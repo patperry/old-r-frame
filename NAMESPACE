@@ -1,0 +1,32 @@
+## Imports
+importFrom(utf8, as_utf8)
+importFrom(utf8, utf8_format)
+importFrom(utf8, utf8_print)
+importFrom(utf8, utf8_valid)
+importFrom(utf8, utf8_width)
+
+
+## Exports
+export(as_dataset)
+export(as_dataset.data.frame)
+export(as_dataset.default)
+export(as_dataset.dataset)
+export(format.dataset)
+export(dataset)
+export(is_dataset)
+export(print.dataset)
+
+## Deprecated
+# (none)
+
+
+## New S3 methods
+S3method(as_dataset, default)
+S3method(as_dataset, data.frame)
+S3method(as_dataset, dataset)
+
+## Base S3 methods
+
+### dataset
+S3method(format, dataset)
+S3method(print, dataset)

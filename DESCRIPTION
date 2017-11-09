@@ -1,0 +1,20 @@
+Package: frame
+Version: 0.0.0.9000
+Title: Variables with Context
+Authors@R: c(
+  person(c("Patrick", "O."), "Perry",
+         role = c("aut", "cph", "cre"),
+         email = "pperry@stern.nyu.edu"))
+Depends: R (>= 2.10)
+Imports:
+  utf8 (>= 1.0.0.9000)
+Suggests:
+  knitr,
+  testthat
+Description: An extension to the 'data.frame' type that makes it easy to affix sampling frames to variables.
+License: Apache License (== 2.0) | file LICENSE
+URL: https://github.com/patperry/r-frame
+BugReports: https://github.com/patperry/r-frame/issues
+LazyData: Yes
+Encoding: UTF-8
+VignetteBuilder: knitr
