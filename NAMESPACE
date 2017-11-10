@@ -1,4 +1,6 @@
 ## Imports
+importFrom(rlang, eval_tidy)
+importFrom(rlang, quos)
 importFrom(utf8, as_utf8)
 importFrom(utf8, utf8_format)
 importFrom(utf8, utf8_print)
@@ -11,8 +13,9 @@ export(as_dataset)
 export(as_dataset.data.frame)
 export(as_dataset.default)
 export(as_dataset.dataset)
-export(format.dataset)
+export(as_dataset.list)
 export(dataset)
+export(format.dataset)
 export(is_dataset)
 export(print.dataset)
 
@@ -24,6 +27,7 @@ export(print.dataset)
 S3method(as_dataset, default)
 S3method(as_dataset, data.frame)
 S3method(as_dataset, dataset)
+S3method(as_dataset, list)
 
 ## Base S3 methods
 
