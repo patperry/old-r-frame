@@ -61,6 +61,10 @@ as_dataset.data.frame <- function(x, key = NULL, ..., rownames = "name")
         }
         x <- structure(c(list(as.character(rownames(x))), as.list(x)),
                        names = c(rownames, names(x)))
+
+        if (is.null(key)) {
+            key <- rownames
+        }
     } else {
         x <- as.list(x)
     }
