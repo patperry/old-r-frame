@@ -1,6 +1,6 @@
 Package: frame
 Version: 0.0.0.9000
-Title: Variables with Context
+Title: Data with Context
 Authors@R: c(
   person(c("Patrick", "O."), "Perry",
          role = c("aut", "cph", "cre"),
