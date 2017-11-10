@@ -50,26 +50,18 @@ as_dataset.data.frame <- function(x, ..., rownames = "name")
         stop("argument is not a valid data frame")
     }
 
-    # fix column names if they are missing
-    if (is.null(names(x))) {
-        names(x) <- paste0("V", seq_along(x))
-    }
-
-    # if row names are present, optionally convert them to a column
+    # convert row names to the first column
     if (.row_names_info(x) > 0 && !is.null(rownames)) {
         if (rownames %in% names(x)) {
-            stop(sprintf("cannot create '%s' column for row names; already exists", rownames))
+            stop(sprintf("cannot create column for row names; name \"%s\" already exists", rownames))
         }
-        xx <- c(list(rownames(x)), as.list(x))
-        names(xx) <- c(rownames, names(x))
-        x <- structure(xx, class = "data.frame",
-                       row.names = .set_row_names(nrow(x)))
+        x <- structure(c(as.character(rownames(x))), as.list(x),
+                       names = c(rownames, names(x)))
     } else {
-        rownames(x) <- NULL
+        x <- as.list(x)
     }
 
-    class(x) <- c("dataset", "data.frame")
-    x
+    as_dataset(x)
 }
 
 
@@ -79,18 +71,12 @@ as_dataset.list <- function(x, ...)
         stop("argument is not a list")
     }
 
-    names <- names(x)
-
-    # fix column names if they are missing
-    if (is.null(names)) {
-        names(x) <- names <- sprintf("V%d", seq_along(x))
-    }
-
-    if ((i <- anyDuplicated(names))) {
-        stop(sprintf("duplicate column name: '%s'", names[[i]]))
-    }
-
     nc <- length(x)
+    with_rethrow({
+        names <- as_names("column name", names(x), nc)
+    })
+    names(x) <- names
+
     if (nc == 0) {
         nr <- 0L
     } else {

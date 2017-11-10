@@ -140,6 +140,52 @@ as_option <- function(name, value)
     as.logical(value)
 }
 
+### Dataset ###
+
+as_names <- function(name, value, n)
+{
+    # fix names if they are missing
+    if (is.null(value)) {
+        return(sprintf("V%d", seq_len(n)))
+    }
+
+    stopifnot(length(value) == n)
+
+    # fix missing and empty names
+    i <- which(is.na(value) | value == "")
+    if (length(i) > 0) {
+        nm <- sprintf("V%d", i)
+        j <- which(nm %in% value)
+        if (length(j) > 0) {
+            stop(sprintf("cannot create %s %d; name \"%s\" already exists",
+                         name, i[[j[[1]]]], nm[[1]]))
+        }
+        value[i] <- nm
+    }
+
+    # check for duplicates
+    if ((i <- anyDuplicated(value))) {
+        stop(sprintf("duplicate %s: \"%s\"", name, value[[i]]))
+    }
+
+    # check for valid encoding
+    i <- which(!utf8_valid(value))
+    if (length(i) > 0) {
+        i <- i[[1]]
+        stop(sprintf("%s %d has wrong declared Encoding", name, i))
+    }
+
+    # convert to UTF-8, NFC
+    value <- as_utf8(value, normalize = TRUE)
+
+    # check for duplicates after normalization
+    if ((i <- anyDuplicated(value))) {
+        stop(sprintf("duplicate (normalized) %s: \"%s\"", name, value[[i]]))
+    }
+
+    value
+}
+
 
 ### Printing ###
 
