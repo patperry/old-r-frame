@@ -38,16 +38,13 @@ format.dataset <- function(x, chars = NULL, na.encode = TRUE,
         print.gap <- 1L
     }
 
-    nr <- .row_names_info(x, 2L)
+    nr <- nrow(x)
     nc <- ncol(x)
     names <- names(x)
-    names[is.na(names)] <- "<NA>"
-    rownames <- rownames(x)
-    stopifnot(!anyNA(rownames))
 
     if ((stretch <- is.null(chars))) {
         width <- getOption("width")
-        rw <- max(0L, utf8_width(rownames))
+        rw <- if (nr == 0) 0 else 1 + floor(log10(nr))
 
         utf8 <- Sys.getlocale("LC_CTYPE") != "C"
         ellipsis <- if (utf8) 1 else 3
@@ -133,11 +130,9 @@ format.dataset <- function(x, chars = NULL, na.encode = TRUE,
         }
     }
 
-    # Should we truncate long names? R cuts them off at 256 characters.
     names(cols) <- names
-
-    structure(cols, class = c("frame", "data.frame"),
-              row.names = rownames)
+    structure(cols, class = "data.frame",
+              row.names = .set_row_names(nr))
 
 }
 
@@ -195,6 +190,7 @@ print.dataset <- function(x, rows = 20L, chars = NULL, digits = NULL,
                           print.gap = print.gap, digits = digits)
     m <- as.matrix(fmt)
     storage.mode(m) <- "character"
+    rownames(m) <- seq_len(nrow(m))
 
     utf8_print(m, chars = .Machine$integer.max, quote = quote,
                na.print = na.print, print.gap = print.gap,
