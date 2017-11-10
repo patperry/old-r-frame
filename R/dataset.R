@@ -31,20 +31,20 @@ dataset <- function(..., frame = NULL)
 }
 
 
-as_dataset <- function(x, ...)
+as_dataset <- function(x, frame = NULL, ...)
 {
     UseMethod("as_dataset")
 }
 
 
-as_dataset.default <- function(x, ...)
+as_dataset.default <- function(x, frame = NULL, ...)
 {
     x <- as.data.frame(x, optional = TRUE, stringsAsFactors = FALSE)
-    as_dataset(x, ...)
+    as_dataset(x, frame = NULL, ...)
 }
 
 
-as_dataset.data.frame <- function(x, ..., rownames = "name")
+as_dataset.data.frame <- function(x, frame = rownames, ..., rownames = "name")
 {
     if (!is.data.frame(x)) {
         stop("argument is not a valid data frame")
@@ -61,50 +61,34 @@ as_dataset.data.frame <- function(x, ..., rownames = "name")
         x <- as.list(x)
     }
 
-    as_dataset(x)
+    as_dataset(x, frame = frame)
 }
 
 
-as_dataset.list <- function(x, ...)
+as_dataset.list <- function(x, frame = NULL, ...)
 {
     if (!is.list(x)) {
         stop("argument is not a list")
     }
 
     nc <- length(x)
+    if (nc > .Machine$integer.max) {
+        stop(sprintf("number of columns (%.0f) exceeds maximum (%d)",
+                     nc, .Machine$integer.max))
+    }
+
     with_rethrow({
         names <- as_names("column name", names(x), nc)
     })
     names(x) <- names
 
-    if (nc == 0) {
-        nr <- 0L
-    } else {
-        nr <- col_nrow(x[[1]])
-        for (i in seq.int(2, length.out = nc - 1)) {
-            elt <- x[[i]]
-            n <- col_nrow(elt)
-            if (n != nr) {
-                stop(sprintf("columns %d and %d have differing numbers of rows: %d and %d",
-                             1, i, nr, n))
-            }
-        }
-    }
+    nr <- nrow_dataset(x)
+    x <- lapply(x, as_column, nr)
 
     structure(x, class = c("dataset", "data.frame"),
               row.names = .set_row_names(nr))
 }
 
-
-col_nrow <- function(x)
-{
-    d <- dim(x)
-    if (is.null(d)) {
-        length(x)
-    } else {
-        d[[1]]
-    }
-}
 
 
 as_dataset.dataset <- function(x, ...)

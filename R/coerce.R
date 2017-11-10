@@ -142,6 +142,58 @@ as_option <- function(name, value)
 
 ### Dataset ###
 
+
+as_column <- function(x, n)
+{
+    # promote scalars
+    if (length(x) == 1) {
+        x <- rep(x, n)
+    }
+
+    # drop names
+    d <- dim(x)
+    if (is.null(d)) {
+        names(x) <- NULL
+    } else {
+        dimnames(x)[1] <- list(NULL)
+    }
+
+    x
+}
+
+
+nrow_dataset <- function(x)
+{
+    nc <- length(x)
+    if (nc == 0) {
+        return(0L)
+    }
+
+    nr <- vapply(x, nrow_column, 0) # not int since result might overflow
+    i <- which.max(nr)
+    n <- nr[[i]]
+    j <- which(nr != 1 & nr != n)
+    if (length(j) > 0) {
+        stop(sprintf(
+            "columns %d and %d have differing numbers of rows: %.0f and %.0f",
+            i, j[[1]], n, nr[[j[[1]]]]))
+    }
+
+    n
+}
+
+
+nrow_column <- function(x)
+{
+    d <- dim(x)
+    if (is.null(d)) {
+        length(x)
+    } else {
+        d[[1]]
+    }
+}
+
+
 as_names <- function(name, value, n)
 {
     # fix names if they are missing

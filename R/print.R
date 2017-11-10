@@ -18,8 +18,8 @@ format.dataset <- function(x, chars = NULL, na.encode = TRUE,
 {
     if (is.null(x)) {
         return(invisible(NULL))
-    } else if (!is.data.frame(x)) {
-        stop("argument is not a data frame")
+    } else if (!is_dataset(x)) {
+        stop("argument is not a valid dataset")
     }
 
     with_rethrow({
@@ -125,11 +125,6 @@ format.dataset <- function(x, chars = NULL, na.encode = TRUE,
                 chars_left <- chars_max
             }
         }
-    }
-
-    lens <- vapply(cols, NROW, 1)
-    if (any(lens != nr)) {
-        stop("invalid data frame: columns have nonuniform lengths")
     }
 
     for (i in seq_len(nc)) {
