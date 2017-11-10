@@ -12,31 +12,19 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-dimnames.dataset <- function(x)
+keynames <- function(x)
 {
-    cn <- names(x)
-    rn <- row.names(x)
-    list(rn, cn)
-}
-
-`dimnames<-.dataset` <- function(x, value)
-{
-    if (!is.null(value[[1]])) {
-        stop("setting row names is not allowed for dataset objects")
+    if (!is_dataset(x)) {
+        stop("argument is not a valid dataset object")
     }
-    x
+    attr(x, "key")
 }
 
-row.names.dataset <- function(x)
-{
-    k <- attr(x, "key")
-    NULL
-}
 
-`row.names<-.dataset` <- function(x, value)
+key <- function(x)
 {
-    if (!is.null(value)) {
-        stop("setting row names is not allowed for dataset objects")
+    if (!is_dataset(x)) {
+        stop("argument is not a valid dataset object")
     }
-    x
+    kn <- keynames(x)
 }

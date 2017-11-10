@@ -34,5 +34,8 @@ S3method(as_dataset, list)
 
 ### dataset
 S3method(dimnames, dataset)
+S3method(`dimnames<-`, dataset)
 S3method(format, dataset)
 S3method(print, dataset)
+S3method(row.names, dataset)
+S3method(`row.names<-`, dataset)
