@@ -123,3 +123,10 @@ test_that("'as_dataset' drops matrix row names", {
     x2 <- matrix(1:20, 4, 5, dimnames = list(letters[1:4], LETTERS[1:5]))
     expect_equal(dataset(x = x1), dataset(x = x2))
 })
+
+
+test_that("'as_dataset' can convert data.frame row names", {
+    x1 <- data.frame(x = 1:26, row.names = letters)
+    x2 <- data.frame(name = letters, x = 1:26, stringsAsFactors = FALSE)
+    expect_equal(as_dataset(x1), as_dataset(x2))
+})

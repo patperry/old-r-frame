@@ -55,7 +55,7 @@ as_dataset.data.frame <- function(x, frame = rownames, ..., rownames = "name")
         if (rownames %in% names(x)) {
             stop(sprintf("cannot create column for row names; name \"%s\" already exists", rownames))
         }
-        x <- structure(c(as.character(rownames(x))), as.list(x),
+        x <- structure(c(list(as.character(rownames(x))), as.list(x)),
                        names = c(rownames, names(x)))
     } else {
         x <- as.list(x)
