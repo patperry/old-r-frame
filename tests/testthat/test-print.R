@@ -25,9 +25,8 @@ test_that("'print.dataset' produces the same results on ASCII", {
     expect_equal(capture_output(print.dataset(d)),
                  capture_output(print(dr)))
     expect_equal(
-        capture_output(print.dataset(d, quote = TRUE,
-                                          row.names = FALSE)),
-        capture_output(print(dq, quote = TRUE, row.names = FALSE)))
+        capture_output(print.dataset(d, quote = TRUE)),
+        capture_output(print(dq, quote = TRUE)))
 })
 
 
@@ -45,9 +44,8 @@ test_that("'print.dataset' handles row names", {
                  capture_output(print(dr)))
 
     expect_equal(
-        capture_output(print.dataset(d, quote = TRUE,
-                                          row.names = FALSE)),
-        capture_output(print(dq, quote = TRUE, row.names = FALSE)))
+        capture_output(print.dataset(d, quote = TRUE)),
+        capture_output(print(dq, quote = TRUE)))
 })
 
 
@@ -151,16 +149,4 @@ test_that("'print.dataset' can wrap 4 columns", {
     expect_equal(strsplit(capture_output(print.dataset(x), width = 80),
                           "\n")[[1]],
                  lines)
-})
-
-
-test_that("'print.dataset' can omit row names", {
-    ctype <- switch_ctype("C")
-    on.exit(Sys.setlocale("LC_CTYPE", ctype))
-
-    d <- data.frame(x = letters)
-    expected <- paste0(capture_output(print(d[1:20,,drop=FALSE], row.names = FALSE)),
-                       "\n (26 rows total)")
-    actual <- capture_output(print.dataset(d, row.names = FALSE))
-    expect_equal(actual, expected)
 })

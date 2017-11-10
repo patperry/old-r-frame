@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+### Basic Types ###
 
 as_character_scalar <- function(name, value, utf8 = TRUE)
 {
@@ -114,40 +115,6 @@ as_integer_vector <- function(name, value, nonnegative = FALSE)
 }
 
 
-as_na_print <- function(name, value)
-{
-    if (is.null(value)) {
-        return(NULL)
-    }
-    value <- as_character_scalar(name, value)
-    if (is.na(value)) {
-        stop(sprintf("'%s' cannot be NA", name))
-    }
-    value
-}
-
-
-as_names <- function(name, value, n, unique = TRUE)
-{
-    if (is.null(value)) {
-        return(NULL)
-    }
-
-    value <- as_character_vector(name, value)
-    if (!unique && length(value) == 1) {
-        value <- rep(value, n)
-    }
-    if (length(value) != n) {
-        stop(sprintf("'%s' has wrong length (%d); must be %d",
-                     name, length(value), n))
-    }
-    if (unique && anyDuplicated(value)) {
-        stop(sprintf("'%s' contains duplicate values", name))
-    }
-    value
-}
-
-
 as_nonnegative <- function(name, value)
 {
     if (is.null(value)) {
@@ -174,6 +141,53 @@ as_option <- function(name, value)
 }
 
 
+### Printing ###
+
+as_chars <- as_nonnegative
+
+
+as_digits <- function(name, value)
+{
+    value <- as_nonnegative(name, value)
+    if (!is.null(value) && value > 22) {
+        stop(sprintf("'%s' must be less than or equal to 22", name))
+    }
+    value
+}
+
+
+as_justify <- function(name, value)
+{
+    as_enum(name, value, c("left", "right", "centre", "none"))
+}
+
+
+as_max_print <- as_nonnegative
+
+
+as_na_print <- function(name, value)
+{
+    if (is.null(value)) {
+        return(NULL)
+    }
+    value <- as_character_scalar(name, value)
+    if (is.na(value)) {
+        stop(sprintf("'%s' cannot be NA", name))
+    }
+    value
+}
+
+
+as_print_gap <- function(name, value)
+{
+    value <- as_nonnegative(name, value)
+    if (!is.null(value) && value > 1024) {
+        stop(sprintf("'%s' must be less than or equal to 1024", name))
+    }
+    value
+}
+
+
 as_rows <- function(name, value)
 {
     if (is.null(value)) {
@@ -185,48 +199,5 @@ as_rows <- function(name, value)
         stop(sprintf("'%s' cannot be NA", name))
     }
 
-    value
-}
-
-
-as_size <- function(size)
-{
-    if (!(is.numeric(size) && length(size) == 1 && !is.na(size))) {
-        stop("'size' must be a finite numeric scalar")
-    }
-
-    if (is.nan(size) || !(size >= 1)) {
-        stop("'size' must be at least 1")
-    }
-
-    size <- floor(size)
-    as.double(size)
-}
-
-
-as_chars <- as_nonnegative
-
-as_digits <- function(name, value)
-{
-    value <- as_nonnegative(name, value)
-    if (!is.null(value) && value > 22) {
-        stop(sprintf("'%s' must be less than or equal to 22", name))
-    }
-    value
-}
-
-as_justify <- function(name, value)
-{
-    as_enum(name, value, c("left", "right", "centre", "none"))
-}
-
-as_max_print <- as_nonnegative
-
-as_print_gap <- function(name, value)
-{
-    value <- as_nonnegative(name, value)
-    if (!is.null(value) && value > 1024) {
-        stop(sprintf("'%s' must be less than or equal to 1024", name))
-    }
     value
 }

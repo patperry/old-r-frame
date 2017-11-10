@@ -8,7 +8,7 @@ Printing and formatting data sets.
 \usage{
 \method{print}{dataset}(x, rows = 20L, chars = NULL, digits = NULL,
       quote = FALSE, na.print = NULL, print.gap = NULL,right = FALSE,
-      row.names = TRUE, max = NULL, display = TRUE, ...)
+      max = NULL, display = TRUE, ...)
 
 \method{format}{dataset}(x, chars = NULL, na.encode = TRUE, quote = FALSE,
        na.print = NULL, print.gap = NULL, ..., justify = "none")
@@ -40,9 +40,6 @@ Printing and formatting data sets.
 
     \item{right}{logical indicating whether to right-align columns
         (ignored for text, character, and factor columns).}
-
-    \item{row.names}{logical indicating whether to print row names, or
-        a character vector giving alternate row names to display.}
 
     \item{max}{maximum number of entries to print; defaults to
         \code{getOption("max.print")}.}

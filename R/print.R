@@ -149,8 +149,7 @@ format.dataset <- function(x, chars = NULL, na.encode = TRUE,
 
 print.dataset <- function(x, rows = 20L, chars = NULL, digits = NULL,
                           quote = FALSE, na.print = NULL, print.gap = NULL,
-                          right = FALSE, row.names = TRUE, max = NULL,
-                          display = TRUE, ...)
+                          right = FALSE, max = NULL, display = TRUE, ...)
 {
     if (is.null(x)) {
         return(invisible(NULL))
@@ -169,13 +168,6 @@ print.dataset <- function(x, rows = 20L, chars = NULL, digits = NULL,
         na.print <- as_na_print("na.print", na.print)
         print.gap <- as_print_gap("print_gap", print.gap)
         right <- as_option("right", right)
-        if (!isTRUE(row.names)) {
-            if (identical(row.names, FALSE)) {
-                row.names <- rep("", n)
-            } else {
-                row.names <- as_names("row.names", row.names, n, unique = FALSE)
-            }
-        }
         max <- as_max_print("max", max)
         display <- as_option("display", display)
     })
@@ -199,9 +191,6 @@ print.dataset <- function(x, rows = 20L, chars = NULL, digits = NULL,
     trunc <- (!is.null(rows) && n > rows)
     if (trunc) {
         xsub <- x[seq_len(rows), , drop = FALSE]
-        if (!isTRUE(row.names)) {
-            row.names <- row.names[seq_len(rows)]
-        }
     } else {
         xsub <- x
     }
@@ -211,10 +200,6 @@ print.dataset <- function(x, rows = 20L, chars = NULL, digits = NULL,
                           print.gap = print.gap, digits = digits)
     m <- as.matrix(fmt)
     storage.mode(m) <- "character"
-
-    if (!isTRUE(row.names)) {
-        rownames(m) <- row.names
-    }
 
     utf8_print(m, chars = .Machine$integer.max, quote = quote,
                na.print = na.print, print.gap = print.gap,
