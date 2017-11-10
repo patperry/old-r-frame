@@ -34,14 +34,33 @@ as_dataset.default <- function(x, ...)
 }
 
 
-as_dataset.data.frame <- function(x, ...)
+as_dataset.data.frame <- function(x, ..., rownames = "name")
 {
     if (!is.data.frame(x)) {
         stop("argument is not a valid data frame")
     }
+    class(x) <- "data.frame"
+
+    # fix column names if they are missing
     if (is.null(names(x))) {
         names(x) <- paste0("V", seq_along(x))
     }
+
+    # if row names are present, optionally convert them to a column
+    if (.row_names_info(x) > 0 && !is.null(rownames)) {
+        if (rownames %in% names(x)) {
+            stop(sprintf(
+                "cannot create '%s' column for row names; already exists",
+                rownames))
+        }
+        xx <- c(list(rownames(x)), as.list(x))
+        names(xx) <- c(rownames, names(x))
+        x <- structure(xx, class = "data.frame",
+                       row.names = .set_row_names(nrow(x)))
+    } else {
+        rownames(x) <- NULL
+    }
+
     class(x) <- c("dataset", "data.frame")
     x
 }
