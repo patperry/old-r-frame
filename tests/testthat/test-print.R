@@ -20,8 +20,6 @@ test_that("'print.dataset' produces the same results on ASCII", {
     dr$ch <- paste0(d$ch, " ")
 
     dq <- d
-    #dq$f <- paste0('"', d$f, '"')
-    #dq$ch <- paste0('"', d$ch, '"')
     names(dq) <- c("x", "f  ", "ch ")
 
     expect_equal(capture_output(print.dataset(d)),
@@ -41,8 +39,6 @@ test_that("'print.dataset' handles row names", {
     dr$ch <- paste0(d$ch, " ")
 
     dq <- d
-    #dq$f <- paste0('"', d$f, '"')
-    #dq$ch <- paste0('"', d$ch, '"')
     names(dq) <- c("x", "f  ", "ch ")
 
     expect_equal(capture_output(print.dataset(d)),
@@ -52,48 +48,6 @@ test_that("'print.dataset' handles row names", {
         capture_output(print.dataset(d, quote = TRUE,
                                           row.names = FALSE)),
         capture_output(print(dq, quote = TRUE, row.names = FALSE)))
-})
-
-
-test_that("'print.dataset' wraps correctly", {
-    w <- getOption("width")
-    half <- floor(w / 2)
-    d <- data.frame(x = c("X", paste(rep("x", 2 * w), collapse="")),
-                    y = c("Y", paste(rep("y", half + 1), collapse="")),
-                    z = c("Z", paste(rep("z", half + 1), collapse="")),
-                    a = 1:2,
-                    b = 3:4,
-                    c = 5:6)
-
-    expect_equal(capture_output(print.dataset(d, chars = 1000)),
-                 capture_output(print(d, right = FALSE)))
-
-    d2 <- data.frame(x = paste(rep("x", w - 2), collapse=""), y = "y", z = "z")
-    expect_equal(capture_output(print.dataset(d2, chars = 1000)),
-                 capture_output(print(d2, right = FALSE)))
-
-    expect_equal(capture_output(print.dataset(d2[,c(2,1,3)],
-                                                   chars = 1000)),
-                 capture_output(print(d2[,c(2,1,3)], right = FALSE)))
-
-    expect_equal(capture_output(print.dataset(d2[,c(2,3,1)],
-                                                   chars = 1000)),
-                 capture_output(print(d2[,c(2,3,1)], right = FALSE)))
-
-    d3 <- data.frame(x = "X", y = "Y", z = "Z",
-                     row.names = paste(rep("x", w), collapse=""))
-    expect_equal(capture_output(print.dataset(d3)),
-                 capture_output(print(d3, right = FALSE)))
-
-    d4 <- data.frame(x = "X", y = "Y", z = "Z",
-                     row.names = paste(rep("x", w - 1), collapse=""))
-    expect_equal(capture_output(print.dataset(d4)),
-                 capture_output(print(d4, right = FALSE)))
-    
-    d5 <- data.frame(x = "X", y = "Y", z = "Z",
-                     row.names = paste(rep("x", w + 1), collapse=""))
-    expect_equal(capture_output(print.dataset(d5)),
-                 capture_output(print(d5, right = FALSE)))
 })
 
 
@@ -167,133 +121,6 @@ test_that("'print.dataset' handles empty data frames", {
                  "data frame with 2 columns and 0 rows")
 })
 
-chartype_frame <- function()
-{
-    chars <- character()
-    desc <- character()
-
-    chars[1] <- "\u0001\u001f"; desc[1] <- "C0 control code"
-    chars[2] <- "\a\b\f\n\r\t"; desc[2] <- "Named control code"
-    chars[3] <- "abcdefuvwxyz"; desc[3] <- "ASCII"
-    chars[4] <- "\u0080\u009f"; desc[4] <- "C1 control code"
-
-    chars[5] <- paste0("\u00a0\u00a1\u00a2\u00a3\u00a4\u00a5",
-                       "\u00fa\u00fb\u00fc\u00fd\u00fe\u00ff")
-    desc[5] <- "Latin-1"
-
-    chars[6] <- paste0("\u0100\u0101\u0102\u0103\u0104\u0105",
-                       "\u0106\u0107\u0108\u0109\u010a\u010b")
-    desc[6] <- "Unicode"
-
-    chars[7] <- "\uff01\uff02\uff03\uff04\uff05\uff06"
-    desc[7] <- "Unicode wide"
-
-    chars[8] <- "\ue00\u2029"
-    desc[8] <- "Unicode control"
-
-    chars[9] <- paste0("x\u00adx\u200bx\u200cx\u200dx\u200ex\u200f",
-                       "x\u034fx\ufeffx", intToUtf8(0xE0001), "x",
-                       intToUtf8(0xE0020), "x", intToUtf8(0xE01EF), "x")
-    desc[9] <- "Unicode ignorable"
-
-    chars[10] <- paste0("a\u0300a\u0301a\u0302a\u0303a\u0304a\u0305",
-                        "a\u0306a\u0307a\u0308a\u0309a\u030aa\u030b")
-    desc[10] <- "Unicode mark"
-
-    chars[11] <- paste0(intToUtf8(0x1F600), intToUtf8(0x1F601),
-                        intToUtf8(0x1F602), intToUtf8(0x1F603),
-                        intToUtf8(0x1F604), intToUtf8(0x1F483))
-    desc[11] <- "Emoji"
-
-    chars[12] <- paste0("x", intToUtf8(0x10ffff), "x")
-    desc[12] <- "Unassigned"
-
-    chars[13] <- "\xfd\xfe\xff"
-    desc[13] <- "Invalid"
-
-    Encoding(chars) <- "UTF-8"
-
-    x <- data.frame(chars, desc, stringsAsFactors = FALSE)
-}
-
-
-test_that("'print.dataset' handles Unicode correctly", {
-    # R can't print all UTF-8 on windows:
-    # https://stat.ethz.ch/pipermail/r-devel/2017-June/074556.html
-    skip_on_os("windows")
-    ctype <- switch_ctype("Unicode")
-    on.exit(Sys.setlocale("LC_CTYPE", ctype))
-
-    x <- chartype_frame()
-    actual <- strsplit(capture_output(print.dataset(x, right = FALSE)),
-                       "\n")[[1]]
-    Encoding(actual) <- "UTF-8"
-
-    expected <- c(
-        "   chars        desc              ",
-        "1  \\u0001\\u001f C0 control code   ",
-        "2  \\a\\b\\f\\n\\r\\t Named control code",
-        "3  abcdefuvwxyz ASCII             ",
-        "4  \\u0080\\u009f C1 control code   ",
-        paste0("5  ", x$chars[5], " Latin-1           "),
-        paste0("6  ", x$chars[6], " Unicode           "),
-        "7  \uff01\uff02\uff03\uff04\uff05\uff06 Unicode wide      ",
-        "8  \\u0e00\\u2029 Unicode control   ",
-        "9  xxxxxxxxxxxx Unicode ignorable ",
-        paste0("10 ", x$chars[10], " Unicode mark      "),
-        paste0("11 ", paste(intToUtf8(0x1F600), intToUtf8(0x1F601),
-                            intToUtf8(0x1F602), intToUtf8(0x1F603),
-                            intToUtf8(0x1F604), intToUtf8(0x1F483), "",
-                            sep = "\u200b"), " Emoji             "),
-        "12 x\\U0010ffffx Unassigned        ",
-        "13 \\xfd\\xfe\\xff Invalid           ")
-    Encoding(expected) <- "UTF-8"
-
-    expect_equal(actual, expected)
-})
-
-
-test_that("'print.dataset' works in C locale", {
-    ctype <- switch_ctype("C")
-    on.exit(Sys.setlocale("LC_CTYPE", ctype))
-
-    x <- chartype_frame()
-    actual <- strsplit(capture_output(print.dataset(x, right = FALSE,
-                                                         chars = 1000)),
-                       "\n")[[1]]
-
-    expected <- c(
-    "   chars                                                                                     ",
-    "1  \\u0001\\u001f                                                                              ",
-    "2  \\a\\b\\f\\n\\r\\t                                                                              ",
-    "3  abcdefuvwxyz                                                                              ",
-    "4  \\u0080\\u009f                                                                              ",
-    "5  \\u00a0\\u00a1\\u00a2\\u00a3\\u00a4\\u00a5\\u00fa\\u00fb\\u00fc\\u00fd\\u00fe\\u00ff                  ",
-    "6  \\u0100\\u0101\\u0102\\u0103\\u0104\\u0105\\u0106\\u0107\\u0108\\u0109\\u010a\\u010b                  ",
-    "7  \\uff01\\uff02\\uff03\\uff04\\uff05\\uff06                                                      ",
-    "8  \\u0e00\\u2029                                                                              ",
-    "9  x\\u00adx\\u200bx\\u200cx\\u200dx\\u200ex\\u200fx\\u034fx\\ufeffx\\U000e0001x\\U000e0020x\\U000e01efx",
-    "10 a\\u0300a\\u0301a\\u0302a\\u0303a\\u0304a\\u0305a\\u0306a\\u0307a\\u0308a\\u0309a\\u030aa\\u030b      ",
-    "11 \\U0001f600\\U0001f601\\U0001f602\\U0001f603\\U0001f604\\U0001f483                              ",
-    "12 x\\U0010ffffx                                                                              ",
-    "13 \\xfd\\xfe\\xff                                                                              ",
-    "   desc              ",
-    "1  C0 control code   ",
-    "2  Named control code",
-    "3  ASCII             ",
-    "4  C1 control code   ",
-    "5  Latin-1           ",
-    "6  Unicode           ",
-    "7  Unicode wide      ",
-    "8  Unicode control   ",
-    "9  Unicode ignorable ",
-    "10 Unicode mark      ",
-    "11 Emoji             ",
-    "12 Unassigned        ",
-    "13 Invalid           ")
-
-    expect_equal(actual, expected)
-})
 
 
 test_that("'print.dataset' can right justify", {
@@ -303,14 +130,6 @@ test_that("'print.dataset' can right justify", {
                  capture_output(print(d, right = TRUE)))
 })
 
-
-test_that("'print.dataset' does not need a gap at the end", {
-    w <- getOption("width")
-    d <- data.frame(x = paste0(rep("x", 10), collapse=""),
-                    y = paste0(rep("y", w - 10 - 3), collapse=""))
-    expect_equal(length(strsplit(capture_output(print.dataset(d)),
-                                 "\n")[[1]]), 2)
-})
 
 
 test_that("'print.dataset' can wrap 4 columns", {
