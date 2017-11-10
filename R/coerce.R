@@ -239,6 +239,27 @@ as_names <- function(name, value, n)
 }
 
 
+as_key <- function(name, value, names)
+{
+    if (is.null(value)) {
+        return(NULL)
+    }
+
+    value <- utf8_normalize(as_character_vector(name, value))
+    if (anyNA(value)) {
+        stop(sprintf("%s contains NA", name))
+    }
+    if (anyDuplicated(value)) {
+        stop(sprintf("%s contains duplicates", name))
+    }
+    unk <- setdiff(value, names)
+    if (length(unk) > 0) {
+        stop(sprintf("%s refers to unknown column \"%s\"", name, unk[[1]]))
+    }
+    value
+}
+
+
 ### Printing ###
 
 as_chars <- as_nonnegative

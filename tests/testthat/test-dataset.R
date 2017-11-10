@@ -130,3 +130,21 @@ test_that("'as_dataset' can convert data.frame row names", {
     x2 <- data.frame(name = letters, x = 1:26, stringsAsFactors = FALSE)
     expect_equal(as_dataset(x1), as_dataset(x2))
 })
+
+
+test_that("'as_dataset' errors for duplicated key", {
+    expect_error(as_dataset(mtcars, key = c("cyl", "cyl")),
+                 "key contains duplicates")
+})
+
+
+test_that("'as_dataset' errors for NA key", {
+    expect_error(as_dataset(mtcars, key = c("cyl", NA)),
+                 "key contains NA")
+})
+
+
+test_that("'as_dataset' errors for missing key", {
+    expect_error(as_dataset(mtcars, key = c("cyl", "zzz")),
+                 "key refers to unknown column \"zzz\"")
+})

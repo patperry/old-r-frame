@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-dataset <- function(..., frame = NULL)
+dataset <- function(..., key = NULL)
 {
     qs <- quos(..., .named = TRUE)
     names <- names(qs)
@@ -27,28 +27,32 @@ dataset <- function(..., frame = NULL)
         names(x)[[i]] <- nm
     }
 
-    as_dataset(x, frame = frame)
+    as_dataset(x, key)
 }
 
 
-as_dataset <- function(x, frame = NULL, ...)
+as_dataset <- function(x, key = NULL, ...)
 {
     UseMethod("as_dataset")
 }
 
 
-as_dataset.default <- function(x, frame = NULL, ...)
+as_dataset.default <- function(x, key = NULL, ...)
 {
     x <- as.data.frame(x, optional = TRUE, stringsAsFactors = FALSE)
-    as_dataset(x, frame = NULL, ...)
+    as_dataset(x, key, ...)
 }
 
 
-as_dataset.data.frame <- function(x, frame = rownames, ..., rownames = "name")
+as_dataset.data.frame <- function(x, key = NULL, ..., rownames = "name")
 {
     if (!is.data.frame(x)) {
         stop("argument is not a valid data frame")
     }
+
+    with_rethrow({
+        rownames <- as_character_scalar("rownames", rownames)
+    })
 
     # convert row names to the first column
     if (.row_names_info(x) > 0 && !is.null(rownames)) {
@@ -61,11 +65,11 @@ as_dataset.data.frame <- function(x, frame = rownames, ..., rownames = "name")
         x <- as.list(x)
     }
 
-    as_dataset(x, frame = frame)
+    as_dataset(x, key)
 }
 
 
-as_dataset.list <- function(x, frame = NULL, ...)
+as_dataset.list <- function(x, key = NULL, ...)
 {
     if (!is.list(x)) {
         stop("argument is not a list")
@@ -79,6 +83,7 @@ as_dataset.list <- function(x, frame = NULL, ...)
 
     with_rethrow({
         names <- as_names("column name", names(x), nc)
+        key <- as_key("key", key, names)
     })
     names(x) <- names
 
@@ -86,7 +91,7 @@ as_dataset.list <- function(x, frame = NULL, ...)
     x <- lapply(x, as_column, nr)
 
     structure(x, class = c("dataset", "data.frame"),
-              row.names = .set_row_names(nr))
+              key = key, row.names = .set_row_names(nr))
 }
 
 
