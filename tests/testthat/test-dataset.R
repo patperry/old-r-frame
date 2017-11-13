@@ -73,16 +73,21 @@ test_that("'as_dataset.data.frame' errors if name already exists", {
 
 test_that("'as_dataset' errors for unequal length columns", {
     expect_error(dataset(x = 1:10, y = 1:10, z = c(1, 2, 3)),
-                 "columns 1 and 3 have differing numbers of rows: 10 and 3")
+                 "columns 1 and 3 \\(\"x\" and \"z\"\\) have differing numbers of rows: 10 and 3")
 
     expect_error(dataset(x = 1:10, y = matrix(1:10, 2, 5)),
-                 "columns 1 and 2 have differing numbers of rows: 10 and 2")
+                 "columns 1 and 2 \\(\"x\" and \"y\"\\) have differing numbers of rows: 10 and 2")
+})
+
+
+test_that("'as_dataset' errors for rank-3 array columns", {
+    expect_error(dataset(x = array(1:24, c(2,3,4))),
+                 "column 1 \\(\"x\"\\) has more than 2 dimensions")
 })
 
 
 test_that("'as_dataset' errors for NULL columns", {
-    expect_error(dataset(x = 1, y = NULL),
-                 "columns 1 and 2 have differing numbers of rows: 1 and 0")
+    expect_error(dataset(x = 1, y = NULL), "column 2 \\(\"y\"\\) is NULL")
 })
 
 

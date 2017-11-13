@@ -91,6 +91,18 @@ as_dataset.list <- function(x, key = NULL, ...)
     })
     names(x) <- names
 
+    for (i in seq_len(nc)) {
+        elt <- x[[i]]
+        if (is.null(elt)) {
+            stop(sprintf("column %d (\"%s\") is NULL", i, names[[i]]))
+        }
+        d <- dim(elt)
+        if (length(d) > 2) {
+            stop(sprintf("column %d (\"%s\") has more than 2 dimensions", i,
+                         names[[i]]))
+        }
+    }
+
     nr <- nrow_dataset(x)
     x <- lapply(x, as_column, nr)
 

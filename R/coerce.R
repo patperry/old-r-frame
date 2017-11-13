@@ -174,9 +174,11 @@ nrow_dataset <- function(x)
     n <- nr[[i]]
     j <- which(nr != 1 & nr != n)
     if (length(j) > 0) {
+        names <- names(x)
         stop(sprintf(
-            "columns %d and %d have differing numbers of rows: %.0f and %.0f",
-            i, j[[1]], n, nr[[j[[1]]]]))
+            "columns %d and %d (\"%s\" and \"%s\") have differing numbers of rows: %.0f and %.0f",
+            i, j[[1]], names[[i]], names[[j[[1]]]],
+            n, nr[[j[[1]]]]))
     }
 
     n
