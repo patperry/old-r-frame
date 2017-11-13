@@ -24,8 +24,7 @@ dimnames.dataset <- function(x)
     if (is.null(value)) {
         stop("setting 'dimnames' to NULL is not allowed")
     } else if (length(value) != 2) {
-        stop(sprintf("length of 'dimnames' (%d) must match that of 'dims' (2)",
-                     length(value)))
+        stop(sprintf("'dimnames' length (%d) must be 2", length(value)))
     } else if (!is.null(value[[1]])) {
         stop("setting row names is not allowed for dataset objects")
     }
@@ -48,5 +47,18 @@ row.names.dataset <- function(x)
     if (!is.null(value)) {
         stop("setting row names is not allowed for dataset objects")
     }
+    x
+}
+
+
+`names<-.dataset` <- function(x, value)
+{
+    if (is.null(value)) {
+        stop("setting 'names' to NULL is not allowed")
+    }
+    with_rethrow({
+        value <- as_names("'names'", value, length(x))
+    })
+    attr(x, "names") <- value
     x
 }

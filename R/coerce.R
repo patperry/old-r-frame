@@ -203,7 +203,10 @@ as_names <- function(name, value, n)
         return(sprintf("V%d", seq_len(n)))
     }
 
-    stopifnot(length(value) == n)
+    if (length(value) != n) {
+        stop(sprintf("%s length (%d) must match number of columns (%d)",
+                     name, length(value), n))
+    }
 
     # fix missing and empty names
     i <- which(is.na(value) | value == "")
@@ -254,11 +257,13 @@ as_key <- function(name, value, names)
     if (anyDuplicated(value)) {
         stop(sprintf("%s contains duplicates", name))
     }
-    unk <- setdiff(value, names)
-    if (length(unk) > 0) {
-        stop(sprintf("%s refers to unknown column \"%s\"", name, unk[[1]]))
+    index <- match(value, names)
+    i <- which(is.na(index))
+    if (length(i) > 0) {
+        stop(sprintf("%s refers to unknown column \"%s\"", name,
+                     value[[i[[1]]]]))
     }
-    value
+    index
 }
 
 

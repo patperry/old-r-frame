@@ -17,5 +17,6 @@ key <- function(x)
     if (!is_dataset(x)) {
         stop("argument is not a valid dataset object")
     }
-    attr(x, "key")
+    index <- attr(x, "key")
+    if (is.null(index)) NULL else names(x)[index]
 }

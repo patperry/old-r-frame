@@ -40,5 +40,29 @@ test_that("'dimnames<-' fails for incorrect number of dimensions", {
     expect_error(dimnames(x) <- NULL,
                  "setting 'dimnames' to NULL is not allowed")
     expect_error(dimnames(x) <- list(NULL, names(x), NULL),
-                 "length of 'dimnames' \\(3\\) must match that of 'dims' \\(2\\)")
+                 "'dimnames' length \\(3\\) must be 2")
+})
+
+
+test_that("'names<-' NULL errors", {
+    x <- as_dataset(mtcars)
+    expect_error(names(x) <- NULL, "setting 'names' to NULL is not allowed")
+})
+
+
+test_that("'names<-' with too many errors", {
+    x <- as_dataset(mtcars)
+    expect_error(names(x) <- c(names(x), "foo"),
+        "'names' length \\(13\\) must match number of columns \\(12\\)")
+})
+
+
+test_that("'names<-' renames key", {
+    x <- as_dataset(mtcars)
+    nm <- names(x)
+    nm[[1]] <- "newkey"
+    names(x) <- nm
+    expect_equal(names(x), nm)
+    expect_equal(key(x), "newkey")
+    expect_equal(rownames(x), rownames(mtcars))
 })
