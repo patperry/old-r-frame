@@ -21,16 +21,26 @@ dimnames.dataset <- function(x)
 
 `dimnames<-.dataset` <- function(x, value)
 {
-    if (!is.null(value[[1]])) {
+    if (is.null(value)) {
+        stop("setting 'dimnames' to NULL is not allowed")
+    } else if (length(value) != 2) {
+        stop(sprintf("length of 'dimnames' (%d) must match that of 'dims' (2)",
+                     length(value)))
+    } else if (!is.null(value[[1]])) {
         stop("setting row names is not allowed for dataset objects")
     }
+    names(x) <- value[[2]]
     x
 }
 
 row.names.dataset <- function(x)
 {
-    k <- attr(x, "key")
-    NULL
+    k <- key(x)
+    if (is.null(k)) {
+        NULL
+    } else {
+        x[[k]]
+    }
 }
 
 `row.names<-.dataset` <- function(x, value)

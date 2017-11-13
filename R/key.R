@@ -12,19 +12,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-keynames <- function(x)
-{
-    if (!is_dataset(x)) {
-        stop("argument is not a valid dataset object")
-    }
-    attr(x, "key")
-}
-
-
 key <- function(x)
 {
     if (!is_dataset(x)) {
         stop("argument is not a valid dataset object")
     }
-    kn <- keynames(x)
+    attr(x, "key")
 }
