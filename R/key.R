@@ -97,6 +97,27 @@ key.dataset <- function(x)
 }
 
 
+keyvals <- function(x)
+{
+    UseMethod("keyvals")
+}
+
+
+keyvals.dataset <- function(x)
+{
+    if (!is_dataset(x)) {
+        stop("argument is not a valid dataset object")
+    }
+
+    key <- attr(x, "key")
+    if (is.null(key)) {
+        NULL
+    }
+
+    lapply(x[key], function(elt) unique(as.character(elt)))
+}
+
+
 key_escape <- function(x)
 {
     # replace \ with \\, : with \:
