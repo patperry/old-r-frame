@@ -18,6 +18,10 @@ export(as_dataset.list)
 export(dataset)
 export(format.dataset)
 export(is_dataset)
+export(key)
+export(key.dataset)
+export(`key<-`)
+export(`key<-.dataset`)
 export(print.dataset)
 
 ## Deprecated
@@ -25,6 +29,8 @@ export(print.dataset)
 
 
 ## New S3 methods
+S3method(key, dataset)
+S3method(`key<-`, dataset)
 S3method(as_dataset, default)
 S3method(as_dataset, data.frame)
 S3method(as_dataset, dataset)

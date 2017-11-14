@@ -46,6 +46,31 @@ test_that("'key' errors for multiple if not unique", {
 })
 
 
+test_that("'key<-' NULL works ", {
+    ds <-dataset(x = letters, key = "x")
+    expect_equal(key(ds), "x")
+    key(ds) <- NULL
+    expect_equal(key(ds), NULL)
+    key(ds) <- NULL
+    expect_equal(key(ds), NULL)
+})
+
+
+test_that("'key<-' errors for invalid key", {
+    ds <- dataset(x = c(1, 1, 2, 2), y = c(1, 2, 1, 1))
+    expect_error(key(ds) <- c("x", "y"),
+                 "key column set \\(\"x\", \"y\"\\) has duplicate rows \\(3 and 4\\)")
+})
+
+test_that("'key<-' errors for key with duplicates", {
+    expect_error(as_dataset(mtcars, key = "vs"),
+                 "key column \"vs\" has duplicate entries \\(1 and 2\\)")
+
+    x <- as_dataset(mtcars)
+    expect_error(key(x) <- "vs",
+                 "key column \"vs\" has duplicate entries \\(1 and 2\\)")
+})
+
 test_that("'rownames' works if key is set", {
     x <- as_dataset(mtcars)
     expect_equal(rownames(x), rownames(mtcars))
