@@ -20,3 +20,16 @@ key <- function(x)
     index <- attr(x, "key")
     if (is.null(index)) NULL else names(x)[index]
 }
+
+
+key_escape <- function(x)
+{
+    # replace \ with \\, : with \:
+    gsub("(\\\\|:)", "\\\\\\1", x)
+}
+
+
+key_join <- function(x)
+{
+    do.call(paste, c(unname(lapply(x, key_escape)), sep = ":"))
+}

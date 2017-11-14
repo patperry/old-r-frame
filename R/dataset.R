@@ -91,6 +91,7 @@ as_dataset.list <- function(x, key = NULL, ...)
     })
     names(x) <- names
 
+    # make sure columns are vectors and matrices only
     for (i in seq_len(nc)) {
         elt <- x[[i]]
         if (is.null(elt)) {
@@ -103,8 +104,52 @@ as_dataset.list <- function(x, key = NULL, ...)
         }
     }
 
+    # validate column lengths
     nr <- nrow_dataset(x)
     x <- lapply(x, as_column, nr)
+
+    # validate keys
+    nk <- length(key)
+    keyvals <- if (nk) vector("list", nk) else NULL
+    for (k in key) {
+        elt <- x[[k]]
+        d <- dim(elt)
+        if (length(d) > 1) {
+            stop(sprintf("key column \"%s\" is not a vector", names[[k]]))
+        }
+        i <- which(is.na(elt))
+        if (length(i) > 0) {
+            stop(sprintf("key column \"%s\" has a missing value (entry %.0f)",
+                         names[[k]], i[[1]]))
+        }
+        keyvals[[k]] <- as.character(elt)
+        i <- which(!utf8_valid(keyvals[[k]]))
+        if (length(i) > 0) {
+            stop(sprintf(
+                "key column \"%s\" cannot be converted to UTF-8 (entry %.0f is invalid)",
+                names[[k]], i[[1]]))
+        }
+    }
+
+    if (nk == 1) {
+        i <- which(duplicated(keyvals[[1]]))
+        if (length(i) > 0) {
+            j <- which(keyvals[[1]] == keyvals[[1]][[i[[1]]]])
+            stopifnot(length(j) > 1)
+            stop(sprintf("key column \"%s\" has duplicate entries (%.0f and %.0f)",
+                         names[[key[[1]]]], j[[1]], j[[2]]))
+        }
+    } else {
+        kv <- key_join(keyvals)
+        i <- which(duplicated(kv))
+        if (length(i) > 0) {
+            j <- which(kv == kv[[i[[1]]]])
+            stopifnot(length(j) > 1)
+            stop(sprintf("key column set (%s) has duplicate rows (%.0f and %.0f)",
+                         paste(paste0("\"", names[key], "\""), collapse = ", "),
+                         j[[1]], j[[2]]))
+        }
+    }
 
     structure(x, class = c("dataset", "data.frame"),
               key = key, row.names = .set_row_names(nr))
