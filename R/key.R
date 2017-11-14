@@ -112,9 +112,9 @@ keyvals.dataset <- function(x)
     key <- attr(x, "key")
     if (is.null(key)) {
         NULL
+    } else {
+        lapply(x[key], function(elt) unique(as.character(elt)))
     }
-
-    lapply(x[key], function(elt) unique(as.character(elt)))
 }
 
 
