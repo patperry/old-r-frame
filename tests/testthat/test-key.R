@@ -81,3 +81,11 @@ test_that("'row.names' works if key is set", {
     x <- as_dataset(mtcars)
     expect_equal(row.names(x), row.names(mtcars))
 })
+
+
+test_that("'rownames' works for multiple keys", {
+    ds <- dataset(x = c(1, 1, 2, 2), y = c(1, 2, 1, 2),
+                  key = c("x", "y"))
+    expect_equal(rownames(ds), c("1:1", "1:2", "2:1", "2:2"))
+    expect_equal(row.names(ds), c("1:1", "1:2", "2:1", "2:2"))
+})

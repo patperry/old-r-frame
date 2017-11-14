@@ -38,7 +38,8 @@ row.names.dataset <- function(x)
     if (is.null(k)) {
         NULL
     } else {
-        x[[k]]
+        rn <- lapply(x[k], function(xk) as_utf8(as.character(xk)))
+        key_join(rn)
     }
 }
 
