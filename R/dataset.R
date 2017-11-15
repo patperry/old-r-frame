@@ -128,5 +128,5 @@ as_dataset.dataset <- function(x, ...)
 
 is_dataset <- function(x)
 {
-    is.data.frame(x) && inherits(x, "dataset")
+    is.data.frame(x) && inherits(x, "dataset") && attr(x, "nkey") >= 0L
 }
