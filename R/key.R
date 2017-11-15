@@ -24,7 +24,7 @@ key.dataset <- function(x)
         stop("argument is not a valid dataset object")
     }
     nkey <- attr(x, "nkey")
-    if (is.null(nkey)) {
+    if (nkey == 0L) {
         NULL
     } else {
         key <- seq_len(nkey)
@@ -46,7 +46,7 @@ key.dataset <- function(x)
     }
 
     # discard the old key
-    attr(x, "nkey") <- NULL
+    attr(x, "nkey") <- 0L
 
     if (is.null(value)) {
         return(x)
@@ -123,7 +123,7 @@ keyvals.dataset <- function(x)
     }
 
     nkey <- attr(x, "nkey")
-    if (is.null(nkey)) {
+    if (nkey == 0L) {
         NULL
     } else {
         key <- seq_len(nkey)

@@ -108,7 +108,7 @@ as_dataset.list <- function(x, key = NULL, ...)
     cols <- lapply(x, as_column, nr)
 
     x <- structure(cols, class = c("dataset", "data.frame"),
-                   row.names = .set_row_names(nr))
+                   nkey = 0L, row.names = .set_row_names(nr))
     with_rethrow({
         key(x) <- key
     })
