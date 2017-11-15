@@ -46,7 +46,7 @@ format.dataset <- function(x, chars = NULL, na.encode = TRUE,
         width <- getOption("width")
         rw <- if (nr == 0) 0 else 1 + floor(log10(nr))
 
-        utf8 <- Sys.getlocale("LC_CTYPE") != "C"
+        utf8 <- output_utf8()
         ellipsis <- if (utf8) 1 else 3
         quotes <- if (quote) 2 else 0
 
@@ -203,11 +203,11 @@ print.dataset <- function(x, rows = 20L, chars = NULL, digits = NULL,
     } else if (trunc) {
         name_width <- max(0, utf8_width(rownames(m)))
 
-        ellipsis <- ifelse(Sys.getlocale("LC_CTYPE") == "C", ".", "\u22ee")
+        ellipsis <- ifelse(output_utf8(), "\u22ee", ".")
         ellipsis <- substr(ellipsis, 1, name_width)
         gap <- if (is.null(print.gap)) 1 else print.gap
         space <- format(ellipsis, width = name_width + gap)
-        if (is_ansi()) {
+        if (output_ansi()) {
             space <- paste0("\x1b[", style_faint, "m", space, "\x1b[0m")
         }
         cat(space, sprintf("(%d rows total)\n", n), sep = "")
