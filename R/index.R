@@ -37,7 +37,7 @@
             i <- match(as.character(i), rownames(x))
             return(x[i,,drop = drop])
         }
-        if (!is.null(attr(x, "key"))) {
+        if (!is.null(attr(x, "nkey"))) {
             dup <- anyDuplicated(i)
             if (dup > 0) {
                  stop(sprintf(

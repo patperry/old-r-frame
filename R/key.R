@@ -23,8 +23,13 @@ key.dataset <- function(x)
     if (!is_dataset(x)) {
         stop("argument is not a valid dataset object")
     }
-    index <- attr(x, "key")
-    if (is.null(index)) NULL else names(x)[index]
+    nkey <- attr(x, "nkey")
+    if (is.null(nkey)) {
+        NULL
+    } else {
+        key <- seq_len(nkey)
+        names(x)[key]
+    }
 }
 
 
@@ -41,7 +46,7 @@ key.dataset <- function(x)
     }
 
     # discard the old key
-    attr(x, "key") <- NULL
+    attr(x, "nkey") <- NULL
 
     if (is.null(value)) {
         return(x)
@@ -99,7 +104,7 @@ key.dataset <- function(x)
     x <- x[c(key, seq_along(x)[-key])]
 
     # set the key
-    attr(x, "key") <- seq_along(key)
+    attr(x, "nkey") <- length(key)
 
     x
 }
@@ -117,10 +122,11 @@ keyvals.dataset <- function(x)
         stop("argument is not a valid dataset object")
     }
 
-    key <- attr(x, "key")
-    if (is.null(key)) {
+    nkey <- attr(x, "nkey")
+    if (is.null(nkey)) {
         NULL
     } else {
+        key <- seq_len(nkey)
         lapply(x[key], function(elt) unique(as.character(elt)))
     }
 }
