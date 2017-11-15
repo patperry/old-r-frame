@@ -2,6 +2,7 @@
 importFrom(rlang, eval_tidy)
 importFrom(rlang, quos)
 importFrom(utf8, as_utf8)
+importFrom(utf8, output_ansi)
 importFrom(utf8, output_utf8)
 importFrom(utf8, utf8_format)
 importFrom(utf8, utf8_normalize)
