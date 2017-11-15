@@ -73,6 +73,25 @@ test_that("'key<-' errors for key with duplicates", {
 })
 
 
+test_that("'keyvals' is NULL if key is NULL", {
+    ds <- dataset(x = letters)
+    expect_equal(keyvals(ds), NULL)
+})
+
+
+test_that("'keyvals' gives unique values for length-1 key", {
+    ds <- dataset(x = LETTERS[1:20], y = rep(1:10, each = 2), key = "x")
+    expect_equal(keyvals(ds), list(x = LETTERS[1:20]))
+})
+
+
+test_that("'keyvals' gives unique values for length-2 key", {
+    ds <- dataset(x = c(letters, letters), y = rep(1:13, each = 4),
+                  key = c("x", "y"))
+    expect_equal(keyvals(ds), list(x = letters, y = as.character(1:13)))
+})
+
+
 test_that("'rownames' works if key is set", {
     x <- as_dataset(mtcars)
     expect_equal(rownames(x), rownames(mtcars))
