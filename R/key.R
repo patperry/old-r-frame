@@ -39,8 +39,11 @@ key.dataset <- function(x)
     if (!is_dataset(x)) {
         stop("argument is not a valid dataset object")
     }
+
+    # discard the old key
+    attr(x, "key") <- NULL
+
     if (is.null(value)) {
-        attr(x, "key") <- NULL
         return(x)
     }
 
@@ -92,7 +95,12 @@ key.dataset <- function(x)
         }
     }
 
-    attr(x, "key") <- key
+    # reorder columns, putting key first
+    x <- x[c(key, seq_along(x)[-key])]
+
+    # set the key
+    attr(x, "key") <- seq_along(key)
+
     x
 }
 

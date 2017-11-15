@@ -73,6 +73,18 @@ test_that("'key<-' errors for key with duplicates", {
 })
 
 
+test_that("'key<-' moves columns to beginning", {
+    ds1 <- dataset(z = letters[1:4], x = c(1, 1, 2, 2), y = c(1, 2, 1, 2),
+                   key = c("x", "y"))
+    ds2 <- dataset(x = c(1, 1, 2, 2), z = letters[1:4], y = c(1, 2, 1, 2),
+                   key = c("x", "y"))
+    ds3 <- dataset(y = c(1, 2, 1, 2), x = c(1, 1, 2, 2), z = letters[1:4],
+                   key = c("x", "y"))
+    expect_equal(ds1, ds2)
+    expect_equal(ds1, ds3)
+})
+
+
 test_that("'keyvals' is NULL if key is NULL", {
     ds <- dataset(x = letters)
     expect_equal(keyvals(ds), NULL)
