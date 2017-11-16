@@ -327,3 +327,5 @@ as_rows <- function(name, value)
 
     value
 }
+
+as_cols <- as_rows

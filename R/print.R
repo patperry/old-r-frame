@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-format.dataset <- function(x, chars = NULL, na.encode = TRUE,
+format.dataset <- function(x, cols = NULL, chars = NULL, na.encode = TRUE,
                            quote = FALSE, na.print = NULL,
                            print.gap = NULL, ..., justify = "none")
 {
@@ -23,6 +23,7 @@ format.dataset <- function(x, chars = NULL, na.encode = TRUE,
     }
 
     with_rethrow({
+        cols <- as_cols("cols", cols)
         chars <- as_chars("chars", chars)
         na.encode <- as_option("na.encode", na.encode)
         quote <- as_option("quote", quote)
@@ -137,9 +138,10 @@ format.dataset <- function(x, chars = NULL, na.encode = TRUE,
 }
 
 
-print.dataset <- function(x, rows = 20L, chars = NULL, digits = NULL,
-                          quote = FALSE, na.print = NULL, print.gap = NULL,
-                          right = FALSE, max = NULL, display = TRUE, ...)
+print.dataset <- function(x, rows = NULL, cols = NULL, chars = NULL,
+                          digits = NULL, quote = FALSE, na.print = NULL,
+                          print.gap = NULL, right = FALSE, max = NULL,
+                          display = TRUE, ...)
 {
     if (is.null(x)) {
         return(invisible(NULL))
@@ -152,6 +154,7 @@ print.dataset <- function(x, rows = 20L, chars = NULL, digits = NULL,
 
     with_rethrow({
         rows <- as_rows("rows", rows)
+        cols <- as_cols("cols", cols)
         chars <- as_chars("chars", chars)
         digits <- as_digits("digits", digits)
         quote <- as_option("quote", quote)
@@ -162,7 +165,10 @@ print.dataset <- function(x, rows = 20L, chars = NULL, digits = NULL,
         display <- as_option("display", display)
     })
 
-    if (is.null(rows) || rows < 0) {
+    if (is.null(rows)) {
+        rows <- 20L
+    }
+    if (rows < 0) {
         rows <- .Machine$integer.max
     }
 
@@ -185,9 +191,10 @@ print.dataset <- function(x, rows = 20L, chars = NULL, digits = NULL,
         xsub <- x
     }
 
-    fmt <- format.dataset(xsub, chars = chars, na.encode = FALSE,
-                          na.print = na.print, quote = quote,
-                          print.gap = print.gap, digits = digits)
+    fmt <- format.dataset(xsub, cols = cols, chars = chars,
+                          na.encode = FALSE, na.print = na.print,
+                          quote = quote, print.gap = print.gap,
+                          digits = digits)
     m <- as.matrix(fmt)
     storage.mode(m) <- "character"
     rownames(m) <- seq_len(nrow(m))
