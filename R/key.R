@@ -28,7 +28,7 @@ key.dataset <- function(x)
         NULL
     } else {
         key <- seq_len(nkey)
-        names(x)[key]
+        attr(x, "names")[key]
     }
 }
 
@@ -78,6 +78,7 @@ key.dataset <- function(x)
                 "key column \"%s\" cannot be converted to UTF-8 (entry %.0f is invalid)",
                 names[[key[[k]]]], i[[1]]))
         }
+        keyvals[[k]] <- as_utf8(keyvals[[k]], normalize = TRUE)
     }
 
     if (nk == 1) {
@@ -127,7 +128,9 @@ keyvals.dataset <- function(x)
         NULL
     } else {
         key <- seq_len(nkey)
-        lapply(x[key], function(elt) unique(as.character(elt)))
+        l <- as.list(x)
+        lapply(l[key], function(elt) unique(as_utf8(as.character(elt),
+                                                    normalize = TRUE)))
     }
 }
 

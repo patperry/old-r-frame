@@ -44,6 +44,12 @@ test_that("'dimnames<-' fails for incorrect number of dimensions", {
 })
 
 
+test_that("'names' does not include key", {
+    x <- as_dataset(mtcars)
+    expect_equal(names(x), names(mtcars))
+})
+
+
 test_that("'names<-' NULL errors", {
     x <- as_dataset(mtcars)
     expect_error(names(x) <- NULL, "setting 'names' to NULL is not allowed")
@@ -53,16 +59,12 @@ test_that("'names<-' NULL errors", {
 test_that("'names<-' with too many errors", {
     x <- as_dataset(mtcars)
     expect_error(names(x) <- c(names(x), "foo"),
-        "'names' length \\(13\\) must match number of columns \\(12\\)")
+        "'names' length \\(12\\) must match number of columns \\(11\\)")
 })
 
 
-test_that("'names<-' renames key", {
+test_that("'names<-' errors if key already has name", {
     x <- as_dataset(mtcars)
-    nm <- names(x)
-    nm[[1]] <- "newkey"
-    names(x) <- nm
-    expect_equal(names(x), nm)
-    expect_equal(key(x), "newkey")
-    expect_equal(rownames(x), rownames(mtcars))
+    expect_error(names(x) <- c("name", names(x)[-1]),
+                 "duplicate column name: \"name\" \\(matches key name\\)")
 })
