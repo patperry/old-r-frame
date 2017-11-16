@@ -24,6 +24,7 @@ length.dataset <- function(x)
     if (is.numeric(i)) {
         i <- i + attr(x, "nkey")
     }
+    # TODO: handle logical
     NextMethod()
 }
 
