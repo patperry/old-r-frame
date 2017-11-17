@@ -21,12 +21,40 @@ attribute, `"key"`, that stores potentially multi-column attributes
 
 ### Constraints
 
-We require that each key (or composite key in the case of multi-attribute
-keys) correspond to a single data point. To this end, we require that the keys
-(or composite keys) be unique after conversion to valid UTF-8. Moreover for
-consistency we require that keys not contain missing values (`NA`). We do
-not require that keys be unique after Unicode normalization, and we allow
+For simplicity, we will require that key values be valid UTF-8 strings. There
+are two reasons for this constraint:
+
+ 1. To use keys as as object names, it will be necessary to convert them to
+    strings.
+
+ 2. To distinguish access-by-key from access-by-index, keys cannot have type
+    `integer` or `double`. The expression `x[3,]` needs to unambigously
+    refer to the third row in `x`, not the row with key 3.
+
+Requiring that keys be strings may impose some efficiency penalty (both time
+and space). If it can be demonstrated that the penalty is substantial, then in
+the future we may allow for integer keys, using a special key class do make
+indexing operations unambiguous.
+
+
+Beyond the type constraints, we require that each key (or composite key in the
+case of multi-attribute keys) correspond to a single data point. To this end,
+we require that the keys (or composite keys) be unique non-missing values.  We
+do not require that keys be unique after Unicode normalization, and we allow
 the empty string (`""`) as a key value.
+
+
+### Component names
+
+An `m`-attribute key can optionally have names for the attributes. For
+example, if we key a set of hourly measurements by a two-component key, we can
+optionally name these components, say `"day"` and `"hour"`. It is not
+necessary that we give the components names. Making component names optional
+allows us to seamlessly convert between, say, a matrix with row and column
+names, and a keyed data set with a two-component key corresponding to the row
+and column indices. Allowing anonymous keys also allows us to convert
+from a `data.frame` with `row.names` to a keyed data set with an anonymous
+key (taken from the `row.names`).
 
 
 ### Conversion to string
@@ -34,11 +62,11 @@ the empty string (`""`) as a key value.
 For compatibility with other R objects that support `"names"`
 but not composite keys, it is essential to have a well-defined mapping between
 composite keys and string representations of them. For a scalar key `k`, we
-use `as_utf8(as.character(k))` as its string representation. For composite key
-`(k1, k2, ..., km)`, we first convert each component `ki` to a UTF-8 string,
-escaping reverse solidus (`\`, U+005C) and comma (`,`, U+002C) by
-preceding these characters with a reverse solidus. The `key_escape` function
-performs the escaping, and the `key_unescape` function reverses it:
+use they key itself as its string representation. For composite key
+`(k1, k2, ..., km)`, we first escaping reverse solidus (`\`, U+005C) and
+comma (`,`, U+002C) by preceding these characters with a reverse solidus.
+The `key_escape` function performs the escaping, and the `key_unescape`
+function reverses it:
 
 ```r
 key_escape(c("Jones, Henrietta", "\\/", ",,,"))
@@ -52,14 +80,14 @@ reverses it:
 
 ```r
 # 3-component composite key
-(s <- key_encode(list(c("Jones, Henrieta", "X, Mx.", "Box, George"),
+(s <- key_encode(list(c("Jones, Henrietta", "X, Mx.", "Box, George"),
                       c("\\/", "", "2\\b"),
                       c("92", "2", "17"))))
 key_decode(s)
 ```
 
-Note, however, that for scalar keys we do not escape reverse solidus and
-comma characters. Thus, the string "Jones, Henrieta" cannot unambiguously
+Note, that for scalar keys we do not escape reverse solidus and
+comma characters. Thus, the string "Jones, Henrietta" cannot unambiguously
 be decoded to a key without knowing whether the key is composite or not:
 
 ```r
@@ -67,6 +95,9 @@ key_decode("Jones, Henrieta")
 key_decode("Jones, Henrieta", composite = FALSE)
 ```
 
-This ambiguity is unfortunate, but as we will see in the sequel, it is
-necessary to make indexing behave consistently between scalar and composite
-keys.
+This ambiguity is unfortunate, but as we will see in the sequel, this
+ambiguity is necessary if we want indexing to behave consistently with scalar
+and composite keys.
+
+
+## Indexing
