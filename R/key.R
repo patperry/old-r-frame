@@ -90,7 +90,7 @@ key.dataset <- function(x)
                          names[[key[[1]]]], j[[1]], j[[2]]))
         }
     } else {
-        kv <- key_join(keyvals)
+        kv <- key_encode(keyvals)
         i <- which(duplicated(kv))
         if (length(i) > 0) {
             j <- which(kv == kv[[i[[1]]]])
@@ -137,12 +137,49 @@ keyvals.dataset <- function(x)
 
 key_escape <- function(x)
 {
-    # replace \ with \\, : with \:
-    gsub("(\\\\|:)", "\\\\\\1", x)
+    # replace '\' with '\\', ',' with '\,'
+    gsub("(\\\\|,)", "\\\\\\1", x)
 }
 
 
-key_join <- function(x)
+key_unescape <- function(x)
 {
-    do.call(paste, c(unname(lapply(x, key_escape)), sep = ":"))
+    gsub("\\\\(\\\\|,)", "\\1", x)
+}
+
+
+key_encode <- function(x)
+{
+    nk <- length(x)
+    if (nk == 0) {
+        NULL
+    } else if (nk == 1) {
+        x[[1]]
+    } else {
+        do.call(paste, c(unname(lapply(x, key_escape)), sep = ","))
+    }
+}
+
+
+key_decode <- function(x, composite = TRUE)
+{
+    if (is.null(x)) {
+        NULL
+    } else if (!composite) {
+        list(x)
+    } else {
+        # split at non-escaped ','
+        # https://stackoverflow.com/a/11819111/6233565
+        parts <- strsplit(x, "(?<!\\\\)(?:\\\\\\\\)*,", perl = TRUE)
+        len <- vapply(parts, length, 0L)
+        nkey <- max(len)
+
+        # pad with NA
+        parts <- lapply(parts, `length<-`, nkey)
+
+        # unescape and transpose
+        k <- split(key_unescape(c(parts, recursive = TRUE)),
+                   rep(seq_len(nkey), length(parts)))
+        unname(k)
+    }
 }

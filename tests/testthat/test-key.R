@@ -1,6 +1,64 @@
 
 context("key")
 
+test_that("'key_escape' handles \\ and ' '", {
+    expect_equal(key_escape(c("Jones, Henrietta", "\\/", ",,,", "\\,\\", "")),
+                 c("Jones\\, Henrietta", "\\\\/", "\\,\\,\\,", "\\\\\\,\\\\",
+                   ""))
+})
+
+
+test_that("'key_unescape' reverses `key_escape", {
+    expect_equal(key_unescape(c("Jones\\, Mx.", "\\\\/", "\\,\\,\\,",
+                                "\\\\\\,\\\\", "")),
+                c("Jones, Mx.", "\\/", ",,,", "\\,\\", ""))
+})
+
+
+test_that("'key_encode' gives NULL for NULL or length 0", {
+    expect_equal(key_encode(NULL), NULL)
+    expect_equal(key_encode(list()), NULL)
+})
+
+
+test_that("'key_decode' gives NULL for NULL", {
+    expect_equal(key_decode(NULL), NULL)
+})
+
+
+test_that("'key_encode' leaves scalar alone", {
+    k <- c("Jones, Henrieta", "X, Mx.", "Box, George")
+    expect_equal(key_encode(list(k)), k)
+})
+
+
+test_that("'key_decode' puts no-comma in list", {
+    k <- c("Jones, Henrieta", "X, Mx.", "Box, George")
+    expect_equal(key_decode(k, composite = FALSE), list(k))
+})
+
+
+test_that("'key_encode' escapes and combines others", {
+    k <- list(c("Jones, Henrieta", "X, Mx.", "Box, George"),
+              c("\\/", "", "2\\b"),
+              c("92", "2", "17"))
+    e <- lapply(k, key_escape)
+    s <- paste0(e[[1]], ",", e[[2]], ",", e[[3]])
+    expect_equal(key_encode(k), s)
+})
+
+
+test_that("'key_decode' splits and unescapes composites ", {
+    k <- list(c("Jones, Henrieta", "X, Mx.", "Box, George"),
+              c("\\/", "", "2\\b"),
+              c("92", "2", "17"))
+    e <- lapply(k, key_escape)
+    s <- paste0(e[[1]], ",", e[[2]], ",", e[[3]])
+    x <- key_encode(k)
+    expect_equal(key_decode(x), k)
+})
+
+
 test_that("'as_dataset' on data.frame uses row names as key", {
     x <- as_dataset(mtcars)
     expect_equal(key(x), "name")
@@ -119,6 +177,6 @@ test_that("'row.names' works if key is set", {
 test_that("'rownames' works for multiple keys", {
     ds <- dataset(x = c(1, 1, 2, 2), y = c(1, 2, 1, 2),
                   key = c("x", "y"))
-    expect_equal(rownames(ds), c("1:1", "1:2", "2:1", "2:2"))
-    expect_equal(row.names(ds), c("1:1", "1:2", "2:1", "2:2"))
+    expect_equal(rownames(ds), c("1,1", "1,2", "2,1", "2,2"))
+    expect_equal(row.names(ds), c("1,1", "1,2", "2,1", "2,2"))
 })

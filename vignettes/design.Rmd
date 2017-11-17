@@ -1,0 +1,72 @@
+---
+title: "Design Motivation"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Design Motivation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+The motivating idea behind this package is that every data point has context,
+and an object storing data points should provide access to this context. The
+`data.frame` object enables this to some extent by allowing us to annotate
+data points with labels (the `"row.names"`), but it is not flexible
+enough to handle cases where the context involves more than one attribute. We
+fix this by replacing the `"row.names"` attribute of a `data.frame` with a new
+attribute, `"key"`, that stores potentially multi-column attributes
+(*composite keys*) that identify each row in the data frame.
+
+
+## Keys
+
+### Constraints
+
+We require that each key (or composite key in the case of multi-attribute
+keys) correspond to a single data point. To this end, we require that the keys
+(or composite keys) be unique after conversion to valid UTF-8. Moreover for
+consistency we require that keys not contain missing values (`NA`). We do
+not require that keys be unique after Unicode normalization, and we allow
+the empty string (`""`) as a key value.
+
+
+### Conversion to string
+
+For compatibility with other R objects that support `"names"`
+but not composite keys, it is essential to have a well-defined mapping between
+composite keys and string representations of them. For a scalar key `k`, we
+use `as_utf8(as.character(k))` as its string representation. For composite key
+`(k1, k2, ..., km)`, we first convert each component `ki` to a UTF-8 string,
+escaping reverse solidus (`\`, U+005C) and comma (`,`, U+002C) by
+preceding these characters with a reverse solidus. The `key_escape` function
+performs the escaping, and the `key_unescape` function reverses it:
+
+```r
+key_escape(c("Jones, Henrietta", "\\/", ",,,"))
+key_unescape(c("Jones\\, Henrietta", "\\\\/", "\\,\\,\\,"))
+```
+
+We then concatenate the escaped strings `s1, s2, ..., sm` together, separating
+the components with unescaped commas. The `key_encode` function performs the
+conversion for us, and the `key_decode` with `composite = TRUE`  (the default)
+reverses it:
+
+```r
+# 3-component composite key
+(s <- key_encode(list(c("Jones, Henrieta", "X, Mx.", "Box, George"),
+                      c("\\/", "", "2\\b"),
+                      c("92", "2", "17"))))
+key_decode(s)
+```
+
+Note, however, that for scalar keys we do not escape reverse solidus and
+comma characters. Thus, the string "Jones, Henrieta" cannot unambiguously
+be decoded to a key without knowing whether the key is composite or not:
+
+```r
+key_decode("Jones, Henrieta")
+key_decode("Jones, Henrieta", composite = FALSE)
+```
+
+This ambiguity is unfortunate, but as we will see in the sequel, it is
+necessary to make indexing behave consistently between scalar and composite
+keys.

@@ -41,8 +41,12 @@ row.names.dataset <- function(x)
         NULL
     } else {
         l <- as.list(x)
-        rn <- lapply(l[1:nkey], function(xk) as_utf8(as.character(xk)))
-        key_join(rn)
+        if (nkey == 1) {
+            as_utf8(as.character(l[[1]]))
+        } else {
+            rn <- lapply(l[1:nkey], function(xk) as_utf8(as.character(xk)))
+            key_encode(rn)
+        }
     }
 }
 
