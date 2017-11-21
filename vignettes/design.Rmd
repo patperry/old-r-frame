@@ -17,6 +17,16 @@ attribute, `"key"`, that stores potentially multi-column attributes
 (*composite keys*) that identify each row in the data frame.
 
 
+We view a *variable* as a map (function) between two sets, called the *frame*
+(domain) and the *type* (domain) of the variable. We refer to members of the
+*frame* as *keys* and members of the *type* as *values*. A *data point* is a
+(variable, key, value) triple. In standard statistical notation, the triple
+$(x, i, x_i)$ would be a data point; this often gets abbreviated as $x_i$
+since it is clear from the that $i$ is the key and $x$ is the variable.
+
+A *sample* is a collection of data points with a common variable.
+
+
 ## Keys
 
 ### Constraints
@@ -68,7 +78,7 @@ comma (`,`, U+002C) by preceding these characters with a reverse solidus.
 The `key_escape` function performs the escaping, and the `key_unescape`
 function reverses it:
 
-```r
+```{r}
 key_escape(c("Jones, Henrietta", "\\/", ",,,"))
 key_unescape(c("Jones\\, Henrietta", "\\\\/", "\\,\\,\\,"))
 ```
@@ -78,7 +88,7 @@ the components with unescaped commas. The `key_encode` function performs the
 conversion for us, and the `key_decode` with `composite = TRUE`  (the default)
 reverses it:
 
-```r
+```{r}
 # 3-component composite key
 (s <- key_encode(list(c("Jones, Henrietta", "X, Mx.", "Box, George"),
                       c("\\/", "", "2\\b"),
@@ -90,7 +100,7 @@ Note, that for scalar keys we do not escape reverse solidus and
 comma characters. Thus, the string "Jones, Henrietta" cannot unambiguously
 be decoded to a key without knowing whether the key is composite or not:
 
-```r
+```{r}
 key_decode("Jones, Henrieta")
 key_decode("Jones, Henrieta", composite = FALSE)
 ```
@@ -100,4 +110,53 @@ ambiguity is necessary if we want indexing to behave consistently with scalar
 and composite keys.
 
 
+## Data tables
+
+A `data_table` is a matrix-like structure storing a set of variables measured
+on a collection of individuals. We identify the individuals with rows of the
+table, and the variables with the columns. We implement the `data_table` as as
+subclass of `data.frame` with better support for matrix columns and the
+ability to specify keys to identify the rows.
+
+The `data_table` type is an extension of `data.frame` that allows specifying
+keys for the rows. We construct a data table as in the following example:
+
+```{r}
+x <- data_table(a = letters, b = rnorm(26), c = 2 * b)
+```
+
+Columns are evaluated sequentially in an environment that includes the
+preceding values. Columns can be vector-like or matrix-like (having one or two
+dimensions). At construction time, we can specify that one or more of the
+columns should be used for the key by giving their names to the `key`
+argument:
+
+```{r}
+y <- data_table(a = letters, b = rnorm(26), c = 2 * b, key = c("c", "a"))
+```
+
+
+
+
 ## Indexing
+
+### Logical or numeric subscript
+
+For dataset `x` and logical vector `i`, the indexing operations `x[i,]` and
+`x[i,j]` behave like the counterpart `data.frame` operations, except that
+`drop = FALSE` is the default.
+
+
+With integer vector `i`, the indexing operation `x[i,]` returns the rows of
+`x` with indices in `i` in the order of their appearances in `i`. When `x` is
+unkeyed, then `i` can contain duplicates, in which case the corresponding rows
+are duplicated in the result. This behavior is the same was with a
+`data.frame`. When `x` has a key, however, `i` is not allowed to contain
+duplicates; otherwise we would need to assign new keys to the duplicated rows
+and there is no satisfactory way of doing this in general, especially for
+composite keys. The operation `x[i,j]` behaves similarly.
+
+
+### Key subscript
+
+When `i` is not numeric or logical, we 
