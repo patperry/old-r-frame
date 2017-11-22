@@ -12,22 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-length.dataset <- function(x)
-{
-    n <- NextMethod()
-    n - attr(x, "nkey")
-}
-
-
-`[[.dataset` <- function(x, i)
-{
-    if (is.numeric(i)) {
-        i <- i + attr(x, "nkey")
-    }
-    # TODO: handle logical
-    NextMethod()
-}
-
 
 # Indexing Modes
 #
@@ -67,8 +51,41 @@ length.dataset <- function(x)
 # TODO: for consistency, need rownames(x) == keyvals[[1]] when nkey == 1
 #
 
-column_subset <- function(x, i, drop = FALSE)
+row_subset <- function(x, i)
 {
+    if (is.null(i) || (length(i) == 1L && is.null(i[[1L]]))) {
+        return(x)
+    }
+
+    keys <- keys(x)
+
+    i <- key_index(keys, i)
+    keys <- lapply(as.list(keys), `[`, i)
+
+    if (anyDuplicated(i)) {
+        # TODO: implement in C
+        copy <- numeric(nrow(x))
+        newkey <- numeric(length(i))
+        for (j in seq_along(i)) {
+            k <- i[[j]]
+            copy[[k]] <- copy[[k]] + 1
+            newkey[[j]] <- copy[[k]]
+        }
+        keys[[length(keys) + 1L]] <- newkey
+    }
+
+    cols <- lapply(as.list(x), `[`, i)
+    x <- as_dataset(cols)
+    keys(x) <- as_dataset(keys)
+    x
+}
+
+column_subset <- function(x, i)
+{
+    if (is.null(i)) {
+        return(x)
+    }
+
     n <- length(x)
     if (is.logical(i)) {
         if (length(i) != n) {
@@ -109,23 +126,23 @@ column_subset <- function(x, i, drop = FALSE)
 
         # downcast for list `[`; no elegant way to do this
         # https://stackoverflow.com/a/20639018/6233565
-        nkey <- attr(x, "nkey")
         rn <- attr(x, "row.names")
+        keys <- attr(x, "keys")
         cl <- class(x)
         class(x) <- NULL
 
-        x <- x[c(seq_len(nkey), i + nkey)]
+        x <- x[i]
 
         attr(x, "row.names") <- rn
-        attr(x, "nkey") <- nkey
+        attr(x, "keys") <- keys
         class(x) <- cl
     }
 
     # TODO handle non-logical, non-numeric
 
-    # TODO: handle 'drop = TRUE'
     x
 }
+
 
 
 `[.dataset` <- function(x, ..., drop = FALSE)
@@ -136,43 +153,28 @@ column_subset <- function(x, i, drop = FALSE)
 
     # https://stackoverflow.com/a/47316520/6233565
     args <- match.call()[-1]
+    if (!missing(drop)) {
+        args <- args[-length(args)]
+    }
+
     miss <- vapply(args, identical, NA, quote(expr=))
     args[miss] <- list(NULL)
     args[[1L]] <- quote(list)
     index <- eval.parent(args)
-    miss <- miss[-1L]
 
     n <- length(index)
 
-    if (n == 0L || all(miss)) {
-        return(x)
+    if (n == 0L) {
+        x
     } else if (n == 1L) {
-        return(column_subset(x, index[[1L]], drop))
-    } else if (n == 2L && miss[[1L]]) {
-        return(column_subset(x, index[[2L]], drop))
-    } else if (n == 2L && !miss[[1L]]) {
-        i <- index[[1]]
-        if (!is.numeric(i)) {
-            i <- match(as.character(i), rownames(x))
-            return(x[i,,drop = drop])
-        }
-        if (attr(x, "nkey") > 0L) {
-            dup <- anyDuplicated(i)
-            if (dup > 0) {
-                 stop(sprintf(
-                    "subset contains duplicate row (%.0f) but key is non-NULL",
-                    i[[dup]]))
-            }
-        }
+        x <- column_subset(x, index[[1L]])
+    } else {
+        i <- index[-n]
+        j <- index[[n]]
+        x <- column_subset(x, j)
+        x <- row_subset(x, i)
     }
 
-    # temporarily remove the key, then do the indexing
-    nkey <- attr(x, "nkey")
-    attr(x, "nkey") <- 0L
-    y <- NextMethod()
-
-    # restore the key and clear the row names
-    attr(y, "nkey") <- nkey
-    attr(y, "row.names") <- .set_row_names(nrow(y))
-    y
+    # TODO: handle 'drop = TRUE'
+    x
 }

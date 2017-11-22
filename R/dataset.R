@@ -107,10 +107,19 @@ as_dataset.list <- function(x, key = NULL, ...)
     nr <- nrow_dataset(x)
     cols <- lapply(x, as_column, nr)
 
+    if (!is.null(key)) {
+        k <- as_key("key", key, names)
+        keys <- cols[k]
+        cols <- cols[-k]
+    } else {
+        keys <- NULL
+    }
+
     x <- structure(cols, class = c("dataset", "data.frame"),
-                   nkey = 0L, row.names = .set_row_names(nr))
+                   row.names = .set_row_names(nr))
+
     with_rethrow({
-        key(x) <- key
+        keys(x) <- keys
     })
     x
 }
@@ -128,5 +137,5 @@ as_dataset.dataset <- function(x, ...)
 
 is_dataset <- function(x)
 {
-    is.data.frame(x) && inherits(x, "dataset") && attr(x, "nkey") >= 0L
+    is.data.frame(x) && inherits(x, "dataset")
 }

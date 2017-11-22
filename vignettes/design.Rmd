@@ -17,22 +17,24 @@ attribute, `"key"`, that stores potentially multi-column attributes
 (*composite keys*) that identify each row in the data frame.
 
 
-We view a *variable* as a map (function) between two sets, called the *frame*
-(domain) and the *type* (domain) of the variable. We refer to members of the
-*frame* as *keys* and members of the *type* as *values*. A *data point* is a
-(variable, key, value) triple. In standard statistical notation, the triple
-$(x, i, x_i)$ would be a data point; this often gets abbreviated as $x_i$
-since it is clear from the that $i$ is the key and $x$ is the variable.
-
-A *sample* is a collection of data points with a common variable.
+This package takes the view a *variable* as a map (function) between two sets,
+called the *frame* (domain) and the *type* (domain) of the variable. We refer
+to members of the *frame* as *keys* and members of the *type* as *values*. A
+*data point* is a (variable, key, value) triple. This differs from the "tidy"
+view of data that considers a data point to be a (variable, value) pair. We
+believe that the context of the value is important and helpful, especially for
+linking downstream analyses to the original data sources.
 
 
 ## Keys
 
-### Constraints
+### Requirements
 
-For simplicity, we will require that key values be valid UTF-8 strings. There
-are two reasons for this constraint:
+We allow two types of keys: simple and composite. A simple key is a
+valid UTF-8 string; `NA` is not allowed by the empty string is. A composite
+string is a tuple of simple keys, each of which is called a component or
+attribute of the key. There are two reasons for requiring that keys be
+composed of strings:
 
  1. To use keys as as object names, it will be necessary to convert them to
     strings.
@@ -57,11 +59,11 @@ the empty string (`""`) as a key value.
 ### Component names
 
 An `m`-attribute key can optionally have names for the attributes. For
-example, if we key a set of hourly measurements by a two-component key, we can
-optionally name these components, say `"day"` and `"hour"`. It is not
+example, if we frame a set of hourly measurements by a two-component key,
+we can optionally name these components, say `"day"` and `"hour"`. It is not
 necessary that we give the components names. Making component names optional
 allows us to seamlessly convert between, say, a matrix with row and column
-names, and a keyed data set with a two-component key corresponding to the row
+names, and a framed data set with a two-component key corresponding to the row
 and column indices. Allowing anonymous keys also allows us to convert
 from a `data.frame` with `row.names` to a keyed data set with an anonymous
 key (taken from the `row.names`).
@@ -112,27 +114,22 @@ and composite keys.
 
 ## Data tables
 
-A `data_table` is a matrix-like structure storing a set of variables measured
-on a collection of individuals. We identify the individuals with rows of the
-table, and the variables with the columns. We implement the `data_table` as as
-subclass of `data.frame` with better support for matrix columns and the
-ability to specify keys to identify the rows.
-
-The `data_table` type is an extension of `data.frame` that allows specifying
-keys for the rows. We construct a data table as in the following example:
+We provide the `dataset` type as an extension of `data.frame` that allows
+specifying keys for the rows. We construct a dataset as in the following
+example:
 
 ```{r}
-x <- data_table(a = letters, b = rnorm(26), c = 2 * b)
+x <- dataset(a = letters, b = rnorm(26), c = 2 * b)
 ```
 
-Columns are evaluated sequentially in an environment that includes the
-preceding values. Columns can be vector-like or matrix-like (having one or two
-dimensions). At construction time, we can specify that one or more of the
+Here, we evaluate columns sequentially in an environment that includes the
+preceding results. Columns can be vector-like or matrix-like (having one or
+two dimensions). At construction time, we can specify that one or more of the
 columns should be used for the key by giving their names to the `key`
 argument:
 
 ```{r}
-y <- data_table(a = letters, b = rnorm(26), c = 2 * b, key = c("c", "a"))
+y <- dataset(a = letters, b = rnorm(26), c = 2 * b, key = c("c", "a"))
 ```
 
 

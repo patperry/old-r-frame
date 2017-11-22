@@ -12,101 +12,112 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-key <- function(x)
+keys <- function(x)
 {
-    UseMethod("key")
+    UseMethod("keys")
 }
 
-
-key.dataset <- function(x)
+keys.dataset <- function(x)
 {
     if (!is_dataset(x)) {
         stop("argument is not a valid dataset object")
     }
-    nkey <- attr(x, "nkey")
-    if (nkey == 0L) {
-        NULL
-    } else {
-        key <- seq_len(nkey)
-        attr(x, "names")[key]
-    }
+    attr(x, "keys")
 }
 
 
-`key<-` <- function(x, value)
+`keys<-` <- function(x, value)
 {
-    UseMethod("key<-")
+    UseMethod("keys<-")
 }
 
 
-`key<-.dataset` <- function(x, value)
+`keys<-.dataset` <- function(x, value)
 {
     if (!is_dataset(x)) {
         stop("argument is not a valid dataset object")
     }
-
-    # discard the old key
-    attr(x, "nkey") <- 0L
 
     if (is.null(value)) {
+        attr(x, "keys") <- NULL
         return(x)
     }
 
-    names <- names(x)
-    with_rethrow({
-        key <- as_key("key", value, names)
-    })
+    n <- nrow(x)
+    value <- as.list(value)
 
-    # validate keys
-    nk <- length(key)
-    keyvals <- if (nk > 0) vector("list", nk) else NULL
-    for (k in seq_along(key)) {
-        elt <- x[[key[[k]]]]
-        d <- dim(elt)
-        if (length(d) > 1) {
-            stop(sprintf("key column \"%s\" is not a vector", names[[key[[k]]]]))
-        }
-        i <- which(is.na(elt))
-        if (length(i) > 0) {
-            stop(sprintf("key column \"%s\" has a missing value (entry %.0f)",
-                         names[[key[[k]]]], i[[1]]))
-        }
-        keyvals[[k]] <- as.character(elt)
-        i <- which(!utf8_valid(keyvals[[k]]))
-        if (length(i) > 0) {
-            stop(sprintf(
-                "key column \"%s\" cannot be converted to UTF-8 (entry %.0f is invalid)",
-                names[[key[[k]]]], i[[1]]))
-        }
-        keyvals[[k]] <- as_utf8(keyvals[[k]], normalize = TRUE)
+    # validate key length
+    if (length(value) > .Machine$integer.max) {
+        stop(sprintf("number of key columns exceeds maximum (%d)",
+                     .Machine$integer.max))
     }
 
-    if (nk == 1) {
-        i <- which(duplicated(keyvals[[1]]))
+    # validate key names, compute display string
+    names <- names(value)
+    if (is.null(names)) {
+        nstrs <- rep("", length(names))
+    } else {
+        i <- which(is.na(names))
         if (length(i) > 0) {
-            j <- which(keyvals[[1]] == keyvals[[1]][[i[[1]]]])
+            stop(sprintf("key column name %d is missing", i))
+        }
+        nstrs <- vapply(names, function(nm)
+                            if (is.null(nm)) "" else sprintf(" (\"%s\")", nm), "")
+    }
+
+    # validate columns convert to UTF-8
+    for (i in seq_along(value)) {
+        elt <- value[[i]]
+        nm <- nstrs[[i]]
+
+        d <- dim(elt)
+        if (length(d) > 1) {
+            stop(sprintf("key column %d%s is not a vector", i, nm))
+        }
+
+        if (length(elt) != n) {
+            stop(sprintf("key column %d%s length (%.0f) not equal to number of rows (%.0f)",
+                         i, nm, length(elt), n))
+        }
+
+        j <- which(is.na(elt))
+        if (length(j) > 0) {
+            stop(sprintf("key column %d%s has a missing value (entry %.0f)",
+                         i, nm, j[[1]]))
+        }
+
+        elt <- as.character(elt)
+        j <- which(!utf8_valid(elt))
+        if (length(j) > 0) {
+            stop(sprintf(
+                "key column %d%s cannot be converted to UTF-8 (entry %.0f is invalid)",
+                i, nm, j[[1]]))
+        }
+        value[[i]] <- as_utf8(elt)
+    }
+
+    if (length(value) == 1) {
+        i <- which(duplicated(value[[1]]))
+        if (length(i) > 0) {
+            j <- which(value[[1]] == value[[1]][[i[[1]]]])
             stopifnot(length(j) > 1)
-            stop(sprintf("key column \"%s\" has duplicate entries (%.0f and %.0f)",
-                         names[[key[[1]]]], j[[1]], j[[2]]))
+            stop(sprintf("key set has duplicate entries (%.0f and %.0f)",
+                         j[[1]], j[[2]]))
         }
     } else {
-        kv <- key_encode(keyvals)
+        kv <- key_encode(value)
         i <- which(duplicated(kv))
         if (length(i) > 0) {
             j <- which(kv == kv[[i[[1]]]])
             stopifnot(length(j) > 1)
-            stop(sprintf("key column set (%s) has duplicate rows (%.0f and %.0f)",
-                         paste(paste0("\"", names[key], "\""), collapse = ", "),
+            stop(sprintf("key set has duplicate rows (%.0f and %.0f)",
                          j[[1]], j[[2]]))
         }
     }
 
-    # reorder columns, putting key first
-    x <- x[c(key, seq_along(x)[-key])]
-
     # set the key
-    attr(x, "nkey") <- length(key)
-
+    attr(x, "keys") <- structure(value, class = c("dataset", "data.frame"),
+                                 row.names = .set_row_names(n))
     x
 }
 
@@ -123,14 +134,11 @@ keyvals.dataset <- function(x)
         stop("argument is not a valid dataset object")
     }
 
-    nkey <- attr(x, "nkey")
-    if (nkey == 0L) {
+    keys <- keys(x)
+    if (is.null(keys)) {
         NULL
     } else {
-        key <- seq_len(nkey)
-        l <- as.list(x)
-        lapply(l[key], function(elt) unique(as_utf8(as.character(elt),
-                                                    normalize = TRUE)))
+        lapply(keys, function(elt) unique(as_utf8(as.character(elt))))
     }
 }
 
@@ -181,5 +189,19 @@ key_decode <- function(x, composite = TRUE)
         k <- split(key_unescape(c(parts, recursive = TRUE)),
                    rep(seq_len(nkey), length(parts)))
         unname(k)
+    }
+}
+
+
+key_index <- function(x, i)
+{
+    n <- nrow(x)
+    d <- length(dim(i))
+    if (d <= 1L) {
+        ix <- seq_len(n)
+        names(ix) <- key_encode(x)
+        ix[i[[1]]]
+    } else {
+        stop("not implemented")
     }
 }

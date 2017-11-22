@@ -36,17 +36,11 @@ dimnames.dataset <- function(x)
 
 row.names.dataset <- function(x)
 {
-    nkey <- attr(x, "nkey")
-    if (nkey == 0) {
+    keys <- attr(x, "keys")
+    if (is.null(keys)) {
         NULL
     } else {
-        l <- as.list(x)
-        if (nkey == 1) {
-            as_utf8(as.character(l[[1]]))
-        } else {
-            rn <- lapply(l[1:nkey], function(xk) as_utf8(as.character(xk)))
-            key_encode(rn)
-        }
+        key_encode(keys)
     }
 }
 
@@ -56,39 +50,5 @@ row.names.dataset <- function(x)
     if (!is.null(value)) {
         stop("setting row names is not allowed for dataset objects")
     }
-    x
-}
-
-
-names.dataset <- function(x)
-{
-    nm <- NextMethod()
-    nkey <- attr(x, "nkey")
-    if (nkey) {
-        nm <- nm[-seq_len(nkey)]
-    }
-    nm
-}
-
-
-`names<-.dataset` <- function(x, value)
-{
-    if (is.null(value)) {
-        stop("setting 'names' to NULL is not allowed")
-    }
-    with_rethrow({
-        value <- as_names("'names'", value, length(x))
-    })
-    old <- attr(x, "names")
-    nkey <- attr(x, "nkey")
-    key <- old[seq_len(nkey)]
-
-    dup <- intersect(key, value)
-    if (length(dup) > 0) {
-        stop(sprintf("duplicate column name: \"%s\" (matches key name)",
-                     dup[[1]]))
-    }
-
-    attr(x, "names") <- c(key, value)
     x
 }

@@ -73,11 +73,21 @@ test_that("indexing with row number works", {
 })
 
 
-test_that("indexing with duplicates errors if key is set", {
+test_that("indexing with row number and 'drop' works", {
+    x <- as_dataset(mtcars)
+    i <- c(13, 5, 20, 19)
+    expect_equal(x[i, , drop = FALSE], as_dataset(mtcars[i,]))
+})
+
+
+test_that("indexing with duplicates should not error if key is set", {
     x <- as_dataset(mtcars)
     i <- c(13, 5, 20, 19, 5, 7)
-    expect_error(x[i,],
-                 "subset contains duplicate row \\(5\\) but key is non-NULL")
+    y <- x[i,]
+    z <- as_dataset(mtcars[i,])
+    keys(z) <- as_dataset(list(name = rownames(mtcars)[i],
+                               c(1, 1, 1, 1, 2, 1)))
+    expect_equal(y, z)
 })
 
 

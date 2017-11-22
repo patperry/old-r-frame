@@ -50,21 +50,9 @@ test_that("'names' does not include key", {
 })
 
 
-test_that("'names<-' NULL errors", {
+test_that("'names<-' does not error if key already has name", {
     x <- as_dataset(mtcars)
-    expect_error(names(x) <- NULL, "setting 'names' to NULL is not allowed")
-})
-
-
-test_that("'names<-' with too many errors", {
-    x <- as_dataset(mtcars)
-    expect_error(names(x) <- c(names(x), "foo"),
-        "'names' length \\(12\\) must match number of columns \\(11\\)")
-})
-
-
-test_that("'names<-' errors if key already has name", {
-    x <- as_dataset(mtcars)
-    expect_error(names(x) <- c("name", names(x)[-1]),
-                 "duplicate column name: \"name\" \\(matches key name\\)")
+    nm <- c("name", names(x)[-1])
+    names(x) <- nm
+    expect_equal(names(x), nm)
 })
