@@ -59,24 +59,33 @@ row_subset <- function(x, i)
 
     keys <- keys(x)
 
-    i <- key_index(keys, i)
-    keys <- lapply(as.list(keys), `[`, i)
+    if (is.null(keys)) {
+        n <- nrow(x)
+        ix <- seq_len(n)
+        i <- ix[i[[1L]]]
+    } else {
+        i <- key_index(keys, i)
+        keys <- lapply(as.list(keys), `[`, i)
 
-    if (anyDuplicated(i)) {
-        # TODO: implement in C
-        copy <- numeric(nrow(x))
-        newkey <- numeric(length(i))
-        for (j in seq_along(i)) {
-            k <- i[[j]]
-            copy[[k]] <- copy[[k]] + 1
-            newkey[[j]] <- copy[[k]]
+        if (anyDuplicated(i)) {
+            # TODO: implement in C
+            copy <- numeric(nrow(x))
+            newkey <- numeric(length(i))
+            for (j in seq_along(i)) {
+                k <- i[[j]]
+                copy[[k]] <- copy[[k]] + 1
+                newkey[[j]] <- copy[[k]]
+            }
+            keys[[length(keys) + 1L]] <- newkey
         }
-        keys[[length(keys) + 1L]] <- newkey
     }
 
     cols <- lapply(as.list(x), `[`, i)
     x <- as_dataset(cols)
-    keys(x) <- as_dataset(keys)
+    if (!is.null(keys)) {
+        keys(x) <- as_dataset(keys)
+    }
+
     x
 }
 

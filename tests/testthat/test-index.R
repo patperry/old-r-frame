@@ -108,3 +108,10 @@ test_that("indexing with column number works", {
 test_that("'length' does not include key columns", {
     expect_equal(length(as_dataset(mtcars)), length(mtcars))
 })
+
+
+test_that("indexing without keys works", {
+    x <- as_dataset(list(a = letters))
+    expect_equal(as_dataset(x[1:5,,drop = FALSE]),
+                 as_dataset(list(a = letters[1:5])))
+})

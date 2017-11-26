@@ -180,3 +180,9 @@ test_that("'rownames' works for multiple keys", {
     expect_equal(rownames(ds), c("1,1", "1,2", "2,1", "2,2"))
     expect_equal(row.names(ds), c("1,1", "1,2", "2,1", "2,2"))
 })
+
+
+test_that("'keys' gives converted row names", {
+    x <- as_dataset(mtcars)
+    expect_equal(keys(x)[[1]], rownames(mtcars))
+})
