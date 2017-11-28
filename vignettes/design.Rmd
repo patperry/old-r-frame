@@ -139,20 +139,18 @@ y <- dataset(a = letters, b = rnorm(26), c = 2 * b, key = c("c", "a"))
 
 ### Logical or numeric subscript
 
-For dataset `x` and logical vector `i`, the indexing operations `x[i,]` and
-`x[i,j]` behave like the counterpart `data.frame` operations, except that
-`drop = FALSE` is the default.
+For dataset `x` and logical or numeric vector `i`, the indexing operations
+`x[i,]` and `x[i,j]` behave like the counterpart `data.frame` operations,
+except that `drop = FALSE` is the default. We apply the same row subsetting to
+the keys, with the following exception. If `keys(x)` is non-`NULL` and `i` is
+numeric with duplicate entries, then we append a column to the keys to ensure
+that `keys(x[i,])` has unique rows. The added column is the appearance number
+of each row in `x[i,]`. We demonstrate this behavior below:
 
-
-With integer vector `i`, the indexing operation `x[i,]` returns the rows of
-`x` with indices in `i` in the order of their appearances in `i`. When `x` is
-unkeyed, then `i` can contain duplicates, in which case the corresponding rows
-are duplicated in the result. This behavior is the same was with a
-`data.frame`. When `x` has a key, however, `i` is not allowed to contain
-duplicates; otherwise we would need to assign new keys to the duplicated rows
-and there is no satisfactory way of doing this in general, especially for
-composite keys. The operation `x[i,j]` behaves similarly.
-
+```{r}
+x <- dataset(k = letters, a = 1:26, key = "k")[c(1, 2, 1, 1, 3, 2), ]
+keys(x)
+```
 
 ### Key subscript
 
