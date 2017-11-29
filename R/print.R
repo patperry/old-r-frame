@@ -42,6 +42,7 @@ format.dataset <- function(x, cols = NULL, chars = NULL, na.encode = TRUE,
     nr <- nrow(x)
     nc <- ncol(x)
     names <- names(x)
+    keys <- keys(x)
 
     if ((stretch <- is.null(chars))) {
         width <- getOption("width")
@@ -88,25 +89,22 @@ format.dataset <- function(x, cols = NULL, chars = NULL, na.encode = TRUE,
             cols[[i]] <- utf8_format(elt, chars = chars, justify = justify,
                                      width = w, na.encode = na.encode,
                                      quote = quote, na.print = na.print)
-            char <- TRUE
         } else { # format others using S3
             cols[[i]] <- format(elt, chars = chars, justify = justify,
                                 width = w, na.encode = na.encode,
                                 quote = quote, na.print = na.print,
                                 print.gap = print.gap, ...)
-            #char <- is_corpus_text(elt)
-            char <- FALSE
         }
 
         # determine column width
         w <- max(w, utf8_width(cols[[i]], quote = quote), na.rm = TRUE)
         if (anyNA(cols[[i]])) {
-            naw <- if (char) utf8_width(na.print) else 2 # NA
+            naw <- utf8_width(na.print)
             w <- max(w, naw)
         }
 
         # format the name, using element justification
-        if (!char) {
+        if (is.numeric(elt) || is.complex(elt)) {
             names[[i]] <- utf8_format(names[[i]], chars = .Machine$integer.max,
                                       justify = "right", width = w)
         }
@@ -125,23 +123,17 @@ format.dataset <- function(x, cols = NULL, chars = NULL, na.encode = TRUE,
         }
     }
 
-    for (i in seq_len(nc)) {
-        if (is.character(cols[[i]]) && inherits(cols[[i]], "character")) {
-            oldClass(cols[[i]]) <- "AsIs"
-        }
-    }
-
     names(cols) <- names
-    structure(cols, class = "data.frame",
-              row.names = .set_row_names(nr))
-
+    x <- as_dataset(cols)
+    keys(x) <- keys
+    x
 }
 
 
-print.dataset <- function(x, rows = NULL, cols = NULL, chars = NULL,
+
+print.dataset <- function(x, rows = NULL, cols = NULL, ..., chars = NULL,
                           digits = NULL, quote = FALSE, na.print = NULL,
-                          print.gap = NULL, right = FALSE, max = NULL,
-                          display = TRUE, ...)
+                          print.gap = NULL, max = NULL, display = TRUE)
 {
     if (is.null(x)) {
         return(invisible(NULL))
@@ -160,7 +152,6 @@ print.dataset <- function(x, rows = NULL, cols = NULL, chars = NULL,
         quote <- as_option("quote", quote)
         na.print <- as_na_print("na.print", na.print)
         print.gap <- as_print_gap("print_gap", print.gap)
-        right <- as_option("right", right)
         max <- as_max_print("max", max)
         display <- as_option("display", display)
     })
@@ -201,7 +192,7 @@ print.dataset <- function(x, rows = NULL, cols = NULL, chars = NULL,
 
     utf8_print(m, chars = .Machine$integer.max, quote = quote,
                na.print = na.print, print.gap = print.gap,
-               right = right, max = max, names = style_bold,
+               right = FALSE, max = max, names = style_bold,
                rownames = style_faint, escapes = style_faint,
                display = display)
 

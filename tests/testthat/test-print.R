@@ -28,7 +28,7 @@ test_that("'print.dataset' produces the same results on ASCII", {
 
 
 test_that("'print.dataset' handles NA elements", {
-    d <- data.frame(x = NA, ch = I(NA_character_),
+    d <- data.frame(x = NA_real_, ch = I(NA_character_),
                     f = as.factor(NA_character_))
     dr <- d
     names(dr) <- c("x", "ch  ", "f   ")
@@ -69,11 +69,11 @@ test_that("'print.dataset' handles empty data frames", {
 
 
 
-test_that("'print.dataset' can right justify", {
+test_that("'print.dataset' ignores 'right' argument", {
     d <- data.frame(ch = c("a", "ab", "abc"))
 
     expect_equal(capture_output(print(as_dataset(d), right = TRUE)),
-                 capture_output(print(d, right = TRUE)))
+                 capture_output(print(as_dataset(d), right = FALSE)))
 })
 
 
