@@ -12,9 +12,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-format.dataset <- function(x, cols = NULL, chars = NULL, na.encode = TRUE,
-                           quote = FALSE, na.print = NULL,
-                           print.gap = NULL, ..., justify = "none")
+format.dataset <- function(x, cols = NULL, ..., chars = NULL,
+                           na.encode = TRUE, quote = FALSE, na.print = NULL,
+                           print.gap = NULL, justify = "none", width = NULL)
 {
     if (is.null(x)) {
         return(invisible(NULL))
@@ -30,6 +30,7 @@ format.dataset <- function(x, cols = NULL, chars = NULL, na.encode = TRUE,
         na.print <- as_na_print("na.print", na.print)
         print.gap <- as_print_gap("print.gap", print.gap)
         justify <- as_justify("justify", justify)
+        width <- as_integer_scalar("width", width)
     })
 
     if (is.null(na.print)) {
@@ -38,6 +39,9 @@ format.dataset <- function(x, cols = NULL, chars = NULL, na.encode = TRUE,
     if (is.null(print.gap)) {
         print.gap <- 1L
     }
+    if (is.null(width)) {
+        width <- 0L
+    }
 
     nr <- nrow(x)
     nc <- ncol(x)
@@ -45,7 +49,7 @@ format.dataset <- function(x, cols = NULL, chars = NULL, na.encode = TRUE,
     keys <- keys(x)
 
     if ((stretch <- is.null(chars))) {
-        width <- getOption("width")
+        linewidth <- getOption("width")
         rw <- if (nr == 0) 0 else 1 + floor(log10(nr))
 
         utf8 <- output_utf8()
@@ -53,7 +57,8 @@ format.dataset <- function(x, cols = NULL, chars = NULL, na.encode = TRUE,
         quotes <- if (quote) 2 else 0
 
         chars_min <- 24
-        chars_max <- max(chars_min, width - ellipsis - quotes - print.gap - rw)
+        chars_max <- max(chars_min,
+                         linewidth - ellipsis - quotes - print.gap - rw)
         chars <- chars_left <- chars_max
     }
 
@@ -73,7 +78,7 @@ format.dataset <- function(x, cols = NULL, chars = NULL, na.encode = TRUE,
         cl <- class(elt)
 
         # determine the name width
-        w <- utf8_width(names[[i]])
+        w <- max(width, utf8_width(names[[i]]))
 
         # convert factor to character
         if (is.factor(elt) && (identical(cl, "factor")
