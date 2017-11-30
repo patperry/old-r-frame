@@ -12,6 +12,26 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+col_width <- function(x, quote, na.print, print.gap)
+{
+    if (length(dim(x)) == 2) {
+        if (is.data.frame(x)) {
+            ws <- vapply(as.list(x), col_width, 0, quote, na.print, print.gap)
+        } else {
+            ws <- apply(as.matrix(x), 2, col_width, quote, na.print, print.gap)
+        }
+        n <- length(ws)
+        w <- sum(ws) + (n - 1) * print.gap
+    } else {
+        w <- max(0, utf8_width(x, quote = quote), na.rm = TRUE)
+        if (anyNA(x)) {
+            naw <- utf8_width(na.print)
+            w <- max(w, naw)
+        }
+        w
+    }
+}
+
 format.dataset <- function(x, cols = NULL, ..., chars = NULL,
                            na.encode = TRUE, quote = FALSE, na.print = NULL,
                            print.gap = NULL, justify = "none", width = NULL)
@@ -48,9 +68,19 @@ format.dataset <- function(x, cols = NULL, ..., chars = NULL,
     names <- names(x)
     keys <- keys(x)
 
+
     if ((stretch <- is.null(chars))) {
         linewidth <- getOption("width")
         rw <- if (nr == 0) 0 else 1 + floor(log10(nr))
+
+        if (!is.null(keys)) {
+            rw <- (rw
+                   + print.gap
+                   + col_width(keys, quote = quote, na.print = na.print,
+                               print.gap = print.gap)
+                   + print.gap
+                   + 1)
+        }
 
         utf8 <- output_utf8()
         ellipsis <- if (utf8) 1 else 3
@@ -102,11 +132,8 @@ format.dataset <- function(x, cols = NULL, ..., chars = NULL,
         }
 
         # determine column width
-        w <- max(w, utf8_width(cols[[i]], quote = quote), na.rm = TRUE)
-        if (anyNA(cols[[i]])) {
-            naw <- utf8_width(na.print)
-            w <- max(w, naw)
-        }
+        w <- max(w, col_width(cols[[i]], quote = quote,
+                              na.print = na.print, print.gap = print.gap))
 
         # format the name, using element justification
         if (is.numeric(elt) || is.complex(elt)) {
