@@ -14,6 +14,7 @@ importFrom(utf8, utf8_width)
 
 ## Exports
 export(`[.dataset`)
+export(as.list.dataset)
 export(as_dataset)
 export(as_dataset.data.frame)
 export(as_dataset.default)
@@ -51,6 +52,7 @@ S3method(as_dataset, list)
 
 ### dataset
 S3method(`[`, dataset)
+S3method(as.list, dataset)
 S3method(dimnames, dataset)
 S3method(`dimnames<-`, dataset)
 S3method(format, dataset)
