@@ -37,3 +37,40 @@ test_that("'as.list.dataset' works", {
                       a.c = z$a$c,
                       b = z$b))
 })
+
+
+test_that("'as.list.dataset' path index works", {
+    x <- dataset(a = letters[1:5], b = rnorm(5))
+    expect_equal(attr(as.list(x, path = TRUE), "index"), list(1, 2))
+    expect_equal(attr(as.list(x, flatten = TRUE, path = TRUE), "index"),
+                 list(1, 2))
+
+    y <- dataset(a = c(3,2,7,8,-1), b = x, c = rnorm(5))
+    expect_equal(attr(as.list(y, path = TRUE), "index"), list(1, 2, 3))
+    expect_equal(attr(as.list(y, flatten = TRUE, path = TRUE), "index"),
+                 list(1, c(2, 1), c(2, 2), 3))
+
+    z <- dataset(a = y, b = LETTERS[6:10])
+    expect_equal(attr(as.list(z, path = TRUE), "index"), list(1, 2))
+    expect_equal(attr(as.list(z, flatten = TRUE, path = TRUE), "index"),
+                 list(c(1, 1), c(1, 2, 1), c(1, 2, 2), c(1, 3), 2))
+})
+
+
+test_that("'as.list.dataset' path names works", {
+    x <- dataset(a = letters[1:5], b = rnorm(5))
+    expect_equal(attr(as.list(x, path = TRUE), "path"), list("a", "b"))
+    expect_equal(attr(as.list(x, flatten = TRUE, path = TRUE), "path"),
+                 list("a", "b"))
+
+    y <- dataset(a = c(3,2,7,8,-1), b = x, c = rnorm(5))
+    expect_equal(attr(as.list(y, path = TRUE), "path"), list("a", "b", "c"))
+    expect_equal(attr(as.list(y, flatten = TRUE, path = TRUE), "path"),
+                 list("a", c("b", "a"), c("b", "b"), "c"))
+
+    z <- dataset(a = y, b = LETTERS[6:10])
+    expect_equal(attr(as.list(z, path = TRUE), "path"), list("a", "b"))
+    expect_equal(attr(as.list(z, flatten = TRUE, path = TRUE), "path"),
+                 list(c("a", "a"), c("a", "b", "a"), c("a", "b", "b"),
+                      c("a", "c"), "b"))
+})
