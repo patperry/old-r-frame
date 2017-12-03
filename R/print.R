@@ -330,11 +330,12 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
         row_width <- row_width + utf8_width(gap)
     }
 
+    line <- max(1L, line - row_width)
     fmt <- format.dataset(xsub, cols = cols, number = number,
                           chars = chars, na.encode = FALSE,
                           na.print = na.print, quote = quote,
                           print.gap = print.gap, digits = digits,
-                          line = line - row_width)
+                          line = line)
 
     cols <- as.list.dataset(fmt, flatten = TRUE, path = TRUE)
     path <- attr(cols, "path")
@@ -361,15 +362,13 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
                         utf8_format(name, width = w,
                                     chars = .Machine$integer.max,
                                     justify = "left"),
-                    names, width, SIMPLIFY = FALSE, USE.NAMES = FALSE)
-    names <- as.character(names)
+                    names, width, SIMPLIFY = TRUE, USE.NAMES = FALSE)
 
     # apply formatting
     names <- bold(names)
     cols <- lapply(cols, normal)
 
     # wrap columns
-    line <- line - row_width
     indent <- 0L
     start <- 1L
     for (i in seq_along(cols)) {
@@ -377,7 +376,7 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
 
         if (i == length(cols) || indent + width[[i + 1L]] > line) {
             head <- paste0(names[start:i], collapse = gap)
-            cat(paste0(row_head, head), "\n", sep = "")
+            cat(row_head, head, "\n", sep = "")
             if (n > 0) {
                 body <- do.call(paste, c(cols[start:i], sep = gap))
                 cat(paste0(row_body, body, collapse = "\n"), "\n", sep = "")
