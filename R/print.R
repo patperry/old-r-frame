@@ -340,7 +340,6 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
     cols <- as.list.dataset(fmt, flatten = TRUE, path = TRUE)
     path <- attr(cols, "path")
     index <- attr(cols, "index")
-    depth <- max(1, vapply(index, length, 0))
     names <- vapply(path, tail, "", n = 1)
 
     # format columns, using max path width as minimum
@@ -375,6 +374,44 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
         indent <- indent + width[[i]] + print.gap
 
         if (i == length(cols) || indent + width[[i + 1L]] > line) {
+            depth <- max(1, vapply(index[start:i], length, 0))
+            ch <- if (utf8) "\u2550" else "="
+            for (d in seq(from = depth, by = -1, length.out = depth - 1)) {
+                group <- vapply(lapply(index[start:i], rev), `[`, 0, d)
+                gname <- vapply(lapply(path[start:i], rev), `[`, "", d)
+                gwidth <- width[start:i]
+                head <- format("", width = row_width)
+                j <- 1
+                m <- length(group)
+                while (j <= m) {
+                    if (j > 1) {
+                        head <- paste0(head, gap)
+                    }
+                    w <- gwidth[[j]]
+                    if (is.na(group[[j]])) {
+                        head <- paste0(head, format("", width = w))
+                    } else {
+                        g <- group[[j]]
+                        nm <- gname[[j]]
+                        # %in% so that this succeeds if NA
+                        while (j < m && group[[j + 1]] %in% g) {
+                            j <- j + 1
+                            w <- w + print.gap + width[[j]]
+                        }
+                        wnm <- utf8_width(nm)
+                        pad <- max(0, w - wnm)
+                        lpad <- floor(pad / 2)
+                        rpad <- ceiling(pad / 2)
+                        banner <- paste0(paste0(rep(ch, lpad), collapse = ""),
+                                         nm,
+                                         paste0(rep(ch, rpad), collapse = ""))
+                        head <- paste0(head, bold(banner))
+                    }
+                    j <- j + 1
+                }
+                cat(head, "\n", sep="")
+            }
+
             head <- paste0(names[start:i], collapse = gap)
             cat(row_head, head, "\n", sep = "")
             if (n > 0) {
