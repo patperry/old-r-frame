@@ -375,28 +375,58 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
 
         if (i == length(cols) || indent + width[[i + 1L]] > line) {
             depth <- max(1, vapply(index[start:i], length, 0))
+            group <- matrix(unlist(lapply(index[start:i], `length<-`, depth)),
+                            nrow = depth)
+            gname <- matrix(unlist(lapply(path[start:i], `length<-`, depth)),
+                            nrow = depth)
+            gwidth <- width[start:i]
+            m <- i - start + 1
+
+            for (d in seq(from = depth - 1, by = -1, length.out = depth - 1)) {
+                j <- 1
+                while (j <= m) {
+                    g <- group[d, j]
+                    if (!is.na(g)) {
+                        s <- j
+                        while (j < m && group[d,j + 1] %in% g) {
+                            j <- j + 1
+                        }
+                        if (all(is.na(group[d + 1, s:j]))) {
+                            k <- d + 1
+                            while (k < depth
+                                       && all(is.na(group[k+1,s:j]))) {
+                                k <- k + 1
+                            }
+                            group[k,s:j] <- group[d,s:j]
+                            group[d,s:j] <- NA
+                            gname[k,s:j] <- gname[d,s:j]
+                            gname[d,s:j] <- NA
+                        }
+                    }
+                    j <- j + 1
+                }
+            }
+
             ch <- if (utf8) "\u2550" else "="
-            for (d in seq(from = depth, by = -1, length.out = depth - 1)) {
-                group <- vapply(lapply(index[start:i], rev), `[`, 0, d)
-                gname <- vapply(lapply(path[start:i], rev), `[`, "", d)
-                gwidth <- width[start:i]
+            for (d in seq_len(depth - 1)) {
+                grp <- group[d,]
+                gnm <- gname[d,]
                 head <- format("", width = row_width)
                 j <- 1
-                m <- length(group)
                 while (j <= m) {
                     if (j > 1) {
                         head <- paste0(head, gap)
                     }
                     w <- gwidth[[j]]
-                    if (is.na(group[[j]])) {
+                    if (is.na(grp[[j]])) {
                         head <- paste0(head, format("", width = w))
                     } else {
-                        g <- group[[j]]
-                        nm <- gname[[j]]
+                        g <- grp[[j]]
+                        nm <- gnm[[j]]
                         # %in% so that this succeeds if NA
-                        while (j < m && group[[j + 1]] %in% g) {
+                        while (j < m && grp[[j + 1]] %in% g) {
                             j <- j + 1
-                            w <- w + print.gap + width[[j]]
+                            w <- w + print.gap + gwidth[[j]]
                         }
                         wnm <- utf8_width(nm)
                         pad <- max(0, w - wnm)
