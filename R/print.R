@@ -370,11 +370,13 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
 
     # wrap columns
     indent <- 0L
+    foot_width <- row_width
     start <- 1L
     for (i in seq_along(cols)) {
         indent <- indent + width[[i]] + print.gap
 
         if (i == length(cols) || indent + width[[i + 1L]] > line) {
+            foot_width <- row_width + indent - print.gap
             # add padding between previous set of rows
             if (start > 1) {
                 cat("\n")
@@ -466,14 +468,10 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
         cat("(0 rows)\n")
     } else if (trunc) {
         ellipsis <- ifelse(utf8, "\u22ee", ".")
-        if (num_width > 0) {
-            ellipsis <- substr(ellipsis, 1, num_width)
-            space <- utf8_format(ellipsis, width = num_width + print.gap)
-        } else {
-            space <- paste0(ellipsis, " ")
-        }
-        cat(faint(space), faint(sprintf("(%d rows total)", norig)), "\n",
-            sep = "")
+        foot <- utf8_format(sprintf(" (%d rows total)", norig),
+                            width = max(0, foot_width - utf8_width(ellipsis)),
+                            justify = "right")
+        cat(faint(ellipsis), (foot), "\n", sep="")
     }
 
     invisible(x)
