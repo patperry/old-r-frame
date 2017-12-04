@@ -185,6 +185,34 @@ format.dataset <- function(x, ..., chars = NULL,
 }
 
 
+truncate <- function(x, rows = NULL, cols = NULL)
+{
+    if (is.null(rows)) {
+        rows <- 20L
+    }
+    if (rows < 0) {
+        rows <- .Machine$integer.max
+    }
+    if (is.null(cols)) {
+        cols <- 20L
+    }
+    if (cols < 0) {
+        cols <- .Machine$integer.max
+    }
+
+    n <- nrow(x)
+    trunc <- (n > rows)
+    if (trunc) {
+        xsub <- x[seq_len(rows), , drop = FALSE]
+    } else {
+        xsub <- x
+    }
+
+    msg <- if (trunc) sprintf("(%d rows total)", n) else NULL
+    list(x = xsub, message = msg)
+}
+
+
 print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
                           chars = NULL, digits = NULL, quote = FALSE,
                           na.print = NULL, print.gap = NULL, max = NULL,
@@ -216,9 +244,6 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
     utf8 <- output_utf8()
     line <- getOption("width")
 
-    if (is.null(rows)) {
-        rows <- 20L
-    }
     if (is.null(na.print)) {
         na.print <- if (quote) "NA" else "<NA>"
     }
@@ -256,20 +281,12 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
         return(invisible(x))
     }
 
-    if (rows < 0) {
-        rows <- .Machine$integer.max
-    }
-
-    trunc <- (n > rows)
-    norig <- n
-    if (trunc) {
-        xsub <- x[seq_len(rows), , drop = FALSE]
-    } else {
-        xsub <- x
-    }
+    trunc <- truncate(x, rows, cols)
+    xorig <- x
+    x <- trunc$x
 
     gap <- utf8_format("", width = print.gap)
-    n <- nrow(xsub)
+    n <- nrow(x)
 
     if (number) {
         row_body <- utf8_format(as.character(seq_len(n)),
@@ -282,7 +299,7 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
         row_head <- ""
     }
 
-    keys <- keys(xsub)
+    keys <- keys(x)
     if (!is.null(keys)) {
         kb <- mapply(function(k, w)
                          utf8_format(k, width = w,
@@ -322,7 +339,7 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
     }
 
     line <- max(1L, line - row_width)
-    fmt <- format.dataset(xsub, chars = chars, na.encode = FALSE,
+    fmt <- format.dataset(x, chars = chars, na.encode = FALSE,
                           na.print = na.print, quote = quote,
                           print.gap = print.gap, digits = digits,
                           line = line)
@@ -457,12 +474,12 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
 
     if (n == 0) {
         cat("(0 rows)\n")
-    } else if (trunc) {
-        foot <- utf8_format(sprintf(" (%d rows total)", norig),
+    } else if (!is.null(trunc$message)) {
+        foot <- utf8_format(paste0(" ", trunc$message),
                             width = max(0, foot_width - utf8_width(ellipsis)),
                             justify = "right")
         cat(faint(ellipsis), foot, "\n", sep="")
     }
 
-    invisible(x)
+    invisible(xorig)
 }
