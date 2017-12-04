@@ -271,6 +271,7 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
     }
 
     trunc <- (n > rows)
+    norig <- n
     if (trunc) {
         xsub <- x[seq_len(rows), , drop = FALSE]
     } else {
@@ -374,6 +375,12 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
         indent <- indent + width[[i]] + print.gap
 
         if (i == length(cols) || indent + width[[i + 1L]] > line) {
+            # add padding between previous set of rows
+            if (start > 1) {
+                cat("\n")
+            }
+
+            # determine header for nested groups
             depth <- max(1, vapply(index[start:i], length, 0))
             group <- matrix(unlist(lapply(index[start:i], `length<-`, depth)),
                             nrow = depth)
@@ -407,6 +414,7 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
                 }
             }
 
+            # print header
             ch <- if (utf8) "\u2550" else "="
             for (d in seq_len(depth - 1)) {
                 grp <- group[d,]
@@ -464,7 +472,8 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
         } else {
             space <- paste0(ellipsis, " ")
         }
-        cat(faint(space), sprintf("(%d rows total)\n", n), sep = "")
+        cat(faint(space), faint(sprintf("(%d rows total)", norig)), "\n",
+            sep = "")
     }
 
     invisible(x)

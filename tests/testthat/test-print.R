@@ -91,6 +91,7 @@ test_that("'print.dataset' can wrap 4 columns", {
     lines <- c(
 '  title                                                          ',
 '1 The Declaration of Independence of The United States of America',
+'',
 '  author           language text                                                ',
 '1 Founding Fathers English  The Declaration of Independence of The United Sta...')
 
