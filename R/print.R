@@ -56,10 +56,10 @@ col_widow <- function(name, x, quote, na.print, print.gap, indent, line)
 }
 
 
-format_character <- function(x, cols = NULL, chars = NULL,
-                             na.encode = TRUE, quote = FALSE, na.print = NULL,
-                             print.gap = NULL, justify = "none", width = NULL,
-                             indent = NULL, line = NULL)
+format_character <- function(x, chars = NULL, na.encode = TRUE, quote = FALSE,
+                             na.print = NULL, print.gap = NULL,
+                             justify = "none", width = NULL, indent = NULL,
+                             line = NULL)
 {
     if ((stretch <- is.null(chars))) {
         utf8 <- output_utf8()
@@ -81,7 +81,7 @@ format_character <- function(x, cols = NULL, chars = NULL,
 }
 
 
-format.dataset <- function(x, cols = NULL, ..., chars = NULL,
+format.dataset <- function(x, ..., chars = NULL,
                            na.encode = TRUE, quote = FALSE, na.print = NULL,
                            print.gap = NULL, justify = "none", width = NULL,
                            indent = NULL, line = NULL)
@@ -93,7 +93,6 @@ format.dataset <- function(x, cols = NULL, ..., chars = NULL,
     }
 
     with_rethrow({
-        cols <- as_cols("cols", cols)
         chars <- as_chars("chars", chars)
         na.encode <- as_option("na.encode", na.encode)
         quote <- as_option("quote", quote)
@@ -129,10 +128,6 @@ format.dataset <- function(x, cols = NULL, ..., chars = NULL,
     fmt <- vector("list", length(x))
 
     for (i in seq_len(nc)) {
-        if (!is.null(cols) && cols == 0) {
-             break
-        }
-
         # wrap to next line
         if (indent >= line) {
             indent <- 0L
@@ -157,14 +152,13 @@ format.dataset <- function(x, cols = NULL, ..., chars = NULL,
         # format character specially
         if (is.character(elt) && (identical(cl, "character")
                                   || identical(cl, "AsIs"))) {
-            fmt[[i]] <- format_character(elt, cols = cols, chars = chars,
+            fmt[[i]] <- format_character(elt, chars = chars,
                                          na.encode = na.encode,
                                          quote = quote, na.print = na.print,
                                          justify = justify, width = w,
                                          indent = indent, line = line)
         } else { # format others using S3
-            fmt[[i]] <- format(elt, cols = cols, ...,
-                               chars = chars, na.encode = na.encode,
+            fmt[[i]] <- format(elt, ..., chars = chars, na.encode = na.encode,
                                quote = quote, na.print = na.print,
                                print.gap = print.gap, justify = justify,
                                width = w, indent = indent, line = line)
@@ -333,8 +327,7 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
     }
 
     line <- max(1L, line - row_width)
-    fmt <- format.dataset(xsub, cols = cols, number = number,
-                          chars = chars, na.encode = FALSE,
+    fmt <- format.dataset(xsub, chars = chars, na.encode = FALSE,
                           na.print = na.print, quote = quote,
                           print.gap = print.gap, digits = digits,
                           line = line)
