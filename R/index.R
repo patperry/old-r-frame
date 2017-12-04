@@ -51,6 +51,15 @@
 # TODO: for consistency, need rownames(x) == keyvals[[1]] when nkey == 1
 #
 
+elt_subset <- function(x, i)
+{
+    if (length(dim(x)) <= 1) {
+        x[i]
+    } else {
+        x[i,,drop = FALSE]
+    }
+}
+
 row_subset <- function(x, i)
 {
     if (is.null(i) || (length(i) == 1L && is.null(i[[1L]]))) {
@@ -68,7 +77,7 @@ row_subset <- function(x, i)
         keys <- lapply(as.list(keys), `[`, i)
 
         if (anyDuplicated(i)) {
-            # TODO: implement in C
+            # TODO: implement in C?
             copy <- numeric(nrow(x))
             newkey <- numeric(length(i))
             for (j in seq_along(i)) {
@@ -80,7 +89,7 @@ row_subset <- function(x, i)
         }
     }
 
-    cols <- lapply(as.list(x), `[`, i)
+    cols <- lapply(as.list(x), elt_subset, i)
     x <- as_dataset(cols)
     if (!is.null(keys)) {
         keys(x) <- as_dataset(keys)
