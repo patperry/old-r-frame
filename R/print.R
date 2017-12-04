@@ -254,11 +254,6 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
                              "data frame with 0 columns and %d rows"), n),
             "\n", sep = "")
         return(invisible(x))
-    } else if (n == 0 && is.null(names(x))) {
-        cat(sprintf(ngettext(nc, "data frame with %d column and 0 rows",
-                             "data frame with %d columns and 0 rows"), nc),
-            "\n", sep = "")
-        return(invisible(x))
     }
 
     if (rows < 0) {
