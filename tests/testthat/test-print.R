@@ -91,11 +91,31 @@ test_that("'print.dataset' can wrap 4 columns", {
     lines <- c(
 '  title                                                          ',
 '1 The Declaration of Independence of The United States of America',
-'',
+'.',
 '  author           language text                                                ',
 '1 Founding Fathers English  The Declaration of Independence of The United Sta...')
 
     expect_equal(strsplit(capture_output(print.dataset(x), width = 80),
                           "\n")[[1]],
                  lines)
+})
+
+
+test_that("'print.dataset can print NA columns", {
+    ctype <- switch_ctype("C")
+    on.exit(Sys.setlocale("LC_CTYPE", ctype), add = TRUE)
+
+    x <- dataset(title = c("For the Independent Journal",
+                           "From the New York Packet"),
+                 date = as.Date(c(NA, "1787-11-20")),
+                 author = c("Hamilton", "Hamilton"),
+                 text = c("To the People of the State of New York",
+                          "To the People of the State of New York"))
+    lines <- c(
+'  title                       date       author   text                       ',
+'1 For the Independent Journal <NA>       Hamilton To the People of the Sta...',
+'2 From the New York Packet    1787-11-20 Hamilton To the People of the Sta...')
+
+    expect_equal(strsplit(capture_output(print.dataset(x), width = 77),
+                          "\n")[[1]], lines)
 })

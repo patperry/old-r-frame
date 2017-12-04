@@ -247,10 +247,11 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
         bold <- faint <- function(x)
             utf8_encode(x, display = display, utf8 = utf8)
     }
-    normal <- function(x) {
+    normal <- function(x, width) {
         x <- utf8_encode(x, quote = quote, escapes = escapes,
                          display = display, utf8 = utf8)
-        x[is.na(x)] <- utf8_encode(na.print, display = display, utf8 = utf8)
+        x[is.na(x)] <- utf8_encode(na.print, width = width, display = display,
+                                   utf8 = utf8)
         x
     }
 
@@ -366,7 +367,9 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
 
     # apply formatting
     names <- bold(names)
-    cols <- lapply(cols, normal)
+    cols <- mapply(normal, cols, width, SIMPLIFY = FALSE, USE.NAMES = FALSE)
+
+    ellipsis <- ifelse(utf8, "\u22ee", ".")
 
     # wrap columns
     indent <- 0L
@@ -376,10 +379,10 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
         indent <- indent + width[[i]] + print.gap
 
         if (i == length(cols) || indent + width[[i + 1L]] > line) {
-            foot_width <- row_width + indent - print.gap
+            foot_width <- max(foot_width, row_width + indent - print.gap)
             # add padding between previous set of rows
             if (start > 1) {
-                cat("\n")
+                cat(faint(ellipsis), "\n", sep="")
             }
 
             # determine header for nested groups
@@ -467,11 +470,10 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
     if (n == 0) {
         cat("(0 rows)\n")
     } else if (trunc) {
-        ellipsis <- ifelse(utf8, "\u22ee", ".")
         foot <- utf8_format(sprintf(" (%d rows total)", norig),
                             width = max(0, foot_width - utf8_width(ellipsis)),
                             justify = "right")
-        cat(faint(ellipsis), (foot), "\n", sep="")
+        cat(faint(ellipsis), foot, "\n", sep="")
     }
 
     invisible(x)
