@@ -85,18 +85,51 @@ new_format_style <- function(control)
 }
 
 
-col_width <- function(name, x, control)
+col_width <- function(name, x, control, limit = NULL)
 {
-    stopifnot(length(dim(x)) <= 1)
-
+    limit <- if (is.null(limit)) Inf else limit
     n <- utf8_width(name)
-    w <- max(0, utf8_width(x, quote = control$quote), na.rm = TRUE)
-    if (anyNA(x)) {
-        naw <- utf8_width(control$na.print)
-        w <- max(w, naw)
+    ellipsis <- utf8_width(control$ellipsis)
+    gap <- control$print.gap
+
+    if (length(dim(x)) <= 1) {
+        w <- max(0, utf8_width(x, quote = control$quote), na.rm = TRUE)
+        if (anyNA(x)) {
+            naw <- utf8_width(control$na.print)
+            w <- max(w, naw)
+        }
+    } else {
+        nc <- ncol(x)
+        names <- colnames(x)
+        w <- 0
+
+        for (j in seq_len(nc)) {
+            xj <- if (is.data.frame(x)) x[[j]] else x[, j, drop = TRUE]
+            wj <- col_width(names[[j]], xj, control)
+
+            if (j > 1) {
+                w <- w + gap
+            }
+
+            if (j < nc) {
+                if (wj > limit - ellipsis - gap - w) {
+                    w <- w + ellipsis
+                    break
+                }
+            } else if (wj > limit - w) {
+                w <- w + ellipsis
+                break
+            }
+
+            w <- w + wj
+        }
     }
 
-    max(n, w)
+    w <- max(n, w)
+    if (w > limit) {
+        w <- ellipsis
+    }
+    w
 }
 
 
