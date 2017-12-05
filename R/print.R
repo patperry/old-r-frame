@@ -330,31 +330,31 @@ format.dataset <- function(x, ..., chars = NULL,
 
     nr <- nrow(x)
     nc <- ncol(x)
-    names <- names(x)
+    names <- colnames(x)
     keys <- keys(x)
 
-    fmt <- vector("list", length(x))
+    y <- vector("list", nc)
 
     for (i in seq_len(nc)) {
         last <- (i == nc)
 
-        f <- format_column(names[[i]], x[[i]], ..., control = control,
-                           indent = indent, sections = sections, last = last)
-        names[[i]] <- f$name
-        fmt[[i]] <- f$value
+        fmt <- format_column(names[[i]], x[[i]], ..., control = control,
+                             indent = indent, sections = sections, last = last)
+        names[[i]] <- fmt$name
+        y[[i]] <- fmt$value
 
-        if (f$trunc) {
-            fmt <- fmt[1:i]
+        if (fmt$trunc) {
+            y <- y[1:i]
             names <- names[1:i]
             break
         }
 
-        indent <- f$indent
-        sections <- f$sections
+        indent <- fmt$indent
+        sections <- fmt$sections
     }
 
-    names(fmt) <- names
-    x <- as_dataset(fmt)
+    names(y) <- names
+    x <- as_dataset(y)
     keys(x) <- keys
     x
 }
