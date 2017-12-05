@@ -15,8 +15,8 @@
 new_format_control <- function(chars = NULL, digits = NULL,
                                na.encode = TRUE, quote = FALSE,
                                na.print = NULL, print.gap = NULL,
-                               justify = "none", display = TRUE,
-                               line = NULL)
+                               justify = "none", width = NULL,
+                               display = TRUE, line = NULL)
 {
     control <- list()
     control$chars <- as_chars("chars", chars)
@@ -26,6 +26,7 @@ new_format_control <- function(chars = NULL, digits = NULL,
     control$na.print <- as_na_print("na.print", na.print)
     control$print.gap <- as_print_gap("print.gap", print.gap)
     control$justify <- as_justify("justify", justify)
+    control$width <- as_integer_scalar("width", width)
     control$display <- as_option("display", display)
     control$line <- as_integer_scalar("line", line, nonnegative = TRUE)
     control$ansi <- output_ansi()
@@ -36,6 +37,9 @@ new_format_control <- function(chars = NULL, digits = NULL,
     }
     if (is.null(control$print.gap)) {
         control$print.gap <- 1L
+    }
+    if (is.null(control$width)) {
+        control$width <- 0L
     }
     if (is.null(control$line)) {
         control$line <- getOption("width")
@@ -123,7 +127,7 @@ col_widow <- function(name, x, control, indent)
 }
 
 
-format_vector <- function(x, ..., control = NULL, width = NULL, indent = NULL,
+format_vector <- function(x, ..., control = NULL, indent = NULL,
                           sections = NULL)
 {
     chars <- control$chars
@@ -143,25 +147,25 @@ format_vector <- function(x, ..., control = NULL, width = NULL, indent = NULL,
     if (is.character(x) && (identical(cl, "character")
                             || identical(cl, "AsIs"))) {
         utf8_format(x, chars = chars, justify = control$justify,
-                    width = width, na.encode = control$na.encode,
+                    width = control$width, na.encode = control$na.encode,
                     quote = control$quote, na.print = control$na.print)
     } else {
         format(x, ..., chars = chars, na.encode = control$na.encode,
                quote = control$quote, na.print = control$na.print,
                print.gap = control$print.gap, justify = control$justify,
-               width = width, indent = indent, line = control$line,
+               width = control$width, indent = indent, line = control$line,
                sections = sections)
     }
 }
 
 
-format_matrix <- function(x, ..., control = control, width = NULL,
-                          indent = NULL, sections = NULL)
+format_matrix <- function(x, ..., control = control, indent = NULL,
+                          sections = NULL)
 {
     format(x, ..., chars = control$chars, na.encode = control$na.encode,
            quote = control$quote, na.print = control$na.print,
            print.gap = control$print.gap, justify = control$justify,
-           width = width, indent = indent, line = control$line,
+           width = control$width, indent = indent, line = control$line,
            sections = sections)
 }
 
@@ -181,26 +185,22 @@ format.dataset <- function(x, ..., chars = NULL,
         control <- new_format_control(chars = chars, na.encode = na.encode,
                                       quote = quote, na.print = na.print,
                                       print.gap = print.gap, justify = justify,
-                                      line = line)
-        width <- as_integer_scalar("width", width)
+                                      width = width, line = line)
         indent <- as_integer_scalar("indent", indent, nonnegative = TRUE)
         sections <- as_integer_scalar("sections", sections)
     })
 
-    nr <- nrow(x)
-    nc <- ncol(x)
-    names <- names(x)
-    keys <- keys(x)
-
-    if (is.null(width)) {
-        width <- 0L
-    }
     if (is.null(indent)) {
         indent <- 0L
     }
     if (is.null(sections) || sections < 0) {
         sections <- .Machine$integer.max
     }
+
+    nr <- nrow(x)
+    nc <- ncol(x)
+    names <- names(x)
+    keys <- keys(x)
 
     fmt <- vector("list", length(x))
 
@@ -228,15 +228,15 @@ format.dataset <- function(x, ..., chars = NULL,
                              dim = dim(elt), dimnames = dimnames(elt))
         }
 
-        # format character specially
+        # format the column
         if (length(dim(elt)) <= 1) {
-            fmt[[i]] <- format_vector(elt, ..., control = control,
-                                      width = w, indent = indent,
-                                      sections = sections)
+            fmt[[i]] <- format_vector(elt, ...,
+                                      control = `[[<-`(control, "width", w),
+                                      indent = indent, sections = sections)
         } else {
-            fmt[[i]] <- format_matrix(elt, ..., control = control,
-                                      width = w, indent = indent,
-                                      sections = sections)
+            fmt[[i]] <- format_matrix(elt, ...,
+                                      control = `[[<-`(control, "width", w),
+                                      indent = indent, sections = sections)
         }
 
         if (length(d) <= 1 && right) {
@@ -294,9 +294,6 @@ print.dataset <- function(x, rows = NULL, sections = 1L, ..., number = TRUE,
         stop("argument is not a data frame")
     }
 
-    n <- nrow(x)
-    nc <- length(x)
-
     with_rethrow({
         rows <- as_rows("rows", rows)
         sections <- as_integer_scalar("sections", sections)
@@ -309,6 +306,7 @@ print.dataset <- function(x, rows = NULL, sections = 1L, ..., number = TRUE,
     style <- new_format_style(control)
 
     if (length(x) == 0) {
+        n <- nrow(x)
         cat(sprintf(ngettext(n, "data frame with 0 columns and %d row",
                              "data frame with 0 columns and %d rows"), n),
             "\n", sep = "")
