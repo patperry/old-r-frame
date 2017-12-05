@@ -104,12 +104,50 @@ col_width <- function(name, x, control, limit = NULL)
         w <- 0
 
         for (j in seq_len(nc)) {
-            xj <- if (is.data.frame(x)) x[[j]] else x[, j, drop = TRUE]
-            wj <- col_width(names[[j]], xj, control)
-
             if (j > 1) {
                 w <- w + gap
             }
+
+            xj <- if (is.data.frame(x)) x[[j]] else x[, j, drop = TRUE]
+            wj <- col_width(names[[j]], xj, control, limit - w)
+
+            w <- w + wj
+            if (w >= limit) {
+                return(limit)
+            }
+        }
+    }
+
+    w <- max(n, w)
+    min(limit, w)
+}
+
+
+col_trunc_width <- function(name, x, control, limit = NULL)
+{
+    limit <- if (is.null(limit)) Inf else limit
+    n <- utf8_width(name)
+    ellipsis <- utf8_width(control$ellipsis)
+    gap <- control$print.gap
+
+    if (length(dim(x)) <= 1) {
+        w <- max(0, utf8_width(x, quote = control$quote), na.rm = TRUE)
+        if (anyNA(x)) {
+            naw <- utf8_width(control$na.print)
+            w <- max(w, naw)
+        }
+    } else {
+        nc <- ncol(x)
+        names <- colnames(x)
+        w <- 0
+
+        for (j in seq_len(nc)) {
+            if (j > 1) {
+                w <- w + gap
+            }
+
+            xj <- if (is.data.frame(x)) x[[j]] else x[, j, drop = TRUE]
+            wj <- col_trunc_width(names[[j]], xj, control, limit - w)
 
             if (j < nc) {
                 if (wj > limit - ellipsis - gap - w) {
@@ -157,45 +195,57 @@ col_widow <- function(name, x, control, indent)
 
 
 format_vector <- function(x, ..., control = NULL, indent = NULL,
-                          sections = NULL)
+                          sections = NULL, last = FALSE)
 {
     chars <- control$chars
+    ellipsis <- utf8_width(control$ellipsis)
     if ((stretch <- is.null(chars))) {
-        ellipsis <- utf8_width(control$ellipsis)
         quotes <- if (control$quote) 2 else 0
+        chars <- max(24, control$line - indent - ellipsis - quotes)
+    }
 
-        chars_min <- 24
-        chars_max <- max(chars_min, control$line - ellipsis - quotes)
-        chars <- chars_max - indent
-        if (chars < chars_min) {
-            chars <- chars_max
+    if (sections == 1) {
+        if (last) {
+            limit <- control$line - indent
+        } else {
+            limit <- control$line - indent - control$print.gap - ellipsis
         }
+    } else {
+        limit <- Inf
     }
 
     cl <- class(x)
     if (is.character(x) && (identical(cl, "character")
                             || identical(cl, "AsIs"))) {
-        utf8_format(x, chars = chars, justify = control$justify,
-                    width = control$width, na.encode = control$na.encode,
-                    quote = control$quote, na.print = control$na.print)
+        y <- utf8_format(x, chars = chars, justify = control$justify,
+                         width = control$width, na.encode = control$na.encode,
+                         quote = control$quote, na.print = control$na.print)
     } else {
-        format(x, ..., chars = chars, na.encode = control$na.encode,
-               quote = control$quote, na.print = control$na.print,
-               print.gap = control$print.gap, justify = control$justify,
-               width = control$width, indent = indent, line = control$line,
-               sections = sections)
+        y <- format(x, ..., chars = chars, na.encode = control$na.encode,
+                    quote = control$quote, na.print = control$na.print,
+                    print.gap = control$print.gap, justify = control$justify,
+                    width = control$width, indent = indent, line = control$line,
+                    sections = sections)
     }
+
+    w <- col_width("", y, control, limit + 1)
+    if ((trunc <- (w > limit))) {
+        y <- rep(control$ellipsis, length(y))
+    }
+
+    list(value = y, trunc = trunc)
 }
 
 
 format_matrix <- function(x, ..., control = control, indent = NULL,
-                          sections = NULL)
+                          sections = NULL, last = FALSE)
 {
-    format(x, ..., chars = control$chars, na.encode = control$na.encode,
-           quote = control$quote, na.print = control$na.print,
-           print.gap = control$print.gap, justify = control$justify,
-           width = control$width, indent = indent, line = control$line,
-           sections = sections)
+    y <- format(x, ..., chars = control$chars, na.encode = control$na.encode,
+                quote = control$quote, na.print = control$na.print,
+                print.gap = control$print.gap, justify = control$justify,
+                width = control$width, indent = indent, line = control$line,
+                sections = sections)
+    list(value = y, trunc = FALSE)
 }
 
 
@@ -222,7 +272,7 @@ format.dataset <- function(x, ..., chars = NULL,
     if (is.null(indent)) {
         indent <- 0L
     }
-    if (is.null(sections) || sections < 0) {
+    if (is.null(sections) || sections <= 0) {
         sections <- .Machine$integer.max
     }
 
@@ -234,17 +284,9 @@ format.dataset <- function(x, ..., chars = NULL,
     fmt <- vector("list", length(x))
 
     for (i in seq_len(nc)) {
-        if (sections == 0) {
-            fmt <- fmt[1:i]
-            names <- names[1:i]
-            fmt[[i]] <- rep(control$ellipsis, nr)
-            names[[i]] <- control$ellipsis
-            break
-        }
-
         elt <- x[[i]]
         cl <- class(elt)
-        d <- dim(elt)
+        vec <- length(dim(elt)) <= 1
         right <- (is.numeric(elt) || is.complex(elt))
 
         # determine the minimum element width
@@ -258,18 +300,28 @@ format.dataset <- function(x, ..., chars = NULL,
         }
 
         # format the column
+        last <- (i == nc)
         ctrl <- control
         ctrl[["width"]] <- w
 
-        if (length(dim(elt)) <= 1) {
-            fmt[[i]] <- format_vector(elt, ..., control = ctrl,
-                                      indent = indent, sections = sections)
+        if (vec) {
+            f <- format_vector(elt, ..., control = ctrl,
+                               indent = indent, sections = sections,
+                               last = last)
         } else {
-            fmt[[i]] <- format_matrix(elt, ..., control = ctrl,
-                                      indent = indent, sections = sections)
+            f <- format_matrix(elt, ..., control = ctrl,
+                               indent = indent, sections = sections,
+                               last = last)
+        }
+        fmt[[i]] <- f$value
+        if (f$trunc) {
+            names[[i]] <- control$ellipsis
+            fmt <- fmt[1:i]
+            names <- names[1:i]
+            break
         }
 
-        if (length(d) <= 1 && right) {
+        if (vec && right) {
             w <- col_width(names[[i]], fmt[[i]], control)
             names[[i]] <- utf8_format(names[[i]],
                                       chars = .Machine$integer.max,
@@ -539,9 +591,11 @@ print.dataset <- function(x, rows = NULL, sections = 1L, ..., number = TRUE,
         cat("(0 rows)\n")
     } else if (!is.null(trunc$message)) {
         foot <- utf8_format(paste0(" ", trunc$message),
-                            width = max(0, foot_width - utf8_width(ellipsis)),
+                            width = max(0,
+                                        foot_width
+                                        - utf8_width(control$vellipsis)),
                             justify = "right")
-        cat(style$faint(ellipsis), foot, "\n", sep="")
+        cat(style$faint(control$vellipsis), foot, "\n", sep="")
     }
 
     invisible(xorig)
