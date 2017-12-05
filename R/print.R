@@ -141,19 +141,15 @@ col_widow <- function(name, x, control, indent)
         if (indent > control$line + control$print.gap) {
             indent <- w + control$print.gap
         }
-    } else if (is.data.frame(x)) {
-        names <- names(x)
-        for (i in seq_along(x)) {
-            indent <- col_widow(names[[i]], x[[i]], control, indent)
-        }
     } else {
+        nc <- ncol(x)
         names <- colnames(x)
         if (is.null(names)) {
-            names <- rep("", ncol(x))
+            names <- as.character(seq_len(nc))
         }
-        for (j in seq_len(ncol(x))) {
-            indent <- col_widow(names[[j]], x[, j, drop = TRUE],
-                                control, indent)
+        for (j in seq_len(nc)) {
+            xj <- if (is.data.frame(x)) x[[j]] else x[, j, drop = TRUE]
+            indent <- col_widow(names[[j]], xj, control, indent)
         }
     }
     indent
