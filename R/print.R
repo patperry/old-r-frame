@@ -12,15 +12,83 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-col_width <- function(name, x, quote, na.print)
+new_format_control <- function(chars = NULL, digits = NULL,
+                               na.encode = TRUE, quote = FALSE,
+                               na.print = NULL, print.gap = NULL,
+                               justify = "none", display = TRUE,
+                               line = NULL)
+{
+    control <- list()
+    control$chars <- as_chars("chars", chars)
+    control$digits <- as_digits("digits", digits)
+    control$na.encode <- as_option("na.encode", na.encode)
+    control$quote <- as_option("quote", quote)
+    control$na.print <- as_na_print("na.print", na.print)
+    control$print.gap <- as_print_gap("print.gap", print.gap)
+    control$justify <- as_justify("justify", justify)
+    control$display <- as_option("display", display)
+    control$line <- as_integer_scalar("line", line, nonnegative = TRUE)
+    control$ansi <- output_ansi()
+    control$utf8 <- output_utf8()
+
+    if (is.null(control$na.print)) {
+        control$na.print <- if (control$quote) "NA" else "<NA>"
+    }
+    if (is.null(control$print.gap)) {
+        control$print.gap <- 1L
+    }
+    if (is.null(control$line)) {
+        control$line <- getOption("width")
+    }
+
+    control$banner    <- if (control$utf8) "\u2550" else "="
+    control$ellipsis  <- if (control$utf8) "\u2026" else "..."
+    control$vellipsis <- if (control$utf8) "\u22ee" else "."
+    control$vline     <- if (control$utf8) "\u2502" else "|"
+
+    control
+}
+
+
+new_format_style <- function(control)
+{
+    if (control$ansi) {
+        escapes <- style_faint
+        bold  <- function(x) paste0("\x1b[", style_bold, "m",
+                                    utf8_encode(x, display = control$display,
+                                                utf8 = control$utf8),
+                                    "\x1b[0m")
+        faint <- function(x) paste0("\x1b[", style_faint, "m",
+                                    utf8_encode(x, display = control$display,
+                                                utf8 = control$utf8),
+                                    "\x1b[0m")
+    } else {
+        escapes <- NULL
+        bold <- faint <- function(x)
+            utf8_encode(x, display = control$display, utf8 = control$utf8)
+    }
+
+    normal <- function(x, width) {
+        x <- utf8_encode(x, quote = control$quote, escapes = control$escapes,
+                         display = control$display, utf8 = control$utf8)
+        x[is.na(x)] <- utf8_encode(control$na.print, width = width,
+                                   display = control$display,
+                                   utf8 = control$utf8)
+        x
+    }
+
+    list(normal = normal, bold = bold, faint = faint)
+}
+
+
+col_width <- function(name, x, control)
 {
     stopifnot(length(dim(x)) <= 1)
 
     n <- utf8_width(name)
-
-    w <- max(0, utf8_width(x, quote = quote), na.rm = TRUE)
+    w <- max(0, utf8_width(x, quote = control$quote), na.rm = TRUE)
     if (anyNA(x)) {
-        naw <- utf8_width(na.print)
+        naw <- utf8_width(control$na.print)
         w <- max(w, naw)
     }
 
@@ -28,19 +96,18 @@ col_width <- function(name, x, quote, na.print)
 }
 
 
-col_widow <- function(name, x, quote, na.print, print.gap, indent, line)
+col_widow <- function(name, x, control, indent)
 {
     if (length(dim(x)) <= 1) {
-        w <- col_width(name, x, quote, na.print)
-        indent <- indent + w + print.gap
-        if (indent > line + print.gap) {
-            indent <- w + print.gap
+        w <- col_width(name, x, control)
+        indent <- indent + w + control$print.gap
+        if (indent > control$line + control$print.gap) {
+            indent <- w + control$print.gap
         }
     } else if (is.data.frame(x)) {
         names <- names(x)
         for (i in seq_along(x)) {
-            indent <- col_widow(names[[i]], x[[i]], quote, na.print,
-                                print.gap, indent, line)
+            indent <- col_widow(names[[i]], x[[i]], control, indent)
         }
     } else {
         names <- colnames(x)
@@ -48,43 +115,61 @@ col_widow <- function(name, x, quote, na.print, print.gap, indent, line)
             names <- rep("", ncol(x))
         }
         for (j in seq_len(ncol(x))) {
-            indent <- col_widow(names[[j]], x[, j, drop = TRUE], quote,
-                                na.print, print.gap, indent, line)
+            indent <- col_widow(names[[j]], x[, j, drop = TRUE],
+                                control, indent)
         }
     }
     indent
 }
 
 
-format_character <- function(x, chars = NULL, na.encode = TRUE, quote = FALSE,
-                             na.print = NULL, print.gap = NULL,
-                             justify = "none", width = NULL, indent = NULL,
-                             line = NULL)
+format_vector <- function(x, ..., control = NULL, width = NULL, indent = NULL,
+                          sections = NULL)
 {
+    chars <- control$chars
     if ((stretch <- is.null(chars))) {
-        utf8 <- output_utf8()
-        ellipsis <- if (utf8) 1 else 3
-        quotes <- if (quote) 2 else 0
+        ellipsis <- utf8_width(control$ellipsis)
+        quotes <- if (control$quote) 2 else 0
 
         chars_min <- 24
-        chars_max <- max(chars_min, line - ellipsis - quotes)
+        chars_max <- max(chars_min, control$line - ellipsis - quotes)
         chars <- chars_max - indent
         if (chars < chars_min) {
             chars <- chars_max
         }
     }
 
-    # TODO: handle matrix
-    utf8_format(x, chars = chars, justify = justify,
-                width = width, na.encode = na.encode,
-                quote = quote, na.print = na.print)
+    cl <- class(x)
+    if (is.character(x) && (identical(cl, "character")
+                            || identical(cl, "AsIs"))) {
+        utf8_format(x, chars = chars, justify = control$justify,
+                    width = width, na.encode = control$na.encode,
+                    quote = control$quote, na.print = control$na.print)
+    } else {
+        format(x, ..., chars = chars, na.encode = control$na.encode,
+               quote = control$quote, na.print = control$na.print,
+               print.gap = control$print.gap, justify = control$justify,
+               width = width, indent = indent, line = control$line,
+               sections = sections)
+    }
+}
+
+
+format_matrix <- function(x, ..., control = control, width = NULL,
+                          indent = NULL, sections = NULL)
+{
+    format(x, ..., chars = control$chars, na.encode = control$na.encode,
+           quote = control$quote, na.print = control$na.print,
+           print.gap = control$print.gap, justify = control$justify,
+           width = width, indent = indent, line = control$line,
+           sections = sections)
 }
 
 
 format.dataset <- function(x, ..., chars = NULL,
                            na.encode = TRUE, quote = FALSE, na.print = NULL,
                            print.gap = NULL, justify = "none", width = NULL,
-                           indent = NULL, line = NULL)
+                           indent = NULL, line = NULL, sections = NULL)
 {
     if (is.null(x)) {
         return(invisible(NULL))
@@ -93,15 +178,13 @@ format.dataset <- function(x, ..., chars = NULL,
     }
 
     with_rethrow({
-        chars <- as_chars("chars", chars)
-        na.encode <- as_option("na.encode", na.encode)
-        quote <- as_option("quote", quote)
-        na.print <- as_na_print("na.print", na.print)
-        print.gap <- as_print_gap("print.gap", print.gap)
-        justify <- as_justify("justify", justify)
+        control <- new_format_control(chars = chars, na.encode = na.encode,
+                                      quote = quote, na.print = na.print,
+                                      print.gap = print.gap, justify = justify,
+                                      line = line)
         width <- as_integer_scalar("width", width)
         indent <- as_integer_scalar("indent", indent, nonnegative = TRUE)
-        line <- as_integer_scalar("line", line, nonnegative = TRUE)
+        sections <- as_integer_scalar("sections", sections)
     })
 
     nr <- nrow(x)
@@ -109,28 +192,25 @@ format.dataset <- function(x, ..., chars = NULL,
     names <- names(x)
     keys <- keys(x)
 
-    if (is.null(na.print)) {
-        na.print <- if (quote) "NA" else "<NA>"
-    }
-    if (is.null(print.gap)) {
-        print.gap <- 1L
-    }
     if (is.null(width)) {
         width <- 0L
     }
     if (is.null(indent)) {
         indent <- 0L
     }
-    if (is.null(line)) {
-        line <- max(12, getOption("width"))
+    if (is.null(sections) || sections < 0) {
+        sections <- .Machine$integer.max
     }
 
     fmt <- vector("list", length(x))
 
     for (i in seq_len(nc)) {
-        # wrap to next line
-        if (indent >= line) {
-            indent <- 0L
+        if (sections == 0) {
+            fmt <- fmt[1:i]
+            names <- names[1:i]
+            fmt[[i]] <- rep(control$ellipsis, nr)
+            names[[i]] <- control$ellipsis
+            break
         }
 
         elt <- x[[i]]
@@ -146,36 +226,33 @@ format.dataset <- function(x, ..., chars = NULL,
                                || identical(cl, c("AsIs", "factor")))) {
             elt <- structure(as.character(elt), names = names(elt),
                              dim = dim(elt), dimnames = dimnames(elt))
-            cl <- class(elt)
         }
 
         # format character specially
-        if (is.character(elt) && (identical(cl, "character")
-                                  || identical(cl, "AsIs"))) {
-            fmt[[i]] <- format_character(elt, chars = chars,
-                                         na.encode = na.encode,
-                                         quote = quote, na.print = na.print,
-                                         justify = justify, width = w,
-                                         indent = indent, line = line)
-        } else { # format others using S3
-            fmt[[i]] <- format(elt, ..., chars = chars, na.encode = na.encode,
-                               quote = quote, na.print = na.print,
-                               print.gap = print.gap, justify = justify,
-                               width = w, indent = indent, line = line)
+        if (length(dim(elt)) <= 1) {
+            fmt[[i]] <- format_vector(elt, ..., control = control,
+                                      width = w, indent = indent,
+                                      sections = sections)
+        } else {
+            fmt[[i]] <- format_matrix(elt, ..., control = control,
+                                      width = w, indent = indent,
+                                      sections = sections)
         }
 
         if (length(d) <= 1 && right) {
-            w <- col_width(names[[i]], fmt[[i]], quote = quote,
-                           na.print = na.print)
-
+            w <- col_width(names[[i]], fmt[[i]], control)
             names[[i]] <- utf8_format(names[[i]],
                                       chars = .Machine$integer.max,
                                       justify = "right", width = w)
         }
 
-        indent <- col_widow(names[[i]], fmt[[i]], quote = quote,
-                            na.print = na.print, print.gap = print.gap,
-                            indent = indent, line = line)
+        indent <- col_widow(names[[i]], fmt[[i]], control, indent)
+
+        # wrap to next line
+        if (indent >= control$line) {
+            indent <- 0L
+            sections <- sections - 1L
+        }
     }
 
     names(fmt) <- names
@@ -185,19 +262,13 @@ format.dataset <- function(x, ..., chars = NULL,
 }
 
 
-truncate <- function(x, rows = NULL, cols = NULL)
+truncate <- function(x, rows = NULL)
 {
     if (is.null(rows)) {
         rows <- 20L
     }
     if (rows < 0) {
         rows <- .Machine$integer.max
-    }
-    if (is.null(cols)) {
-        cols <- 20L
-    }
-    if (cols < 0) {
-        cols <- .Machine$integer.max
     }
 
     n <- nrow(x)
@@ -213,10 +284,9 @@ truncate <- function(x, rows = NULL, cols = NULL)
 }
 
 
-print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
+print.dataset <- function(x, rows = NULL, sections = 1L, ..., number = TRUE,
                           chars = NULL, digits = NULL, quote = FALSE,
-                          na.print = NULL, print.gap = NULL, max = NULL,
-                          display = TRUE)
+                          na.print = NULL, print.gap = NULL, display = TRUE)
 {
     if (is.null(x)) {
         return(invisible(NULL))
@@ -229,50 +299,14 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
 
     with_rethrow({
         rows <- as_rows("rows", rows)
-        cols <- as_cols("cols", cols)
+        sections <- as_integer_scalar("sections", sections)
         number <- as_option("number", number)
-        chars <- as_chars("chars", chars)
-        digits <- as_digits("digits", digits)
-        quote <- as_option("quote", quote)
-        na.print <- as_na_print("na.print", na.print)
-        print.gap <- as_print_gap("print_gap", print.gap)
-        max <- as_max_print("max", max)
-        display <- as_option("display", display)
+        control <- new_format_control(chars = chars, digits = digits,
+                                      quote = quote, na.print = na.print,
+                                      print.gap = print.gap, display = display)
     })
 
-    ansi <- output_ansi()
-    utf8 <- output_utf8()
-    line <- getOption("width")
-
-    if (is.null(na.print)) {
-        na.print <- if (quote) "NA" else "<NA>"
-    }
-    if (is.null(print.gap)) {
-        print.gap <- 1
-    }
-
-    if (ansi) {
-        escapes <- style_faint
-        bold  <- function(x) paste0("\x1b[", style_bold, "m",
-                                    utf8_encode(x, display = display,
-                                                utf8 = utf8),
-                                    "\x1b[0m")
-        faint <- function(x) paste0("\x1b[", style_faint, "m",
-                                    utf8_encode(x, display = display,
-                                                utf8 = utf8),
-                                    "\x1b[0m")
-    } else {
-        escapes <- NULL
-        bold <- faint <- function(x)
-            utf8_encode(x, display = display, utf8 = utf8)
-    }
-    normal <- function(x, width) {
-        x <- utf8_encode(x, quote = quote, escapes = escapes,
-                         display = display, utf8 = utf8)
-        x[is.na(x)] <- utf8_encode(na.print, width = width, display = display,
-                                   utf8 = utf8)
-        x
-    }
+    style <- new_format_style(control)
 
     if (length(x) == 0) {
         cat(sprintf(ngettext(n, "data frame with 0 columns and %d row",
@@ -281,12 +315,12 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
         return(invisible(x))
     }
 
-    trunc <- truncate(x, rows, cols)
+    trunc <- truncate(x, rows)
     xorig <- x
     x <- trunc$x
-
-    gap <- utf8_format("", width = print.gap)
     n <- nrow(x)
+
+    gap <- utf8_format("", width = control$print.gap)
 
     if (number) {
         row_body <- utf8_format(as.character(seq_len(n)),
@@ -325,24 +359,24 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
     }
 
     row_width <- utf8_width(row_head)
-    row_head <- faint(row_head)
-    row_body <- faint(row_body)
+    row_head <- style$faint(row_head)
+    row_body <- style$faint(row_body)
 
     if (!is.null(keys)) {
         row_head <- paste0(row_head, gap, " ", gap)
         row_width <- row_width + 1 + 2 * utf8_width(gap)
-        row_body <- paste0(row_body, gap, if (utf8) "\u2502" else "|", gap)
+        row_body <- paste0(row_body, gap, control$vline, gap)
     } else if (row_width > 0) {
         row_head <- paste0(row_head, gap)
         row_body <- paste0(row_body, gap)
         row_width <- row_width + utf8_width(gap)
     }
 
-    line <- max(1L, line - row_width)
-    fmt <- format.dataset(x, chars = chars, na.encode = FALSE,
-                          na.print = na.print, quote = quote,
-                          print.gap = print.gap, digits = digits,
-                          line = line)
+    line <- max(1L, control$line - row_width)
+    fmt <- format.dataset(x, chars = control$chars, sections = sections,
+                          na.encode = FALSE, na.print = control$na.print,
+                          quote = control$quote, print.gap = control$print.gap,
+                          digits = control$digits, line = line)
 
     cols <- as.list.dataset(fmt, flatten = TRUE, path = TRUE)
     path <- attr(cols, "path")
@@ -360,7 +394,7 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
 
     width <- pmax(width,
                   mapply(function(name, col)
-                             col_width(name, col, quote, na.print),
+                             col_width(name, col, control),
                          names, cols, SIMPLIFY = TRUE, USE.NAMES = FALSE))
 
     # format names, using column width as minimum
@@ -371,23 +405,23 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
                     names, width, SIMPLIFY = TRUE, USE.NAMES = FALSE)
 
     # apply formatting
-    names <- bold(names)
-    cols <- mapply(normal, cols, width, SIMPLIFY = FALSE, USE.NAMES = FALSE)
-
-    ellipsis <- ifelse(utf8, "\u22ee", ".")
+    names <- style$bold(names)
+    cols <- mapply(style$normal, cols, width,
+                   SIMPLIFY = FALSE, USE.NAMES = FALSE)
 
     # wrap columns
     indent <- 0L
     foot_width <- row_width
     start <- 1L
     for (i in seq_along(cols)) {
-        indent <- indent + width[[i]] + print.gap
+        indent <- indent + width[[i]] + control$print.gap
 
         if (i == length(cols) || indent + width[[i + 1L]] > line) {
-            foot_width <- max(foot_width, row_width + indent - print.gap)
+            foot_width <- max(foot_width,
+                              row_width + indent - control$print.gap)
             # add padding between previous set of rows
             if (start > 1) {
-                cat(faint(ellipsis), "\n", sep="")
+                cat(style$faint(control$vellipsis), "\n", sep="")
             }
 
             # determine header for nested groups
@@ -425,7 +459,6 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
             }
 
             # print header
-            ch <- if (utf8) "\u2550" else "="
             for (d in seq_len(depth - 1)) {
                 grp <- group[d,]
                 gnm <- gname[d,]
@@ -444,16 +477,18 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
                         # %in% so that this succeeds if NA
                         while (j < m && grp[[j + 1]] %in% g) {
                             j <- j + 1
-                            w <- w + print.gap + gwidth[[j]]
+                            w <- w + control$print.gap + gwidth[[j]]
                         }
                         wnm <- utf8_width(nm)
                         pad <- max(0, w - wnm)
                         lpad <- floor(pad / 2)
                         rpad <- ceiling(pad / 2)
-                        banner <- paste0(paste0(rep(ch, lpad), collapse = ""),
+                        banner <- paste0(paste0(rep(control$banner, lpad),
+                                                collapse = ""),
                                          nm,
-                                         paste0(rep(ch, rpad), collapse = ""))
-                        head <- paste0(head, bold(banner))
+                                         paste0(rep(control$banner, rpad),
+                                                collapse = ""))
+                        head <- paste0(head, style$bold(banner))
                     }
                     j <- j + 1
                 }
@@ -478,7 +513,7 @@ print.dataset <- function(x, rows = NULL, cols = NULL, ..., number = TRUE,
         foot <- utf8_format(paste0(" ", trunc$message),
                             width = max(0, foot_width - utf8_width(ellipsis)),
                             justify = "right")
-        cat(faint(ellipsis), foot, "\n", sep="")
+        cat(style$faint(ellipsis), foot, "\n", sep="")
     }
 
     invisible(xorig)
