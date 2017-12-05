@@ -194,46 +194,73 @@ col_widow <- function(name, x, control, indent)
 }
 
 
-format_vector <- function(x, ..., control = NULL, indent = NULL,
+format_vector <- function(name, x, ..., control = NULL, indent = NULL,
                           sections = NULL, last = FALSE)
 {
     chars <- control$chars
+    gap <- control$print.gap
     ellipsis <- utf8_width(control$ellipsis)
     if ((stretch <- is.null(chars))) {
         quotes <- if (control$quote) 2 else 0
         chars <- max(24, control$line - indent - ellipsis - quotes)
     }
 
-    if (sections == 1) {
-        if (last) {
-            limit <- control$line - indent
-        } else {
-            limit <- control$line - indent - control$print.gap - ellipsis
-        }
-    } else {
-        limit <- Inf
+    # determine the minimum element width
+    width <- max(control$width, utf8_width(name))
+
+    # convert factor to character
+    cl <- class(x)
+    if (is.factor(x) && (identical(cl, "factor")
+                         || identical(cl, c("AsIs", "factor")))) {
+        x <- as.character(x)
+        cl <- class(x)
     }
 
-    cl <- class(x)
+    # format character specially, otherwise use S3
     if (is.character(x) && (identical(cl, "character")
                             || identical(cl, "AsIs"))) {
         y <- utf8_format(x, chars = chars, justify = control$justify,
-                         width = control$width, na.encode = control$na.encode,
+                         width = width, na.encode = control$na.encode,
                          quote = control$quote, na.print = control$na.print)
     } else {
         y <- format(x, ..., chars = chars, na.encode = control$na.encode,
                     quote = control$quote, na.print = control$na.print,
                     print.gap = control$print.gap, justify = control$justify,
-                    width = control$width, indent = indent, line = control$line,
+                    width = width, indent = indent, line = control$line,
                     sections = sections)
     }
 
-    w <- col_width("", y, control, limit + 1)
-    if ((trunc <- (w > limit))) {
-        y <- rep(control$ellipsis, length(y))
+    # compute width, determine whether to truncate
+    if (sections == 1) {
+        if (last) {
+            limit <- control$line - indent
+        } else {
+            limit <- control$line - indent - gap - ellipsis
+        }
+        w <- col_width(name, y, control, limit + 1)
+        trunc <- (w > limit)
+    } else {
+        w <- col_width(name, y, control)
+        trunc <- FALSE
     }
 
-    list(value = y, trunc = trunc)
+    # truncate
+    if (trunc) {
+        y <- rep(control$ellipsis, length(y))
+        w <- utf8_width(control$ellipsis)
+    }
+
+    # compute new indent
+    start <- (indent == 0L)
+    indent <- indent + w + gap
+    if (indent > control$line + gap && !start) {
+        # wrap, re-format with new indent
+        format_vector(name, x, ..., control = control, indent = 0,
+                      sections = sections - 1, last = last)
+    } else {
+        list(value = y, width = w, trunc = trunc, indent = indent,
+             sections = sections)
+    }
 }
 
 
@@ -284,6 +311,7 @@ format.dataset <- function(x, ..., chars = NULL,
     fmt <- vector("list", length(x))
 
     for (i in seq_len(nc)) {
+        last <- (i == nc)
         elt <- x[[i]]
         cl <- class(elt)
         vec <- length(dim(elt)) <= 1
@@ -292,27 +320,17 @@ format.dataset <- function(x, ..., chars = NULL,
         # determine the minimum element width
         w <- max(width, utf8_width(names[[i]]))
 
-        # convert factor to character
-        if (is.factor(elt) && (identical(cl, "factor")
-                               || identical(cl, c("AsIs", "factor")))) {
-            elt <- structure(as.character(elt), names = names(elt),
-                             dim = dim(elt), dimnames = dimnames(elt))
-        }
-
         # format the column
-        last <- (i == nc)
-        ctrl <- control
-        ctrl[["width"]] <- w
-
         if (vec) {
-            f <- format_vector(elt, ..., control = ctrl,
+            f <- format_vector(names[[i]], elt, ..., control = control,
                                indent = indent, sections = sections,
                                last = last)
         } else {
-            f <- format_matrix(elt, ..., control = ctrl,
+            f <- format_matrix(elt, ..., control = control,
                                indent = indent, sections = sections,
                                last = last)
         }
+
         fmt[[i]] <- f$value
         if (f$trunc) {
             names[[i]] <- control$ellipsis
@@ -322,19 +340,13 @@ format.dataset <- function(x, ..., chars = NULL,
         }
 
         if (vec && right) {
-            w <- col_width(names[[i]], fmt[[i]], control)
             names[[i]] <- utf8_format(names[[i]],
                                       chars = .Machine$integer.max,
-                                      justify = "right", width = w)
+                                      justify = "right", width = f$width)
         }
 
-        indent <- col_widow(names[[i]], fmt[[i]], control, indent)
-
-        # wrap to next line
-        if (indent >= control$line) {
-            indent <- 0L
-            sections <- sections - 1L
-        }
+        indent <- f$indent
+        sections <- f$sections
     }
 
     names(fmt) <- names
