@@ -205,6 +205,9 @@ format_vector <- function(name, x, ..., control = NULL, indent = NULL,
         chars <- max(24, control$line - indent - ellipsis - quotes)
     }
 
+    # determine whether to right-align name
+    right <- (is.numeric(x) || is.complex(x))
+
     # determine the minimum element width
     width <- max(control$width, utf8_width(name))
 
@@ -244,10 +247,18 @@ format_vector <- function(name, x, ..., control = NULL, indent = NULL,
         trunc <- FALSE
     }
 
-    # truncate
+    # truncate if necessary
     if (trunc) {
         y <- rep(control$ellipsis, length(y))
         w <- utf8_width(control$ellipsis)
+        name <- control$ellipsis
+        right <- FALSE
+    }
+
+    # right align the name if necessary
+    if (right) {
+        name <- utf8_format(name, chars = .Machine$integer.max,
+                            justify = "right", width = w)
     }
 
     # compute new indent
@@ -258,13 +269,13 @@ format_vector <- function(name, x, ..., control = NULL, indent = NULL,
         format_vector(name, x, ..., control = control, indent = 0,
                       sections = sections - 1, last = last)
     } else {
-        list(value = y, width = w, trunc = trunc, indent = indent,
-             sections = sections)
+        list(name = name, value = y, width = w, trunc = trunc,
+             indent = indent, sections = sections)
     }
 }
 
 
-format_matrix <- function(x, ..., control = control, indent = NULL,
+format_matrix <- function(name, x, ..., control = control, indent = NULL,
                           sections = NULL, last = FALSE)
 {
     y <- format(x, ..., chars = control$chars, na.encode = control$na.encode,
@@ -273,6 +284,20 @@ format_matrix <- function(x, ..., control = control, indent = NULL,
                 width = control$width, indent = indent, line = control$line,
                 sections = sections)
     list(value = y, trunc = FALSE)
+}
+
+
+format_column <- function(name, x, ..., control = NULL, indent = NULL,
+                          sections = NULL, last = FALSE)
+{
+    vec <- length(dim(x)) <= 1
+    if (vec) {
+        format_vector(name, x, ..., control = control,
+                      indent = indent, sections = sections, last = last)
+    } else {
+        format_matrix(name, x, ..., control = control,
+                      indent = indent, sections = sections, last = last)
+    }
 }
 
 
@@ -312,37 +337,16 @@ format.dataset <- function(x, ..., chars = NULL,
 
     for (i in seq_len(nc)) {
         last <- (i == nc)
-        elt <- x[[i]]
-        cl <- class(elt)
-        vec <- length(dim(elt)) <= 1
-        right <- (is.numeric(elt) || is.complex(elt))
 
-        # determine the minimum element width
-        w <- max(width, utf8_width(names[[i]]))
-
-        # format the column
-        if (vec) {
-            f <- format_vector(names[[i]], elt, ..., control = control,
-                               indent = indent, sections = sections,
-                               last = last)
-        } else {
-            f <- format_matrix(elt, ..., control = control,
-                               indent = indent, sections = sections,
-                               last = last)
-        }
-
+        f <- format_column(names[[i]], x[[i]], ..., control = control,
+                           indent = indent, sections = sections, last = last)
+        names[[i]] <- f$name
         fmt[[i]] <- f$value
+
         if (f$trunc) {
-            names[[i]] <- control$ellipsis
             fmt <- fmt[1:i]
             names <- names[1:i]
             break
-        }
-
-        if (vec && right) {
-            names[[i]] <- utf8_format(names[[i]],
-                                      chars = .Machine$integer.max,
-                                      justify = "right", width = f$width)
         }
 
         indent <- f$indent
