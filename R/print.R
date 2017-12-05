@@ -229,13 +229,14 @@ format.dataset <- function(x, ..., chars = NULL,
         }
 
         # format the column
+        ctrl <- control
+        ctrl[["width"]] <- w
+
         if (length(dim(elt)) <= 1) {
-            fmt[[i]] <- format_vector(elt, ...,
-                                      control = `[[<-`(control, "width", w),
+            fmt[[i]] <- format_vector(elt, ..., control = ctrl,
                                       indent = indent, sections = sections)
         } else {
-            fmt[[i]] <- format_matrix(elt, ...,
-                                      control = `[[<-`(control, "width", w),
+            fmt[[i]] <- format_matrix(elt, ..., control = ctrl,
                                       indent = indent, sections = sections)
         }
 
