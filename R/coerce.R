@@ -155,7 +155,7 @@ as_column <- function(x, n)
     if (is.null(d)) {
         names(x) <- NULL
     } else {
-        dimnames(x)[1] <- list(NULL)
+        rownames(x) <- NULL
     }
 
     x
