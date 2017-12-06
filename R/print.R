@@ -123,29 +123,6 @@ col_width <- function(name, x, control, limit = NULL)
 }
 
 
-col_widow <- function(name, x, control, indent)
-{
-    if (length(dim(x)) <= 1) {
-        w <- col_width(name, x, control)
-        indent <- indent + w + control$print.gap
-        if (indent > control$line + control$print.gap) {
-            indent <- w + control$print.gap
-        }
-    } else {
-        nc <- ncol(x)
-        names <- colnames(x)
-        if (is.null(names)) {
-            names <- as.character(seq_len(nc))
-        }
-        for (j in seq_len(nc)) {
-            xj <- if (is.data.frame(x)) x[[j]] else x[, j, drop = TRUE]
-            indent <- col_widow(names[[j]], xj, control, indent)
-        }
-    }
-    indent
-}
-
-
 format_vector <- function(name, x, ..., control, indent, sections)
 {
     chars <- control$chars
