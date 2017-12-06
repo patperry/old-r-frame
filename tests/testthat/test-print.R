@@ -59,7 +59,7 @@ test_that("'print.dataset' handles empty data frames", {
     # no row or column names
     d1 <- data.frame()
     expect_equal(capture_output(print(as_dataset(d1))),
-                 "(0 rows and 0 columns)")
+                 "(0 rows, 0 columns)")
 
     # no row names
     d2 <- data.frame(a = integer(), b = integer(), "\n" = logical(),
@@ -134,7 +134,8 @@ test_that("'print' can handle matrix columns", {
 '  ==============x============== ==============X============== =======Z=======',
 '  1 2 3 4 5 6 7 8 9 10 11 12 13 1 2 3 4 5 6 7 8 9 10 11 12 13 1 2 3 4 5 6 ...',
 '1 a c e g i k m o q s  u  w  y  A C E G I K M O Q S  U  W  Y  a c e g i k ...',
-'2 b d f h j l n p r t  v  x  z  B D F H J L N P R T  V  X  Z  b d f h j l ...')
+'2 b d f h j l n p r t  v  x  z  B D F H J L N P R T  V  X  Z  b d f h j l ...',
+'.                                                          (39 columns total)')
 
     expect_equal(strsplit(capture_output(print.dataset(x), width = 77),
                           "\n")[[1]], lines)
@@ -154,7 +155,8 @@ test_that("'print' can handle matrix columns with tail", {
 '  ==============x============== ==============X============== =====Z=====    ',
 '  1 2 3 4 5 6 7 8 9 10 11 12 13 1 2 3 4 5 6 7 8 9 10 11 12 13 1 2 3 4 ... ...',
 '1 a c e g i k m o q s  u  w  y  A C E G I K M O Q S  U  W  Y  a c e g ... ...',
-'2 b d f h j l n p r t  v  x  z  B D F H J L N P R T  V  X  Z  b d f h ... ...')
+'2 b d f h j l n p r t  v  x  z  B D F H J L N P R T  V  X  Z  b d f h ... ...',
+'.                                                          (40 columns total)')
 
     expect_equal(strsplit(capture_output(print.dataset(x), width = 77),
                           "\n")[[1]], lines)

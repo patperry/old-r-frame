@@ -263,6 +263,19 @@ format_column <- function(name, x, ..., control, indent, wrap)
     }
 }
 
+ncol_recursive <- function(x, offset = 0)
+{
+    if (length(dim(x)) <= 1) {
+        offset + 1
+    } else if (is.data.frame(x)) {
+        for (j in seq_len(ncol(x))) {
+            offset <- ncol_recursive(x[[j]], offset)
+        }
+        offset
+    } else {
+        offset + ncol(x)
+    }
+}
 
 format.dataset <- function(x, rows = NULL, wrap = NULL, ..., chars = NULL,
                            na.encode = TRUE, quote = FALSE, na.print = NULL,
@@ -306,8 +319,16 @@ format.dataset <- function(x, rows = NULL, wrap = NULL, ..., chars = NULL,
     y <- fmt$value
     keys(y) <- keys(x)
 
-    if (rtrunc) {
+    if ((ctrunc <- fmt$trunc)) {
+        nc <- ncol_recursive(x)
+    }
+
+    if (rtrunc && ctrunc) {
+        attr(y, "caption") <- sprintf("(%.0f rows, %.0f columns total)", n, nc)
+    } else if (rtrunc) {
         attr(y, "caption") <- sprintf("(%.0f rows total)", n)
+    } else if (ctrunc) {
+        attr(y, "caption") <- sprintf("(%.0f columns total)", nc)
     }
 
     y
@@ -339,7 +360,7 @@ print.dataset <- function(x, rows = 20L, wrap = 0L, ..., number = TRUE,
 
     if (length(x) == 0) {
         n <- nrow(x)
-        cat(sprintf("(%.0f rows and 0 columns)\n", n))
+        cat(sprintf("(%.0f rows, 0 columns)\n", n))
         return(invisible(x))
     }
 
