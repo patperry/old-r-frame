@@ -235,7 +235,7 @@ format_matrix <- function(name, x, ..., control, indent, sections)
                 j <- j + 1
                 names[[j]] <- control$ellipsis
                 y[[j]] <- rep(control$ellipsis, nrow(x))
-                indent <- indent + gap + ellipsis
+                indent <- indent + ellipsis + gap
             }
             y <- y[1:j]
             names <- names[1:j]
