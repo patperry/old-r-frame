@@ -215,7 +215,7 @@ format_matrix <- function(name, x, ..., control, indent, wrap)
 
     # Determine the minimum element width.
     #
-    # This is a conservative approach that enforces no matter how the
+    # NOTE: This is a conservative approach that enforces no matter how the
     # columns get wrapped, the matrix name will be wider than the column
     # names. It would be nice to do something less conservative so that,
     # e.g., instead of the following:
