@@ -23,7 +23,11 @@ as.list.dataset <- function(x, ..., flatten = FALSE, path = FALSE)
     attr(x, "row.names") <- NULL
 
     if (flatten) {
-        names <- as.list(names(x))
+        names <- names(x)
+        if (is.null(names)) {
+            names <- as.character(seq_along(x))
+        }
+        names <- as.list(names)
         names(x) <- NULL
         index <- vector("list", length(x))
         path_ <- vector("list", length(x))
@@ -36,30 +40,35 @@ as.list.dataset <- function(x, ..., flatten = FALSE, path = FALSE)
                 index[[i]] <- list(i)
                 path_[[i]] <- list(names[[i]])
                 names[[i]] <- list(names[[i]])
-            } else if (is.data.frame(xi)) {
-                x[[i]] <- as.list(xi, ..., flatten = TRUE, path = TRUE)
+            } else {
+                n <- ncol(xi)
+
+                if (is.data.frame(xi)) {
+                    x[[i]] <- as.list(xi, ..., flatten = TRUE, path = TRUE)
+                } else {
+                    x[[i]] <- lapply(seq_len(n),
+                                     function(j) xi[, j, drop = TRUE])
+                }
+
+                nm <- names(x[[i]])
+                if (is.null(nm)) {
+                    nm <- as.character(seq_len(n))
+                }
+                names(x[[i]]) <- nm
+
                 ii <- attr(x[[i]], "index")
                 if (is.null(ii)) {
-                    ii <- seq_along(xi)
+                    ii <- seq_len(n)
                 }
                 index[[i]] <- lapply(ii, function(iij) c(i, iij))
+
                 pi_ <- attr(x[[i]], "path")
                 if (is.null(pi_)) {
-                    pi_ <- names(xi)
+                    pi_ <- nm
                 }
+
                 path_[[i]] <- lapply(pi_, function(pij) c(names[[i]], pij))
-                names[[i]] <- paste(names[[i]], names(x[[i]]), sep = ".")
-            } else {
-                nm <- colnames(xi)
-                if (is.null(nm)) {
-                    nm <- as.character(seq_len(ncol(xi)))
-                }
-                x[[i]] <- lapply(seq_len(ncol(xi)),
-                             function(j) xi[, j, drop = TRUE])
-                ii <- seq_len(ncol(xi))
-                index[[i]] <- lapply(ii, function(iij) c(i, iij))
-                path_[[i]] <- lapply(as.character(ii),
-                                     function(pij) c(names[[i]], pij))
+                names[[i]] <- paste(names[[i]], nm, sep = ".")
             }
         }
 
