@@ -47,8 +47,10 @@ row.names.dataset <- function(x)
 
 `row.names<-.dataset` <- function(x, value)
 {
-    if (!is.null(value)) {
-        stop("setting row names is not allowed for dataset objects")
+    if (is.null(value)) {
+        keys(x) <- NULL
+    } else {
+        keys(x) <- list(name = value)
     }
     x
 }

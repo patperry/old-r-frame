@@ -2,22 +2,23 @@
 context("names")
 
 test_that("'rownames' returns NULL when absent", {
-    x <- as_dataset(mtcars, rownames = NULL)
+    x <- as_dataset(mtcars, key = character())
     expect_equal(rownames(x), NULL)
 })
 
 
-test_that("'rownames<-' errors", {
+test_that("'rownames<-' is allowd", {
     x <- as_dataset(mtcars)
-    expect_error(rownames(x) <- seq_len(nrow(x)),
-                 "setting row names is not allowed for dataset objects")
+    rownames(x) <- seq_len(nrow(x))
+    expect_equal(rownames(x), as.character(seq_len(nrow(x))))
+    expect_equal(keys(x)[[1]], rownames(x))
 })
 
 
 test_that("'rownames<- NULL' is allowed", {
     x <- as_dataset(mtcars)
     rownames(x) <- NULL
-    expect_equal(x, as_dataset(mtcars))
+    expect_equal(x, as_dataset(mtcars, key = character()))
 })
 
 

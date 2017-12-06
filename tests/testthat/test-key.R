@@ -66,8 +66,8 @@ test_that("'as_dataset' on data.frame uses row names as key", {
 
 
 test_that("'as_dataset' on data.frame uses row names special column as key", {
-    x <- as_dataset(mtcars, rownames = "foo")
-    expect_equal(keys(x)[["foo"]], rownames(mtcars))
+    x <- as_dataset(mtcars)
+    expect_equal(keys(x)[["name"]], rownames(mtcars))
 })
 
 

@@ -69,12 +69,6 @@ test_that("'as_dataset.list' allows duplicated names", {
 })
 
 
-test_that("'as_dataset.data.frame' errors if name already exists", {
-    expect_error(as_dataset(mtcars, rownames = "cyl"),
-                 "cannot create column for row names; name \"cyl\" already exists")
-})
-
-
 test_that("'as_dataset' errors for unequal length columns", {
     expect_error(dataset(x = 1:10, y = 1:10, z = c(1, 2, 3)),
                  "columns 1 and 3 \\(\"x\" and \"z\"\\) have differing numbers of rows: 10 and 3")

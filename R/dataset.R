@@ -46,32 +46,27 @@ as_dataset.default <- function(x, key = NULL, ...)
 }
 
 
-as_dataset.data.frame <- function(x, key = NULL, ..., rownames = "name")
+as_dataset.data.frame <- function(x, key = NULL, ...)
 {
     if (!is.data.frame(x)) {
         stop("argument is not a valid data frame")
     }
 
-    with_rethrow({
-        rownames <- as_character_scalar("rownames", rownames)
-    })
-
     # convert row names to the first column
-    if (.row_names_info(x) > 0 && !is.null(rownames)) {
-        if (rownames %in% names(x)) {
-            stop(sprintf("cannot create column for row names; name \"%s\" already exists", rownames))
-        }
-        x <- structure(c(list(as.character(rownames(x))), as.list(x)),
-                       names = c(rownames, names(x)))
-
-        if (is.null(key)) {
-            key <- rownames
-        }
+    if (is.null(key) && .row_names_info(x) > 0) {
+        rn <- row.names(x)
     } else {
-        x <- as.list(x)
+        rn <- NULL
     }
 
-    as_dataset(x, key)
+    l <- as.list(x)
+    x <- as_dataset(l, key)
+
+    if (!is.null(rn)) {
+        row.names(x) <- rn
+    }
+
+    x
 }
 
 
@@ -109,14 +104,15 @@ as_dataset.list <- function(x, key = NULL, ...)
     nr <- nrow_dataset(x)
     cols <- lapply(x, as_column, nr)
 
+    keys <- NULL
     if (!is.null(key)) {
         with_rethrow({
             k <- as_key("key", key, names)
         })
-        keys <- cols[k]
-        cols <- cols[-k]
-    } else {
-        keys <- NULL
+        if (length(k) > 0) {
+            keys <- cols[k]
+            cols <- cols[-k]
+        }
     }
 
     x <- structure(cols, class = c("dataset", "data.frame"),
