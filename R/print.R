@@ -213,7 +213,25 @@ format_matrix <- function(name, x, ..., control, indent, wrap)
     ellipsis <- utf8_width(control$ellipsis)
     line <- control$line
 
-    # determine the minimum element width
+    # Determine the minimum element width.
+    #
+    # This is a conservative approach that enforces no matter how the
+    # columns get wrapped, the matrix name will be wider than the column
+    # names. It would be nice to do something less conservative so that,
+    # e.g., instead of the following:
+    #
+    #   =======group1=======
+    #     drat     wt   qsec
+    # 1    3.9  2.620  16.46
+    # 2    3.9  2.875  17.02
+    #
+    # we would get
+    #
+    #   =====group1=====
+    #   drat    wt  qsec
+    # 1  3.9 2.620 16.46
+    # 2  3.9 2.875 17.02
+    #
     control$width <- max(control$width, utf8_width(name))
 
     for (j in seq_len(nc)) {
