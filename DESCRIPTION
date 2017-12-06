@@ -8,11 +8,11 @@ Authors@R: c(
 Depends: R (>= 2.10)
 Imports:
   rlang,
-  utf8 (>= 1.0.0.9000)
+  utf8 (>= 1.1.1.9000)
 Suggests:
   knitr,
   testthat
-Description: An extension to the 'data.frame' type that makes it easy to affix sampling frames to variables.
+Description: Data frames supporting multi-attribute keys, nested data frames and other matrix-like columns.
 License: Apache License (== 2.0) | file LICENSE
 URL: https://github.com/patperry/r-frame
 BugReports: https://github.com/patperry/r-frame/issues
