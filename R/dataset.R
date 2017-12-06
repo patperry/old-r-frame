@@ -108,7 +108,9 @@ as_dataset.list <- function(x, key = NULL, ...)
     cols <- lapply(x, as_column, nr)
 
     if (!is.null(key)) {
-        k <- as_key("key", key, names)
+        with_rethrow({
+            k <- as_key("key", key, names)
+        })
         keys <- cols[k]
         cols <- cols[-k]
     } else {
