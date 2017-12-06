@@ -158,6 +158,25 @@ test_that("'print' can handle matrix columns with tail", {
 '2 b d f h j l n p r t  v  x  z  B D F H J L N P R T  V  X  Z  b d f h ... ...',
 '.                                                          (40 columns total)')
 
-    expect_equal(strsplit(capture_output(print.dataset(x), width = 77),
+    expect_equal(strsplit(capture_output(print(x), width = 77),
                           "\n")[[1]], lines)
+})
+
+
+test_that("'print' can handle narrow grouped columns", {
+    ctype <- switch_ctype("C")
+    on.exit(Sys.setlocale("LC_CTYPE", ctype), add = TRUE)
+
+    group1 <- dataset(drat = c(3.9, 3.9),
+                      wt   = c(2.620, 2.875),
+                      qsec = c(16.46, 17.02))
+    x <- dataset(group1)
+
+    lines <- c(
+'  =======group1=======',
+'    drat     wt   qsec',
+'1    3.9  2.620  16.46',
+'2    3.9  2.875  17.02')
+
+    expect_equal(strsplit(capture_output(print(x)), "\n")[[1]], lines)
 })

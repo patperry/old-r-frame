@@ -213,6 +213,9 @@ format_matrix <- function(name, x, ..., control, indent, wrap)
     ellipsis <- utf8_width(control$ellipsis)
     line <- control$line
 
+    # determine the minimum element width
+    control$width <- max(control$width, utf8_width(name))
+
     for (j in seq_len(nc)) {
         if (wrap == 0 && j < nc) {
             control$line <- line - gap - ellipsis
