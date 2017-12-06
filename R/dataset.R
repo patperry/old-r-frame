@@ -125,12 +125,17 @@ as_dataset.list <- function(x, key = NULL, ...)
 }
 
 
-as_dataset.dataset <- function(x, ...)
+as_dataset.dataset <- function(x, key = NULL, ...)
 {
     if (!is_dataset(x)) {
         stop("argument is not a valid dataset")
     }
-    class(x) <- c("dataset", "data.frame")
+    if (is.null(key)) {
+        class(x) <- c("dataset", "data.frame")
+    } else {
+        l <- as.list(x)
+        x <- as.dataset(l, key)
+    }
     x
 }
 
