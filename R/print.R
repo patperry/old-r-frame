@@ -194,8 +194,7 @@ col_widow <- function(name, x, control, indent)
 }
 
 
-format_vector <- function(name, x, ..., control = NULL, indent = NULL,
-                          sections = NULL, last = FALSE)
+format_vector <- function(name, x, ..., control, indent, sections, last)
 {
     chars <- control$chars
     gap <- control$print.gap
@@ -266,29 +265,54 @@ format_vector <- function(name, x, ..., control = NULL, indent = NULL,
     indent <- indent + w + gap
     if (indent > control$line + gap && !start) {
         # wrap, re-format with new indent
+        stopifnot(sections > 1)
         format_vector(name, x, ..., control = control, indent = 0,
                       sections = sections - 1, last = last)
     } else {
-        list(name = name, value = y, width = w, trunc = trunc,
+        list(name = name, value = y, trunc = trunc,
              indent = indent, sections = sections)
     }
 }
 
 
-format_matrix <- function(name, x, ..., control = control, indent = NULL,
-                          sections = NULL, last = FALSE)
+format_matrix <- function(name, x, ..., control, indent, sections, last)
 {
-    y <- format(x, ..., chars = control$chars, na.encode = control$na.encode,
-                quote = control$quote, na.print = control$na.print,
-                print.gap = control$print.gap, justify = control$justify,
-                width = control$width, indent = indent, line = control$line,
-                sections = sections)
-    list(value = y, trunc = FALSE)
+    nc <- ncol(x)
+    names <- colnames(x)
+    if (is.null(names)) {
+        names <- as.character(seq_len(nc))
+    }
+    y <- vector("list", nc)
+    trunc <- FALSE
+
+    for (j in seq_len(nc)) {
+        lj <- (j == nc) && last
+        xj <- if (is.data.frame(x)) x[[j]] else x[, j, drop = TRUE]
+
+        fmt <- format_column(names[[j]], xj, ..., control = control,
+                             indent = indent, sections = sections, last = lj)
+        names[[j]] <- fmt$name
+        y[[j]] <- fmt$value
+
+        if (fmt$trunc) {
+            y <- y[1:j]
+            names <- names[1:j]
+            trunc <- TRUE
+            break
+        }
+
+        indent <- fmt$indent
+        sections <- fmt$sections
+    }
+
+    names(y) <- names
+    y <- as_dataset(y)
+    list(name = name, value = y, trunc = trunc, indent = indent,
+         sections = sections)
 }
 
 
-format_column <- function(name, x, ..., control = NULL, indent = NULL,
-                          sections = NULL, last = FALSE)
+format_column <- function(name, x, ..., control, indent, sections, last)
 {
     vec <- length(dim(x)) <= 1
     if (vec) {
@@ -328,35 +352,11 @@ format.dataset <- function(x, ..., chars = NULL,
         sections <- .Machine$integer.max
     }
 
-    nr <- nrow(x)
-    nc <- ncol(x)
-    names <- colnames(x)
-    keys <- keys(x)
-
-    y <- vector("list", nc)
-
-    for (i in seq_len(nc)) {
-        last <- (i == nc)
-
-        fmt <- format_column(names[[i]], x[[i]], ..., control = control,
-                             indent = indent, sections = sections, last = last)
-        names[[i]] <- fmt$name
-        y[[i]] <- fmt$value
-
-        if (fmt$trunc) {
-            y <- y[1:i]
-            names <- names[1:i]
-            break
-        }
-
-        indent <- fmt$indent
-        sections <- fmt$sections
-    }
-
-    names(y) <- names
-    x <- as_dataset(y)
-    keys(x) <- keys
-    x
+    fmt <- format_column("", x, ..., control = control, indent = indent,
+                         sections = sections, last = TRUE)
+    y <- fmt$value
+    keys(y) <- keys(x)
+    y
 }
 
 
