@@ -1,7 +1,4 @@
 ## Imports
-importFrom(rlang, eval_tidy)
-importFrom(rlang, quos)
-importFrom(rlang, quo_is_missing)
 importFrom(utf8, as_utf8)
 importFrom(utf8, output_ansi)
 importFrom(utf8, output_utf8)

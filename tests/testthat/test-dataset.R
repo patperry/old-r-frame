@@ -6,11 +6,12 @@ test_that("'dataset' allows NULL names", {
     expect_equal(names(x), NULL)
 })
 
-test_that("'dataset' evaluates columns in order", {
-    x <- dataset(x = 1:10, y = 2 * x, z = 3 * x, y = x)
-    l <- list(x = 1:10, y = 2 * (1:10), z = 3 * (1:10), y = 1:10)
-    expect_equal(x, as_dataset(l))
-})
+# Removed; this is no longer the default behavior
+#test_that("'dataset' evaluates columns in order", {
+#    x <- dataset(x = 1:10, y = 2 * x, z = 3 * x, y = x)
+#    l <- list(x = 1:10, y = 2 * (1:10), z = 3 * (1:10), y = 1:10)
+#    expect_equal(x, as_dataset(l))
+#})
 
 
 test_that("'as_dataset.list' errors for non-list inputs", {

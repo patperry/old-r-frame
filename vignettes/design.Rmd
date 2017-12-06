@@ -13,8 +13,8 @@ and an object storing data points should provide access to this context. The
 data points with labels (the `"row.names"`), but it is not flexible
 enough to handle cases where the context involves more than one attribute. We
 fix this by replacing the `"row.names"` attribute of a `data.frame` with a new
-attribute, `"key"`, that stores potentially multi-column attributes
-(*composite keys*) that identify each row in the data frame.
+attribute, `"keys"`, that stores potentially multi-attribute labels
+(*composite keys*) that identify each row in the data set.
 
 
 This package takes the view a *variable* as a map (function) between two sets,

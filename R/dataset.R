@@ -14,19 +14,21 @@
 
 dataset <- function(..., key = NULL)
 {
-    qs <- quos(..., .named = TRUE)
-    names <- names(qs)
+    args <- as.list(substitute(list(...)))[-1L]
+    x <- list(...)
+    n <- length(x)
 
-    x <- list()
-    for (i in seq_along(qs)) {
-        nm <- names[[i]]
-        y <- eval_tidy(qs[[i]], data = x)
-
-        # safer than 'x[[nm]] <- y' since y might be NULL or nm duplicated
-        x <- c(x, list(y))
-        names(x)[[i]] <- nm
+    names <- names(x)
+    if (is.null(names)) {
+        names <- character(n)
     }
-
+    for (i in seq_len(n)) {
+        if (names[[i]] == "") {
+            name <- deparse(args[[i]], nlines = 1L)[1L]
+            names[[i]] <- sub("^I\\((.*)\\)$", "\\1", name)
+        }
+    }
+    names(x) <- names
     as_dataset(x, key)
 }
 
