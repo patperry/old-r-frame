@@ -137,7 +137,7 @@ test_that("'print' can handle matrix columns", {
 '2 b d f h j l n p r t  v  x  z  B D F H J L N P R T  V  X  Z  b d f h j l ...',
 '.                                                          (39 columns total)')
 
-    expect_equal(strsplit(capture_output(print.dataset(x), width = 77),
+    expect_equal(strsplit(capture_output(print(x, wrap = 0), width = 77),
                           "\n")[[1]], lines)
 })
 
@@ -158,7 +158,7 @@ test_that("'print' can handle matrix columns with tail", {
 '2 b d f h j l n p r t  v  x  z  B D F H J L N P R T  V  X  Z  b d f h ... ...',
 '.                                                          (40 columns total)')
 
-    expect_equal(strsplit(capture_output(print(x), width = 77),
+    expect_equal(strsplit(capture_output(print(x, wrap = 0), width = 77),
                           "\n")[[1]], lines)
 })
 

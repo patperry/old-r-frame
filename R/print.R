@@ -356,7 +356,7 @@ format.dataset <- function(x, rows = NULL, wrap = NULL, ..., chars = NULL,
 }
 
 
-print.dataset <- function(x, rows = 20L, wrap = 0L, ..., number = TRUE,
+print.dataset <- function(x, rows = 20L, wrap = 4L, ..., number = TRUE,
                           chars = NULL, digits = NULL, quote = FALSE,
                           na.print = NULL, print.gap = NULL, display = TRUE)
 {
