@@ -263,7 +263,6 @@ format_matrix <- function(name, x, ..., control, indent, wrap)
             trunc <- TRUE
             break
         }
-
     }
 
     names(y) <- names

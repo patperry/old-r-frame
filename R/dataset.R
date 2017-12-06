@@ -90,13 +90,13 @@ as_dataset.list <- function(x, key = NULL, ...)
     # make sure columns are vectors and matrices only
     for (i in seq_len(nc)) {
         elt <- x[[i]]
+        lab <- if (is.null(names)) "" else sprintf(" (\"%s\")", names[[i]])
         if (is.null(elt)) {
-            stop(sprintf("column %d (\"%s\") is NULL", i, names[[i]]))
+            stop(sprintf("column %d%s is NULL", i, lab))
         }
         d <- dim(elt)
         if (length(d) > 2) {
-            stop(sprintf("column %d (\"%s\") has more than 2 dimensions", i,
-                         names[[i]]))
+            stop(sprintf("column %d%s has more than 2 dimensions", i, lab))
         }
     }
 

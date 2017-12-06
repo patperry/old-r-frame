@@ -45,7 +45,8 @@ keys.dataset <- function(x)
     }
 
     n <- nrow(x)
-    value <- as.list(value)
+    value <- as_dataset(value)
+    keys(value) <- NULL
 
     # validate key length
     if (length(value) > .Machine$integer.max) {
@@ -123,13 +124,13 @@ keys.dataset <- function(x)
 }
 
 
-keyvals <- function(x)
+keylevels <- function(x)
 {
-    UseMethod("keyvals")
+    UseMethod("keylevels")
 }
 
 
-keyvals.dataset <- function(x)
+keylevels.dataset <- function(x)
 {
     if (!is_dataset(x)) {
         stop("argument is not a valid dataset object")

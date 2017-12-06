@@ -151,3 +151,10 @@ test_that("'as_dataset' errors for missing key", {
     expect_error(as_dataset(mtcars, key = c("cyl", "zzz")),
                  "key refers to unknown column \"zzz\"")
 })
+
+
+test_that("'as_dataset' works for nested", {
+    l <- list(zz = dataset(a = 1:4))
+    x <- as_dataset(l)
+    expect_equal(x, dataset(zz = dataset(a = 1:4)))
+})

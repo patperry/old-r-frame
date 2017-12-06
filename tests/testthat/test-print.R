@@ -180,3 +180,18 @@ test_that("'print' can handle narrow grouped columns", {
 
     expect_equal(strsplit(capture_output(print(x)), "\n")[[1]], lines)
 })
+
+
+test_that("'print' can handle matrix with one column", {
+    x <- dataset(x = matrix(5:8, 4, 1))
+
+    lines <- c(
+'  x',
+'  1',
+'1 5',
+'2 6',
+'3 7',
+'4 8')
+
+    expect_equal(strsplit(capture_output(print(x)), "\n")[[1]], lines)
+})

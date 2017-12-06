@@ -145,23 +145,23 @@ test_that("'key<-' moves columns to beginning", {
 })
 
 
-test_that("'keyvals' is NULL if key is NULL", {
+test_that("'keylevels' is NULL if key is NULL", {
     ds <- dataset(x = letters)
-    expect_equal(keyvals(ds), NULL)
+    expect_equal(keylevels(ds), NULL)
 })
 
 
-test_that("'keyvals' gives unique values for length-1 key", {
+test_that("'keylevels' gives unique values for length-1 key", {
     ds <- as_dataset(list(x = LETTERS[1:20], y = rep(1:10, each = 2)),
                      key = "x")
-    expect_equal(keyvals(ds), list(x = LETTERS[1:20]))
+    expect_equal(keylevels(ds), list(x = LETTERS[1:20]))
 })
 
 
-test_that("'keyvals' gives unique values for length-2 key", {
+test_that("'keylevels' gives unique values for length-2 key", {
     ds <- as_dataset(list(x = c(letters, letters), y = rep(1:13, each = 4)),
                      key = c("x", "y"))
-    expect_equal(keyvals(ds), list(x = letters, y = as.character(1:13)))
+    expect_equal(keylevels(ds), list(x = letters, y = as.character(1:13)))
 })
 
 

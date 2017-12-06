@@ -42,13 +42,13 @@
 #      as_utf8(as.character(i)) is row name
 #
 # If #index == nkey + 1 (x[k1,k2,k3,j])
-#      as_utf8(as.character(ki)) compared against keyvals(x)[[i]]
+#      as_utf8(as.character(ki)) compared against keylevels(x)[[i]]
 #      keep rows with first key in k1,
 #                 and second key in k2,
 #                 and second key in k3
 #      missing ki includes all
 #
-# TODO: for consistency, need rownames(x) == keyvals[[1]] when nkey == 1
+# TODO: for consistency, need rownames(x) == keylevels[[1]] when nkey == 1
 #
 
 elt_subset <- function(x, i)

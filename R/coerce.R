@@ -146,7 +146,7 @@ as_option <- function(name, value)
 as_column <- function(x, n)
 {
     # promote scalars
-    if (length(x) == 1) {
+    if (length(x) == 1 && length(dim(x)) <= 1) {
         x <- rep(x, n)
     }
 
