@@ -194,7 +194,7 @@ col_widow <- function(name, x, control, indent)
 }
 
 
-format_vector <- function(name, x, ..., control, indent, sections, last)
+format_vector <- function(name, x, ..., control, indent, sections)
 {
     chars <- control$chars
     gap <- control$print.gap
@@ -234,11 +234,7 @@ format_vector <- function(name, x, ..., control, indent, sections, last)
 
     # compute width, determine whether to truncate
     if (sections == 1) {
-        if (last) {
-            limit <- control$line - indent
-        } else {
-            limit <- control$line - indent - gap - ellipsis
-        }
+        limit <- control$line - indent
         w <- col_width(name, y, control, limit + 1)
         trunc <- (w > limit)
     } else {
@@ -263,11 +259,10 @@ format_vector <- function(name, x, ..., control, indent, sections, last)
     # compute new indent
     start <- (indent == 0L)
     indent <- indent + w + gap
-    if (indent > control$line + gap && !start) {
+    if (indent > control$line + gap && !start && sections > 1) {
         # wrap, re-format with new indent
-        stopifnot(sections > 1)
         format_vector(name, x, ..., control = control, indent = 0,
-                      sections = sections - 1, last = last)
+                      sections = sections - 1)
     } else {
         list(name = name, value = y, trunc = trunc,
              indent = indent, sections = sections)
@@ -275,7 +270,7 @@ format_vector <- function(name, x, ..., control, indent, sections, last)
 }
 
 
-format_matrix <- function(name, x, ..., control, indent, sections, last)
+format_matrix <- function(name, x, ..., control, indent, sections)
 {
     nc <- ncol(x)
     names <- colnames(x)
@@ -285,24 +280,40 @@ format_matrix <- function(name, x, ..., control, indent, sections, last)
     y <- vector("list", nc)
     trunc <- FALSE
 
+    gap <- control$print.gap
+    ellipsis <- utf8_width(control$ellipsis)
+    line <- control$line
+
     for (j in seq_len(nc)) {
-        lj <- (j == nc) && last
+        if (sections == 1 && j < nc) {
+            control$line <- line - gap - ellipsis
+        } else {
+            control$line <- line
+        }
+
         xj <- if (is.data.frame(x)) x[[j]] else x[, j, drop = TRUE]
 
         fmt <- format_column(names[[j]], xj, ..., control = control,
-                             indent = indent, sections = sections, last = lj)
+                             indent = indent, sections = sections)
+
         names[[j]] <- fmt$name
         y[[j]] <- fmt$value
+        indent <- fmt$indent
+        sections <- fmt$sections
 
         if (fmt$trunc) {
+            if (j < nc && length(dim(xj)) > 1) {
+                j <- j + 1
+                names[[j]] <- control$ellipsis
+                y[[j]] <- rep(control$ellipsis, nrow(x))
+                indent <- indent + gap + ellipsis
+            }
             y <- y[1:j]
             names <- names[1:j]
             trunc <- TRUE
             break
         }
 
-        indent <- fmt$indent
-        sections <- fmt$sections
     }
 
     names(y) <- names
@@ -312,15 +323,15 @@ format_matrix <- function(name, x, ..., control, indent, sections, last)
 }
 
 
-format_column <- function(name, x, ..., control, indent, sections, last)
+format_column <- function(name, x, ..., control, indent, sections)
 {
     vec <- length(dim(x)) <= 1
     if (vec) {
         format_vector(name, x, ..., control = control,
-                      indent = indent, sections = sections, last = last)
+                      indent = indent, sections = sections)
     } else {
         format_matrix(name, x, ..., control = control,
-                      indent = indent, sections = sections, last = last)
+                      indent = indent, sections = sections)
     }
 }
 
@@ -353,7 +364,7 @@ format.dataset <- function(x, ..., chars = NULL,
     }
 
     fmt <- format_column("", x, ..., control = control, indent = indent,
-                         sections = sections, last = TRUE)
+                         sections = sections)
     y <- fmt$value
     keys(y) <- keys(x)
     y

@@ -120,3 +120,42 @@ test_that("'print.dataset can print NA columns", {
     expect_equal(strsplit(capture_output(print.dataset(x), width = 77),
                           "\n")[[1]], lines)
 })
+
+
+test_that("'print' can handle matrix columns", {
+    ctype <- switch_ctype("C")
+    on.exit(Sys.setlocale("LC_CTYPE", ctype), add = TRUE)
+
+    x <- dataset(x = matrix(letters, 2, 13),
+                 X = matrix(LETTERS, 2, 13),
+                 Z = matrix(letters, 2, 13))
+
+    lines <- c(
+'  ==============x============== ==============X============== =======Z=======',
+'  1 2 3 4 5 6 7 8 9 10 11 12 13 1 2 3 4 5 6 7 8 9 10 11 12 13 1 2 3 4 5 6 ...',
+'1 a c e g i k m o q s  u  w  y  A C E G I K M O Q S  U  W  Y  a c e g i k ...',
+'2 b d f h j l n p r t  v  x  z  B D F H J L N P R T  V  X  Z  b d f h j l ...')
+
+    expect_equal(strsplit(capture_output(print.dataset(x), width = 77),
+                          "\n")[[1]], lines)
+})
+
+
+test_that("'print' can handle matrix columns with tail", {
+    ctype <- switch_ctype("C")
+    on.exit(Sys.setlocale("LC_CTYPE", ctype), add = TRUE)
+
+    x <- dataset(x = matrix(letters, 2, 13),
+                 X = matrix(LETTERS, 2, 13),
+                 Z = matrix(letters, 2, 13),
+                 z = c("a", "b"))
+
+    lines <- c(
+'  ==============x============== ==============X============== =====Z=====    ',
+'  1 2 3 4 5 6 7 8 9 10 11 12 13 1 2 3 4 5 6 7 8 9 10 11 12 13 1 2 3 4 ... ...',
+'1 a c e g i k m o q s  u  w  y  A C E G I K M O Q S  U  W  Y  a c e g ... ...',
+'2 b d f h j l n p r t  v  x  z  B D F H J L N P R T  V  X  Z  b d f h ... ...')
+
+    expect_equal(strsplit(capture_output(print.dataset(x), width = 77),
+                          "\n")[[1]], lines)
+})
