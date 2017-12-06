@@ -123,54 +123,6 @@ col_width <- function(name, x, control, limit = NULL)
 }
 
 
-col_trunc_width <- function(name, x, control, limit = NULL)
-{
-    limit <- if (is.null(limit)) Inf else limit
-    n <- utf8_width(name)
-    ellipsis <- utf8_width(control$ellipsis)
-    gap <- control$print.gap
-
-    if (length(dim(x)) <= 1) {
-        w <- max(0, utf8_width(x, quote = control$quote), na.rm = TRUE)
-        if (anyNA(x)) {
-            naw <- utf8_width(control$na.print)
-            w <- max(w, naw)
-        }
-    } else {
-        nc <- ncol(x)
-        names <- colnames(x)
-        w <- 0
-
-        for (j in seq_len(nc)) {
-            if (j > 1) {
-                w <- w + gap
-            }
-
-            xj <- if (is.data.frame(x)) x[[j]] else x[, j, drop = TRUE]
-            wj <- col_trunc_width(names[[j]], xj, control, limit - w)
-
-            if (j < nc) {
-                if (wj > limit - ellipsis - gap - w) {
-                    w <- w + ellipsis
-                    break
-                }
-            } else if (wj > limit - w) {
-                w <- w + ellipsis
-                break
-            }
-
-            w <- w + wj
-        }
-    }
-
-    w <- max(n, w)
-    if (w > limit) {
-        w <- ellipsis
-    }
-    w
-}
-
-
 col_widow <- function(name, x, control, indent)
 {
     if (length(dim(x)) <= 1) {
