@@ -123,7 +123,7 @@ col_width <- function(name, x, control, limit = NULL)
 }
 
 
-format_vector <- function(name, x, ..., control, indent, sections)
+format_vector <- function(name, x, ..., control, indent, wrap)
 {
     chars <- control$chars
     gap <- control$print.gap
@@ -158,11 +158,11 @@ format_vector <- function(name, x, ..., control, indent, sections)
                     quote = control$quote, na.print = control$na.print,
                     print.gap = control$print.gap, justify = control$justify,
                     width = width, indent = indent, line = control$line,
-                    sections = sections)
+                    wrap = wrap)
     }
 
     # compute width, determine whether to truncate
-    if (sections == 1) {
+    if (wrap == 0) {
         limit <- control$line - indent
         w <- col_width(name, y, control, limit + 1)
         trunc <- (w > limit)
@@ -188,18 +188,18 @@ format_vector <- function(name, x, ..., control, indent, sections)
     # compute new indent
     start <- (indent == 0L)
     indent <- indent + w + gap
-    if (indent > control$line + gap && !start && sections > 1) {
+    if (indent > control$line + gap && !start && wrap > 0) {
         # wrap, re-format with new indent
         format_vector(name, x, ..., control = control, indent = 0,
-                      sections = sections - 1)
+                      wrap = wrap - 1)
     } else {
         list(name = name, value = y, trunc = trunc,
-             indent = indent, sections = sections)
+             indent = indent, wrap = wrap)
     }
 }
 
 
-format_matrix <- function(name, x, ..., control, indent, sections)
+format_matrix <- function(name, x, ..., control, indent, wrap)
 {
     nc <- ncol(x)
     names <- colnames(x)
@@ -214,7 +214,7 @@ format_matrix <- function(name, x, ..., control, indent, sections)
     line <- control$line
 
     for (j in seq_len(nc)) {
-        if (sections == 1 && j < nc) {
+        if (wrap == 0 && j < nc) {
             control$line <- line - gap - ellipsis
         } else {
             control$line <- line
@@ -223,12 +223,12 @@ format_matrix <- function(name, x, ..., control, indent, sections)
         xj <- if (is.data.frame(x)) x[[j]] else x[, j, drop = TRUE]
 
         fmt <- format_column(names[[j]], xj, ..., control = control,
-                             indent = indent, sections = sections)
+                             indent = indent, wrap = wrap)
 
         names[[j]] <- fmt$name
         y[[j]] <- fmt$value
         indent <- fmt$indent
-        sections <- fmt$sections
+        wrap <- fmt$wrap
 
         if (fmt$trunc) {
             if (j < nc && length(dim(xj)) > 1) {
@@ -247,20 +247,19 @@ format_matrix <- function(name, x, ..., control, indent, sections)
 
     names(y) <- names
     y <- as_dataset(y)
-    list(name = name, value = y, trunc = trunc, indent = indent,
-         sections = sections)
+    list(name = name, value = y, trunc = trunc, indent = indent, wrap = wrap)
 }
 
 
-format_column <- function(name, x, ..., control, indent, sections)
+format_column <- function(name, x, ..., control, indent, wrap)
 {
     vec <- length(dim(x)) <= 1
     if (vec) {
         format_vector(name, x, ..., control = control,
-                      indent = indent, sections = sections)
+                      indent = indent, wrap = wrap)
     } else {
         format_matrix(name, x, ..., control = control,
-                      indent = indent, sections = sections)
+                      indent = indent, wrap = wrap)
     }
 }
 
@@ -268,7 +267,7 @@ format_column <- function(name, x, ..., control, indent, sections)
 format.dataset <- function(x, ..., chars = NULL,
                            na.encode = TRUE, quote = FALSE, na.print = NULL,
                            print.gap = NULL, justify = "none", width = NULL,
-                           indent = NULL, line = NULL, sections = NULL)
+                           indent = NULL, line = NULL, wrap = NULL)
 {
     if (is.null(x)) {
         return(invisible(NULL))
@@ -282,18 +281,18 @@ format.dataset <- function(x, ..., chars = NULL,
                                       print.gap = print.gap, justify = justify,
                                       width = width, line = line)
         indent <- as_integer_scalar("indent", indent, nonnegative = TRUE)
-        sections <- as_integer_scalar("sections", sections)
+        wrap <- as_integer_scalar("wrap", wrap)
     })
 
     if (is.null(indent)) {
         indent <- 0L
     }
-    if (is.null(sections) || sections <= 0) {
-        sections <- .Machine$integer.max
+    if (is.null(wrap) || wrap < 0) {
+        wrap <- .Machine$integer.max
     }
 
     fmt <- format_column("", x, ..., control = control, indent = indent,
-                         sections = sections)
+                         wrap = wrap)
     y <- fmt$value
     keys(y) <- keys(x)
     y
@@ -322,7 +321,7 @@ truncate <- function(x, rows = NULL)
 }
 
 
-print.dataset <- function(x, rows = NULL, sections = 1L, ..., number = TRUE,
+print.dataset <- function(x, rows = NULL, wrap = 0L, ..., number = TRUE,
                           chars = NULL, digits = NULL, quote = FALSE,
                           na.print = NULL, print.gap = NULL, display = TRUE)
 {
@@ -334,7 +333,7 @@ print.dataset <- function(x, rows = NULL, sections = 1L, ..., number = TRUE,
 
     with_rethrow({
         rows <- as_rows("rows", rows)
-        sections <- as_integer_scalar("sections", sections)
+        wrap <- as_integer_scalar("wrap", wrap)
         number <- as_option("number", number)
         control <- new_format_control(chars = chars, digits = digits,
                                       quote = quote, na.print = na.print,
@@ -409,7 +408,7 @@ print.dataset <- function(x, rows = NULL, sections = 1L, ..., number = TRUE,
     }
 
     line <- max(1L, control$line - row_width)
-    fmt <- format.dataset(x, chars = control$chars, sections = sections,
+    fmt <- format.dataset(x, chars = control$chars, wrap = wrap,
                           na.encode = FALSE, na.print = control$na.print,
                           quote = control$quote, print.gap = control$print.gap,
                           digits = control$digits, line = line)
