@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-dataset <- function(..., key = NULL)
+dataset <- function(...)
 {
     args <- as.list(substitute(list(...)))[-1L]
     x <- list(...)
@@ -29,7 +29,7 @@ dataset <- function(..., key = NULL)
         }
     }
     names(x) <- names
-    as_dataset(x, key)
+    as_dataset(x)
 }
 
 
