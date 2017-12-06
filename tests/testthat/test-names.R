@@ -22,24 +22,32 @@ test_that("'rownames<- NULL' is allowed", {
 })
 
 
-test_that("'dimnames[[1]]<-' errors", {
+test_that("'dimnames[[1]]<-' is allowed", {
     x <- as_dataset(mtcars)
-    expect_error(dimnames(x) <- list(seq_len(nrow(x)), names(x)),
-                 "setting row names is not allowed for dataset objects")
+
+    rn <- seq_len(nrow(x))
+    cn <- names(x)
+    dimnames(x) <- list(rn, cn)
+    expect_equal(rownames(x), as.character(rn))
+    expect_equal(colnames(x), as.character(cn))
 })
 
 
 test_that("'dimnames[[1]]<-' NULL is allowed", {
     x <- as_dataset(mtcars)
     dimnames(x) <- list(NULL, names(x))
-    expect_equal(x, as_dataset(mtcars))
+    expect_equal(x, as_dataset(mtcars, key = character()))
 })
 
+test_that("'dimnames<-' NULL is allowed", {
+    x <- as_dataset(mtcars)
+    dimnames(x) <- NULL
+    expect_equal(rownames(x), NULL)
+    expect_equal(colnames(x), NULL)
+})
 
 test_that("'dimnames<-' fails for incorrect number of dimensions", {
     x <- as_dataset(mtcars)
-    expect_error(dimnames(x) <- NULL,
-                 "setting 'dimnames' to NULL is not allowed")
     expect_error(dimnames(x) <- list(NULL, names(x), NULL),
                  "'dimnames' length \\(3\\) must be 2")
 })
