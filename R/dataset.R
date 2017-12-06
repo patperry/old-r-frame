@@ -60,7 +60,7 @@ as_dataset.data.frame <- function(x, key = NULL, ...)
     }
 
     l <- as.list(x)
-    x <- as_dataset(l, key)
+    x <- as_dataset(l, key, ...)
 
     if (!is.null(rn)) {
         row.names(x) <- rn
@@ -134,7 +134,7 @@ as_dataset.dataset <- function(x, key = NULL, ...)
         class(x) <- c("dataset", "data.frame")
     } else {
         l <- as.list(x)
-        x <- as.dataset(l, key)
+        x <- as.dataset(l, key, ...)
     }
     x
 }
