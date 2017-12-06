@@ -59,7 +59,7 @@ test_that("'print.dataset' handles empty data frames", {
     # no row or column names
     d1 <- data.frame()
     expect_equal(capture_output(print(as_dataset(d1))),
-                 "data frame with 0 columns and 0 rows")
+                 "(0 rows and 0 columns)")
 
     # no row names
     d2 <- data.frame(a = integer(), b = integer(), "\n" = logical(),

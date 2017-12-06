@@ -264,10 +264,10 @@ format_column <- function(name, x, ..., control, indent, wrap)
 }
 
 
-format.dataset <- function(x, ..., chars = NULL,
+format.dataset <- function(x, rows = NULL, wrap = NULL, ..., chars = NULL,
                            na.encode = TRUE, quote = FALSE, na.print = NULL,
                            print.gap = NULL, justify = "none", width = NULL,
-                           indent = NULL, line = NULL, wrap = NULL)
+                           indent = NULL, line = NULL)
 {
     if (is.null(x)) {
         return(invisible(NULL))
@@ -276,61 +276,48 @@ format.dataset <- function(x, ..., chars = NULL,
     }
 
     with_rethrow({
+        rows <- as_rows("rows", rows)
+        wrap <- as_integer_scalar("wrap", wrap)
         control <- new_format_control(chars = chars, na.encode = na.encode,
                                       quote = quote, na.print = na.print,
                                       print.gap = print.gap, justify = justify,
                                       width = width, line = line)
         indent <- as_integer_scalar("indent", indent, nonnegative = TRUE)
-        wrap <- as_integer_scalar("wrap", wrap)
     })
+
+    n <- nrow(x)
 
     if (is.null(indent)) {
         indent <- 0L
     }
+    if (is.null(rows) || rows < 0) {
+        rows <- n
+    }
     if (is.null(wrap) || wrap < 0) {
         wrap <- .Machine$integer.max
+    }
+
+    if ((rtrunc <- (n > rows))) {
+        x <- x[seq_len(rows), , drop = FALSE]
     }
 
     fmt <- format_column("", x, ..., control = control, indent = indent,
                          wrap = wrap)
     y <- fmt$value
     keys(y) <- keys(x)
+
+    if (rtrunc) {
+        attr(y, "caption") <- sprintf("(%.0f rows total)", n)
+    }
+
     y
 }
 
 
-truncate <- function(x, rows = NULL)
-{
-    if (is.null(rows)) {
-        rows <- 20L
-    }
-    if (rows < 0) {
-        rows <- .Machine$integer.max
-    }
-
-    n <- nrow(x)
-    trunc <- (n > rows)
-    if (trunc) {
-        xsub <- x[seq_len(rows), , drop = FALSE]
-    } else {
-        xsub <- x
-    }
-
-    msg <- if (trunc) sprintf("(%d rows total)", n) else NULL
-    list(x = xsub, message = msg)
-}
-
-
-print.dataset <- function(x, rows = NULL, wrap = 0L, ..., number = TRUE,
+print.dataset <- function(x, rows = 20L, wrap = 0L, ..., number = TRUE,
                           chars = NULL, digits = NULL, quote = FALSE,
                           na.print = NULL, print.gap = NULL, display = TRUE)
 {
-    if (is.null(x)) {
-        return(invisible(NULL))
-    } else if (!is.data.frame(x)) {
-        stop("argument is not a data frame")
-    }
-
     with_rethrow({
         rows <- as_rows("rows", rows)
         wrap <- as_integer_scalar("wrap", wrap)
@@ -340,26 +327,30 @@ print.dataset <- function(x, rows = NULL, wrap = 0L, ..., number = TRUE,
                                       print.gap = print.gap, display = display)
     })
 
+    if (is.null(x)) {
+        return(invisible(NULL))
+    } else if (!is.data.frame(x)) {
+        stop("argument is not a data frame")
+    }
+
+    n <- nrow(x)
     style <- new_format_style(control)
+    gap <- utf8_format("", width = control$print.gap)
 
     if (length(x) == 0) {
         n <- nrow(x)
-        cat(sprintf(ngettext(n, "data frame with 0 columns and %d row",
-                             "data frame with 0 columns and %d rows"), n),
-            "\n", sep = "")
+        cat(sprintf("(%.0f rows and 0 columns)\n", n))
         return(invisible(x))
     }
 
-    trunc <- truncate(x, rows)
-    xorig <- x
-    x <- trunc$x
-    n <- nrow(x)
-
-    gap <- utf8_format("", width = control$print.gap)
+    if (!is.null(rows) && rows >= 0) {
+        n <- min(n, rows)
+    }
 
     if (number) {
         row_body <- utf8_format(as.character(seq_len(n)),
-                                chars = .Machine$integer.max, justify = "left")
+                                chars = .Machine$integer.max,
+                                justify = "left")
         num_width <- max(0, utf8_width(row_body))
         row_head <- utf8_format("", width = num_width)
     } else {
@@ -368,7 +359,7 @@ print.dataset <- function(x, rows = NULL, wrap = 0L, ..., number = TRUE,
         row_head <- ""
     }
 
-    keys <- keys(x)
+    keys <- keys(x)[seq_len(n), , drop = FALSE]
     if (!is.null(keys)) {
         kb <- mapply(function(k, w)
                          utf8_format(k, width = w,
@@ -408,7 +399,7 @@ print.dataset <- function(x, rows = NULL, wrap = 0L, ..., number = TRUE,
     }
 
     line <- max(1L, control$line - row_width)
-    fmt <- format.dataset(x, chars = control$chars, wrap = wrap,
+    fmt <- format.dataset(x, rows = rows, wrap = wrap, chars = control$chars,
                           na.encode = FALSE, na.print = control$na.print,
                           quote = control$quote, print.gap = control$print.gap,
                           digits = control$digits, line = line)
@@ -542,10 +533,11 @@ print.dataset <- function(x, rows = NULL, wrap = 0L, ..., number = TRUE,
         }
     }
 
-    if (n == 0) {
+    caption <- attr(fmt, "caption")
+    if (nrow(x) == 0) {
         cat("(0 rows)\n")
-    } else if (!is.null(trunc$message)) {
-        foot <- utf8_format(paste0(" ", trunc$message),
+    } else if (!is.null(caption)) {
+        foot <- utf8_format(paste0(" ", caption),
                             width = max(0,
                                         foot_width
                                         - utf8_width(control$vellipsis)),
@@ -553,5 +545,5 @@ print.dataset <- function(x, rows = NULL, wrap = 0L, ..., number = TRUE,
         cat(style$faint(control$vellipsis), foot, "\n", sep="")
     }
 
-    invisible(xorig)
+    invisible(x)
 }
