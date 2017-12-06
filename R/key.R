@@ -17,6 +17,8 @@ keys <- function(x)
     UseMethod("keys")
 }
 
+keys.default <- function(x) NULL
+
 keys.dataset <- function(x)
 {
     if (!is_dataset(x)) {
@@ -24,7 +26,6 @@ keys.dataset <- function(x)
     }
     attr(x, "keys")
 }
-
 
 `keys<-` <- function(x, value)
 {

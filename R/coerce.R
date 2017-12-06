@@ -150,10 +150,17 @@ as_column <- function(x, n)
         x <- rep(x, n)
     }
 
+    # drop keys
+    if (!is.null(keys(x))) {
+        keys(x) <- NULL
+    }
+
     # drop names
     d <- dim(x)
     if (is.null(d)) {
         names(x) <- NULL
+    } else if (length(d) == 1) {
+        dimnames(x) <- NULL
     } else {
         rownames(x) <- NULL
     }
