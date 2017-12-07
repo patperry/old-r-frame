@@ -74,7 +74,7 @@ row_subset <- function(x, i)
         i <- ix[i[[1L]]]
     } else {
         i <- key_index(keys, i)
-        keys <- lapply(as.list(keys), `[`, i)
+        keys <- keys[i,,drop = FALSE]
 
         if (anyDuplicated(i)) {
             # TODO: implement in C?
@@ -92,7 +92,7 @@ row_subset <- function(x, i)
     cols <- lapply(as.list(x), elt_subset, i)
     x <- as_dataset(cols)
     if (!is.null(keys)) {
-        keys(x) <- as_dataset(keys)
+        keys(x) <- keys
     }
 
     x
@@ -131,7 +131,7 @@ column_subset <- function(x, i)
     # https://stackoverflow.com/a/20639018/6233565
     rn <- attr(x, "row.names")
     keys <- attr(x, "keys")
-    cl <- class(x)
+    cl <- oldClass(x)
     class(x) <- NULL
 
     x <- x[cols]
@@ -175,5 +175,45 @@ column_subset <- function(x, i)
     }
 
     # TODO: handle 'drop = TRUE'
+    x
+}
+
+
+`[[<-.dataset` <- function(x, i, value)
+{
+    cl <- oldClass(x)
+    class(x) <- NULL
+    n <- .row_names_info(x, 2L)
+
+    if (!is.null(value)) {
+        r <- length(dim(value))
+        if (r > 2) {
+            stop("replacement is not a vector or matrix")
+        }
+        n2 <- nrow_column(value)
+        if (!(n2 == n || (n2 == 1L && r == 1L))) {
+            stop(sprintf("replacement has %.0f rows, data has %.0f", n2, n))
+        }
+        value <- as_column(value, n)
+    }
+
+    x[[i]] <- value
+    class(x) <- cl
+    x
+}
+
+
+`$<-.dataset` <- function(x, name, value)
+{
+    n1 <- length(x) + 1L
+    i <- match(name, names(x), n1)
+    x[[i]] <- value
+
+    if (i == n1 && !is.na(name)) {
+        if (is.null(names(x))) {
+            names(x) <- character(n1)
+        }
+        names(x)[[i]] <- name
+    }
     x
 }

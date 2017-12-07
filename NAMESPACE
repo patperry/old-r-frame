@@ -50,7 +50,9 @@ S3method(as_dataset, list)
 ## Base S3 methods
 
 ### dataset
+S3method(`$<-`, dataset)
 S3method(`[`, dataset)
+S3method(`[[<-`, dataset)
 S3method(as.list, dataset)
 S3method(dimnames, dataset)
 S3method(`dimnames<-`, dataset)
