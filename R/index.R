@@ -98,6 +98,7 @@ row_subset <- function(x, i)
     x
 }
 
+
 column_subset <- function(x, i)
 {
     if (is.null(i)) {
@@ -105,62 +106,42 @@ column_subset <- function(x, i)
     }
 
     n <- length(x)
-    if (is.logical(i)) {
-        if (length(i) != n) {
-            stop(sprintf(
-              "logical subscript length (%.0f) must equal number of column (%d)",
-              length(i), n))
-        }
-        if (anyNA(i)) {
-            stop(sprintf("logical subscript entry %.0f is NA",
-                         which(is.na(i))[[1]]))
-        }
-        i <- seq_len(n)[i]
+    if (is.logical(i) && length(i) != n) {
+        stop(sprintf(
+            "selection mask length (%.0f) must equal number of columns (%.0f)",
+            length(i), n))
     }
 
-    if (is.numeric(i)) {
-        na <- which(!is.finite(i))
-        if (length(na) > 0) {
-            stop(sprintf("subscript entry %.0f is %s", na[[1]], i[[na[[1]]]]))
-        }
+    cols <- seq_len(n)
+    names(cols) <- names(x)
+    cols <- cols[i]
 
-        i <- trunc(i)
-        if (any(i < 0)) {
-            if (any(i > 0)) {
-                 stop("subscript contains both positive and with negative values")
-            }
-            big <- which(i < -n)
-            if (length(big) > 0L) {
-                stop(sprintf("subscript entry %.0f is out of bounds", big[[1]]))
-            }
-            i <- seq_len(n)[i]
+    if (anyNA(cols)) {
+        j <- which(is.na(cols))[[1L]]
+        if (is.na(i[[j]])) {
+            stop(sprintf("column selection entry %.0f is NA", j))
+        } else if (is.character(i[[j]])) {
+            stop(sprintf("selected column \"%s\" is undefined", i[[j]]))
         } else {
-            big <- which(i > n)
-            if (length(big) > 0L) {
-                stop(sprintf("subscript entry %.0f is out of bounds", big[[1]]))
-            }
-            i <- i[i != 0]
+            stop(sprintf("column selection entry %.0f is out of bounds", j))
         }
-
-        # downcast for list `[`; no elegant way to do this
-        # https://stackoverflow.com/a/20639018/6233565
-        rn <- attr(x, "row.names")
-        keys <- attr(x, "keys")
-        cl <- class(x)
-        class(x) <- NULL
-
-        x <- x[i]
-
-        attr(x, "row.names") <- rn
-        attr(x, "keys") <- keys
-        class(x) <- cl
     }
 
-    # TODO handle non-logical, non-numeric
+    # downcast for list `[`; no elegant way to do this
+    # https://stackoverflow.com/a/20639018/6233565
+    rn <- attr(x, "row.names")
+    keys <- attr(x, "keys")
+    cl <- class(x)
+    class(x) <- NULL
+
+    x <- x[cols]
+
+    attr(x, "row.names") <- rn
+    attr(x, "keys") <- keys
+    class(x) <- cl
 
     x
 }
-
 
 
 `[.dataset` <- function(x, ..., drop = FALSE)
