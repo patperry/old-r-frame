@@ -109,7 +109,7 @@ test_that("indexing without keys works", {
 })
 
 
-test_that("indexing with slicing works", {
+test_that("indexing with first key works", {
     a <- matrix(2 * 1:12 - 13, 4, 3)
     rownames(a) <- c("a", "b", "c", "d")
     colnames(a) <- c("x", "y", "z")
@@ -117,4 +117,69 @@ test_that("indexing with slicing works", {
     x <- dataset(value = as.vector(a))
     keys(x) <- dataset(row = rownames(a)[row(a)],
                        col = colnames(a)[col(a)])
+
+    expect_equal(x["a",,,drop = FALSE], x[keys(x)$row == "a",])
+    expect_equal(x["b",,,drop = FALSE], x[keys(x)$row == "b",])
+    expect_equal(x["d",,,drop = FALSE], x[keys(x)$row == "d",])
+})
+
+
+test_that("indexing with two first keys works", {
+    a <- matrix(2 * 1:12 - 13, 4, 3)
+    rownames(a) <- c("a", "b", "c", "d")
+    colnames(a) <- c("x", "y", "z")
+
+    x <- dataset(value = as.vector(a))
+    keys(x) <- dataset(row = rownames(a)[row(a)],
+                       col = colnames(a)[col(a)])
+
+    expect_equal(x[c("a","c"),,], x[keys(x)$row %in% c("a", "c"),])
+    expect_equal(x[c("c","b"),,], x[keys(x)$row %in% c("c", "b"),])
+})
+
+
+test_that("indexing with second key works", {
+    a <- matrix(2 * 1:12 - 13, 4, 3)
+    rownames(a) <- c("a", "b", "c", "d")
+    colnames(a) <- c("x", "y", "z")
+
+    x <- dataset(value = as.vector(a))
+    keys(x) <- dataset(row = rownames(a)[row(a)],
+                       col = colnames(a)[col(a)])
+
+    expect_equal(x[,"x",,drop = FALSE], x[keys(x)$col == "x",])
+    expect_equal(x[,"y",,drop = FALSE], x[keys(x)$col == "y",])
+    expect_equal(x[,"z",,drop = FALSE], x[keys(x)$col == "z",])
+})
+
+
+test_that("indexing with two second keys works", {
+    a <- matrix(2 * 1:12 - 13, 4, 3)
+    rownames(a) <- c("a", "b", "c", "d")
+    colnames(a) <- c("x", "y", "z")
+
+    x <- dataset(value = as.vector(a))
+    keys(x) <- dataset(row = rownames(a)[row(a)],
+                       col = colnames(a)[col(a)])
+
+    expect_equal(x[,c("y","x"),], x[keys(x)$col %in% c("y", "x"),])
+    expect_equal(x[,c("x","z"),], x[keys(x)$col %in% c("x", "z"),])
+})
+
+
+test_that("indexing with named key works", {
+    a <- matrix(2 * 1:12 - 13, 4, 3)
+    rownames(a) <- c("a", "b", "c", "d")
+    colnames(a) <- c("x", "y", "z")
+
+    x <- dataset(value = as.vector(a))
+    keys(x) <- dataset(row = rownames(a)[row(a)],
+                       col = colnames(a)[col(a)])
+
+    expect_equal(x[row = "b", drop = FALSE], x[keys(x)$row == "b",])
+    expect_equal(x[row = c("a","c")], x[keys(x)$row %in% c("a", "c"),])
+    expect_equal(x[col = c("y","x"),], x[keys(x)$col %in% c("y", "x"),])
+    expect_equal(x[col = "x",,drop = FALSE], x[keys(x)$col == "x",])
+    expect_equal(x[col = "y", row = "c", drop = FALSE],
+                 x[with(keys(x), col == "y" & row == "c"),])
 })
