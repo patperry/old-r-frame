@@ -62,34 +62,53 @@ elt_subset <- function(x, i)
 
 row_subset <- function(x, i, drop = TRUE)
 {
-    ni <- length(i)
-    if (ni < 1L || (ni == 1L && is.null(i[[1L]]))) {
+    if (is.null(i)) {
         return(x)
     }
 
+    n <- nrow(x)
     keys <- keys(x)
 
-    if (is.null(keys)) {
-        if (ni > 1) {
-            stop("cannot index with multiple row indices when 'keys' is NULL")
+    if (is.list(i) && is.null(class(i))) {
+        if (is.null(keys)) {
+            stop("cannot index rows with list when 'keys' is NULL")
         }
-
-        i <- i[[1L]]
-        n <- nrow(x)
-        rows <- seq_len(n)
-
-        rows <- rows[i]
-        if (anyNA(rows)) {
-            j <- which(is.na(rows))[[1L]]
-            stop(sprintf("row selection entry %.0f is NA", j))
-        }
-    } else {
         rows <- key_index(keys, i)
-        keys <- keys[rows, , drop = FALSE]
+    } else {
+        r <- length(dim(i))
+        if (r <= 1) {
+            if (!is.numeric(i) && !is.logical(i)) {
+                i <- as.character(i)
+            }
+            if (is.character(i)) {
+                if (is.null(keys)) {
+                    stop("cannot index rows with character when 'keys' is NULL")
+                }
+                rows <- key_index(keys, i)
+            } else {
+                rows <- seq_len(n)
+                rows <- rows[i]
+                if (anyNA(rows)) {
+                    j <- which(is.na(rows))[[1L]]
+                    stop(sprintf("row selection entry %.0f is NA", j))
+                }
+            }
+        } else if (r == 2) {
+            i <- as_dataset(i, flat = TRUE)
+            if (is.null(keys)) {
+                stop("cannot index rows with matrix when 'keys' is NULL")
+            }
+            rows <- key_index(keys, i)
+        } else {
+            stop(sprintf("cannot index rows with rank-%.0f array", r))
+        }
+    }
 
+    if (!is.null(keys)) {
+        keys <- keys[rows, , drop = FALSE]
         if (anyDuplicated(rows)) {
             # TODO: implement in C?
-            copy <- integer(nrow(x))
+            copy <- integer(n)
             newkey <- integer(length(rows))
             for (j in seq_along(rows)) {
                 k <- rows[[j]]
@@ -180,6 +199,9 @@ column_subset <- function(x, i)
     } else {
         i <- index[-n]
         j <- index[[n]]
+        if (length(i) == 1L) {
+            i <- i[[1L]]
+        }
         x <- column_subset(x, j)
         x <- row_subset(x, i, drop)
     }

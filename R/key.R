@@ -197,13 +197,21 @@ key_decode <- function(x, composite = TRUE)
 
 key_index <- function(x, i)
 {
-    n <- nrow(x)
+    l <- is.list(i) && is.null(class(i))
     d <- length(dim(i))
-    if (d <= 1L) {
+    if (d <= 1L && !l) {
+        n <- nrow(x)
         ix <- seq_len(n)
-        names(ix) <- key_encode(x)
-        ix[i[[1]]]
+        if (is.character(i)) {
+            names(ix) <- key_encode(x)
+        }
+        ix <- ix[i]
+        if (anyNA(ix)) {
+            j <- which(is.na(ix))[[1L]]
+            stop(sprintf("row selection entry %.0f is NA", j))
+        }
     } else {
         stop("not implemented")
     }
+    ix
 }
