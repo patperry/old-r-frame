@@ -85,17 +85,16 @@ row_subset <- function(x, i)
                 copy[[k]] <- copy[[k]] + 1
                 newkey[[j]] <- copy[[k]]
             }
-            keys[[length(keys) + 1L]] <- newkey
+            keys[[length(keys) + 1L]] <- as.character(newkey)
         }
     }
 
-    cols <- lapply(as.list(x), elt_subset, i)
-    x <- as_dataset(cols)
-    if (!is.null(keys)) {
-        keys(x) <- keys
-    }
+    cols <- lapply(x, elt_subset, i)
+    attr(cols, "row.names") <- .set_row_names(length(i))
+    attr(cols, "keys") <- keys
+    attr(cols, "class") <- attr(x, "class")
 
-    x
+    cols
 }
 
 
