@@ -203,13 +203,14 @@ key_index <- function(x, i)
             stop(sprintf("number of index components (%.0f) must match number of key components (%.0f)", length(i), length(x)))
         }
 
-        if (!is.null(class(i))) {
+        if (!is.null(oldClass(i))) {
             i <- key_encode(i)
         }
     }
 
+    n <- nrow(x)
+
     if (is.character(i)) {
-        n <- nrow(x)
         ix <- seq_len(n)
         if (is.character(i)) {
             names(ix) <- key_encode(x)
@@ -217,10 +218,31 @@ key_index <- function(x, i)
         ix <- ix[i]
         if (anyNA(ix)) {
             j <- which(is.na(ix))[[1L]]
+            if (is.character(i)) {
+                stop(sprintf(
+                    "selected row entry %.0f (\"%s\") does not exist",
+                    j, i[[j]]))
+            }
+
             stop(sprintf("row selection entry %.0f is NA", j))
         }
+    } else if (is.list(i)) {
+        mask <- rep(TRUE, n)
+        for (k in seq_along(i)) {
+            ik <- i[[k]]
+            if (is.null(ik)) {
+                next
+            }
+            xk <- x[[k]]
+            storage.mode(ik) <- storage.mode(xk)
+            if (is.character(ik)) {
+                ik <- as_utf8(ik)
+            }
+            mask <- mask & (xk %in% ik)
+        }
+        ix <- which(mask)
     } else {
-        stop("not implemented")
+        stop(sprintf("invalid index type: \"%s\"", class(i)))
     }
     ix
 }

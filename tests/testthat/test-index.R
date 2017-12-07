@@ -107,3 +107,14 @@ test_that("indexing without keys works", {
     expect_equal(as_dataset(x[1:5,,drop = FALSE]),
                  as_dataset(list(a = letters[1:5])))
 })
+
+
+test_that("indexing with slicing works", {
+    a <- matrix(2 * 1:12 - 13, 4, 3)
+    rownames(a) <- c("a", "b", "c", "d")
+    colnames(a) <- c("x", "y", "z")
+
+    x <- dataset(value = as.vector(a))
+    keys(x) <- dataset(row = rownames(a)[row(a)],
+                       col = colnames(a)[col(a)])
+})

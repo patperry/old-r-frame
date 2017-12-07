@@ -69,12 +69,13 @@ row_subset <- function(x, i, drop = TRUE)
     n <- nrow(x)
     keys <- keys(x)
 
-    if (is.list(i) && is.null(class(i))) {
+    if (is.list(i) && is.null(oldClass(i))) {
         if (is.null(keys)) {
             stop("cannot index rows with list when 'keys' is NULL")
         }
         rows <- key_index(keys, i)
     } else {
+        drop <- FALSE
         r <- length(dim(i))
         if (r <= 1) {
             if (!is.numeric(i) && !is.logical(i)) {
@@ -90,6 +91,11 @@ row_subset <- function(x, i, drop = TRUE)
                 rows <- rows[i]
                 if (anyNA(rows)) {
                     j <- which(is.na(rows))[[1L]]
+                    if (is.character(i)) {
+                        stop(sprintf(
+                            "selected row entry %.0f (\"%s\") does not exist",
+                            j, i[[j]]))
+                    }
                     stop(sprintf("row selection entry %.0f is NA", j))
                 }
             }
@@ -105,6 +111,10 @@ row_subset <- function(x, i, drop = TRUE)
     }
 
     if (!is.null(keys)) {
+        if (drop) {
+            keep <- vapply(i, function(k) length(k) != 1, FALSE)
+            keys <- keys[, keep, drop = FALSE]
+        }
         keys <- keys[rows, , drop = FALSE]
         if (anyDuplicated(rows)) {
             # TODO: implement in C?
