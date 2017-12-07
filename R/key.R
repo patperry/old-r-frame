@@ -147,6 +147,7 @@ keylevels.dataset <- function(x)
 
 key_escape <- function(x)
 {
+    x <- as_utf8(as.character(x))
     # replace '\' with '\\', ',' with '\,'
     gsub("(\\\\|,)", "\\\\\\1", x)
 }
@@ -164,7 +165,7 @@ key_encode <- function(x)
     if (nk == 0) {
         NULL
     } else if (nk == 1) {
-        x[[1]]
+        as_utf8(as.character(x[[1]]))
     } else {
         do.call(paste, c(unname(lapply(x, key_escape)), sep = ","))
     }
@@ -197,9 +198,17 @@ key_decode <- function(x, composite = TRUE)
 
 key_index <- function(x, i)
 {
-    l <- is.list(i) && is.null(class(i))
-    d <- length(dim(i))
-    if (d <= 1L && !l) {
+    if (is.list(i)) {
+        if (length(x) != length(i)) {
+            stop(sprintf("number of index components (%.0f) must match number of key components (%.0f)", length(i), length(x)))
+        }
+
+        if (!is.null(class(i))) {
+            i <- key_encode(i)
+        }
+    }
+
+    if (is.character(i)) {
         n <- nrow(x)
         ix <- seq_len(n)
         if (is.character(i)) {
