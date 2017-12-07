@@ -199,10 +199,33 @@ column_subset <- function(x, i)
     args[miss] <- list(NULL)
     args[[1L]] <- quote(list)
     index <- eval.parent(args)
-
     n <- length(index)
+    names <- names(index)
 
-    if (n == 0L) {
+    if (!is.null(names)) {
+        empty <- !nzchar(names)
+        if (any(!nzchar(names)[-n])) {
+            stop(sprintf("cannot mix named and unnamed row index arguments"))
+        }
+
+        if (empty[[n]]) {
+            j <- index[[n]]
+            names <- names[-n]
+            index <- index[-n]
+            x <- column_subset(x, j)
+        }
+
+        keys <- keys(x)
+        ki <- match(names, names(keys))
+        if (anyNA(ki)) {
+            kj <- which(is.na(ki))[[1L]]
+            stop(sprintf("selected key \"%s\" does not exist", names[[kj]]))
+        }
+
+        i <- vector("list", length(keys))
+        i[ki] <- index
+        x <- row_subset(x, i, drop)
+    } else if (n == 0L) {
         x
     } else if (n == 1L) {
         x <- column_subset(x, index[[1L]])
