@@ -60,37 +60,48 @@ elt_subset <- function(x, i)
     }
 }
 
-row_subset <- function(x, i)
+row_subset <- function(x, i, drop = TRUE)
 {
-    if (is.null(i) || (length(i) == 1L && is.null(i[[1L]]))) {
+    ni <- length(i)
+    if (ni < 1L || (ni == 1L && is.null(i[[1L]]))) {
         return(x)
     }
 
     keys <- keys(x)
 
     if (is.null(keys)) {
-        n <- nrow(x)
-        ix <- seq_len(n)
-        i <- ix[i[[1L]]]
-    } else {
-        i <- key_index(keys, i)
-        keys <- keys[i,,drop = FALSE]
+        if (ni > 1) {
+            stop("cannot index with multiple row indices when 'keys' is NULL")
+        }
 
-        if (anyDuplicated(i)) {
+        i <- i[[1L]]
+        n <- nrow(x)
+        rows <- seq_len(n)
+
+        rows <- rows[i]
+        if (anyNA(rows)) {
+            j <- which(is.na(rows))[[1L]]
+            stop(sprintf("row selection entry %.0f is NA", j))
+        }
+    } else {
+        rows <- key_index(keys, i)
+        keys <- keys[rows, , drop = FALSE]
+
+        if (anyDuplicated(rows)) {
             # TODO: implement in C?
-            copy <- numeric(nrow(x))
-            newkey <- numeric(length(i))
-            for (j in seq_along(i)) {
-                k <- i[[j]]
-                copy[[k]] <- copy[[k]] + 1
+            copy <- integer(nrow(x))
+            newkey <- integer(length(rows))
+            for (j in seq_along(rows)) {
+                k <- rows[[j]]
+                copy[[k]] <- copy[[k]] + 1L
                 newkey[[j]] <- copy[[k]]
             }
             keys[[length(keys) + 1L]] <- as.character(newkey)
         }
     }
 
-    cols <- lapply(x, elt_subset, i)
-    attr(cols, "row.names") <- .set_row_names(length(i))
+    cols <- lapply(x, elt_subset, rows)
+    attr(cols, "row.names") <- .set_row_names(length(rows))
     attr(cols, "keys") <- keys
     attr(cols, "class") <- attr(x, "class")
 
@@ -143,7 +154,7 @@ column_subset <- function(x, i)
 }
 
 
-`[.dataset` <- function(x, ..., drop = FALSE)
+`[.dataset` <- function(x, ..., drop = TRUE)
 {
     if (!is_dataset(x)) {
         stop("argument is not a valid dataset")
@@ -170,10 +181,9 @@ column_subset <- function(x, i)
         i <- index[-n]
         j <- index[[n]]
         x <- column_subset(x, j)
-        x <- row_subset(x, i)
+        x <- row_subset(x, i, drop)
     }
 
-    # TODO: handle 'drop = TRUE'
     x
 }
 
