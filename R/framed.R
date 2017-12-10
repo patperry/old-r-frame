@@ -12,27 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-dataset <- function(...)
-{
-    args <- as.list(substitute(list(...)))[-1L]
-    x <- list(...)
-    n <- length(x)
-
-    names <- names(x)
-    if (is.null(names)) {
-        names <- character(n)
-    }
-    for (i in seq_len(n)) {
-        if (names[[i]] == "") {
-            name <- deparse(args[[i]], nlines = 1L)[1L]
-            names[[i]] <- sub("^I\\((.*)\\)$", "\\1", name)
-        }
-    }
-    names(x) <- names
-    framed(x)
-}
-
-
 framed <- function(x, keys = NULL, ...)
 {
     UseMethod("framed")
@@ -118,16 +97,15 @@ framed.dataset <- function(x, keys = NULL, ...)
         stop("argument is not a valid dataset")
     }
     if (is.null(keys)) {
-        class(x) <- c("dataset", "data.frame")
+        nr <- nrow(x)
+        names <- names(x)
+        attributes(x) <- NULL
+        names(x) <- names
+        x <- structure(x, class = c("dataset", "data.frame"),
+                       row.names = .set_row_names(nr))
     } else {
         l <- as.list(x)
-        x <- as.dataset(l, keys, ...)
+        x <- framed(l, keys, ...)
     }
     x
-}
-
-
-is_dataset <- function(x)
-{
-    is.data.frame(x) && inherits(x, "dataset")
 }
