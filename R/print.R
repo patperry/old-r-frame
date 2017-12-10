@@ -445,7 +445,7 @@ print.dataset <- function(x, rows = 20L, wrap = 0L, ..., number = TRUE,
                           quote = control$quote, print.gap = control$print.gap,
                           digits = control$digits, line = line)
 
-    cols <- as.list.dataset(fmt, flatten = TRUE, path = TRUE)
+    cols <- as.list.dataset(fmt, flat = TRUE, path = TRUE)
     path <- attr(cols, "path")
     index <- attr(cols, "index")
     names <- vapply(path, tail, "", n = 1)

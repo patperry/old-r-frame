@@ -12,17 +12,17 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-as.list.dataset <- function(x, ..., flatten = FALSE, path = FALSE)
+as.list.dataset <- function(x, ..., flat = FALSE, path = FALSE)
 {
     with_rethrow({
-        flatten <- as_option("recursive", flatten)
+        flat <- as_option("flat", flat)
     })
 
     x <- unclass(x)
     attr(x, "keys") <- NULL
     attr(x, "row.names") <- NULL
 
-    if (flatten) {
+    if (flat) {
         names <- names(x)
         if (is.null(names)) {
             names <- as.character(seq_along(x))
@@ -44,7 +44,7 @@ as.list.dataset <- function(x, ..., flatten = FALSE, path = FALSE)
                 n <- ncol(xi)
 
                 if (is.data.frame(xi)) {
-                    x[[i]] <- as.list(xi, ..., flatten = TRUE, path = TRUE)
+                    x[[i]] <- as.list(xi, ..., flat = TRUE, path = TRUE)
                 } else {
                     x[[i]] <- lapply(seq_len(n),
                                      function(j) xi[, j, drop = TRUE])
