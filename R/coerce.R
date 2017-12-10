@@ -222,7 +222,7 @@ as_names <- function(name, value, n)
 }
 
 
-as_key <- function(name, value, names)
+as_keys <- function(name, value, names)
 {
     if (is.null(value)) {
         return(NULL)
@@ -230,15 +230,15 @@ as_key <- function(name, value, names)
 
     value <- utf8_normalize(as_character_vector(name, value))
     if (anyNA(value)) {
-        stop(sprintf("%s contains NA", name))
+        stop(sprintf("'%s' contains NA", name))
     }
     if (anyDuplicated(value)) {
-        stop(sprintf("%s contains duplicates", name))
+        stop(sprintf("'%s' contains duplicates", name))
     }
     index <- match(value, names)
     i <- which(is.na(index))
     if (length(i) > 0) {
-        stop(sprintf("%s refers to unknown column \"%s\"", name,
+        stop(sprintf("'%s' refers to unknown column \"%s\"", name,
                      value[[i[[1]]]]))
     }
     index

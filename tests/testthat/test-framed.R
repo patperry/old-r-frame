@@ -1,5 +1,5 @@
 
-context("dataset")
+context("framed")
 
 test_that("'dataset' allows NULL names", {
     x <- framed(list(1, 2, 3))
@@ -89,18 +89,6 @@ test_that("'framed' errors for NULL columns", {
 })
 
 
-test_that("'framed' errors for too many columns", {
-    # use S3this rather than allocate a 2GB list to test
-    x <- structure(list(), class = c("frame_longlist", "list"))
-    length.frame_longlist <<- function(x) .Machine$integer.max + 1
-
-    expect_error(framed(x),
-                 "number of columns \\(2147483648\\) exceeds maximum \\(2147483647\\)")
-
-    remove("length.frame_longlist", envir = .GlobalEnv)
-})
-
-
 test_that("'framed' allows scalar columns", {
     expect_equal(dataset(x = 1:10, y = 10:1, z = 1),
                  dataset(x = 1:10, y = 10:1, z = rep(1, 10)))
@@ -131,25 +119,25 @@ test_that("'framed' drops matrix row names", {
 test_that("'framed' can convert data.frame row names", {
     x1 <- data.frame(x = 1:26, row.names = letters)
     x2 <- data.frame(name = letters, x = 1:26, stringsAsFactors = FALSE)
-    expect_equal(framed(x1), framed(x2, key = "name"))
+    expect_equal(framed(x1), framed(x2, keys = "name"))
 })
 
 
 test_that("'framed' errors for duplicated key", {
     expect_error(framed(mtcars, key = c("cyl", "cyl")),
-                 "key contains duplicates")
+                 "'keys' contains duplicates")
 })
 
 
 test_that("'framed' errors for NA key", {
     expect_error(framed(mtcars, key = c("cyl", NA)),
-                 "key contains NA")
+                 "'keys' contains NA")
 })
 
 
 test_that("'framed' errors for missing key", {
     expect_error(framed(mtcars, key = c("cyl", "zzz")),
-                 "key refers to unknown column \"zzz\"")
+                 "'keys' refers to unknown column \"zzz\"")
 })
 
 

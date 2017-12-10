@@ -33,55 +33,42 @@ dataset <- function(...)
 }
 
 
-framed <- function(x, key = NULL, ...)
+framed <- function(x, keys = NULL, ...)
 {
     UseMethod("framed")
 }
 
 
-framed.default <- function(x, key = NULL, ...)
+framed.default <- function(x, keys = NULL, ...)
 {
     x <- as.data.frame(x, optional = TRUE, stringsAsFactors = FALSE)
-    framed(x, key, ...)
+    framed(x, keys, ...)
 }
 
 
-framed.data.frame <- function(x, key = NULL, ...)
+framed.data.frame <- function(x, keys = NULL, ...)
 {
     if (!is.data.frame(x)) {
         stop("argument is not a valid data frame")
     }
 
     # convert row names to the first column
-    if (is.null(key) && .row_names_info(x) > 0) {
-        rn <- row.names(x)
-    } else {
-        rn <- NULL
+    if (is.null(keys) && .row_names_info(x) > 0) {
+        keys <- dataset(name = row.names(x))
     }
 
     l <- as.list(x)
-    x <- framed(l, key, ...)
-
-    if (!is.null(rn)) {
-        row.names(x) <- rn
-    }
-
-    x
+    framed(l, keys, ...)
 }
 
 
-framed.list <- function(x, key = NULL, ...)
+framed.list <- function(x, keys = NULL, ...)
 {
     if (!is.list(x)) {
         stop("argument is not a list")
     }
 
     nc <- length(x)
-    if (nc > .Machine$integer.max) {
-        stop(sprintf("number of columns (%.0f) exceeds maximum (%d)",
-                     nc, .Machine$integer.max))
-    }
-
     with_rethrow({
         names <- as_names("column name", names(x), nc)
     })
@@ -92,49 +79,49 @@ framed.list <- function(x, key = NULL, ...)
         elt <- x[[i]]
         lab <- if (is.null(names)) "" else sprintf(" (\"%s\")", names[[i]])
         if (is.null(elt)) {
-            stop(sprintf("column %d%s is NULL", i, lab))
+            stop(sprintf("column %.0f%s is NULL", i, lab))
         }
         d <- dim(elt)
         if (length(d) > 2) {
-            stop(sprintf("column %d%s has more than 2 dimensions", i, lab))
+            stop(sprintf("column %.0f%s has more than 2 dimensions", i, lab))
         }
     }
 
     # validate column lengths
     nr <- nrow_dataset(x)
     cols <- lapply(x, as_column, nr)
-
-    keys <- NULL
-    if (!is.null(key)) {
-        with_rethrow({
-            k <- as_key("key", key, names)
-        })
-        if (length(k) > 0) {
-            keys <- cols[k]
-            cols <- cols[-k]
+    if (!is.null(keys) && length(dim(keys)) < 2L) {
+        j <- as_keys("keys", keys, names)
+        if (length(j) > 0) {
+            keys <- framed(cols[j])
+            cols <- cols[-j]
+        } else {
+            keys <- NULL
         }
     }
 
     x <- structure(cols, class = c("dataset", "data.frame"),
                    row.names = .set_row_names(nr))
 
-    with_rethrow({
+    # set keys
+    if (!is.null(keys)) {
         keys(x) <- keys
-    })
+    }
+
     x
 }
 
 
-framed.dataset <- function(x, key = NULL, ...)
+framed.dataset <- function(x, keys = NULL, ...)
 {
     if (!is_dataset(x)) {
         stop("argument is not a valid dataset")
     }
-    if (is.null(key)) {
+    if (is.null(keys)) {
         class(x) <- c("dataset", "data.frame")
     } else {
         l <- as.list(x)
-        x <- as.dataset(l, key, ...)
+        x <- as.dataset(l, keys, ...)
     }
     x
 }

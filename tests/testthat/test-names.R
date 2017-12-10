@@ -2,7 +2,7 @@
 context("names")
 
 test_that("'rownames' returns NULL when absent", {
-    x <- framed(mtcars, key = character())
+    x <- framed(mtcars, keys = character())
     expect_equal(rownames(x), NULL)
 })
 
