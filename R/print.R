@@ -266,7 +266,7 @@ format_matrix <- function(name, x, ..., control, indent, wrap)
     }
 
     names(y) <- names
-    y <- as_dataset(y)
+    y <- framed(y)
     list(name = name, value = y, trunc = trunc, indent = indent, wrap = wrap)
 }
 

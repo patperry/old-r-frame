@@ -45,7 +45,7 @@ keys.dataset <- function(x)
     }
 
     n <- nrow(x)
-    value <- as_dataset(value)
+    value <- framed(value)
     keys(value) <- NULL
 
     # validate key length

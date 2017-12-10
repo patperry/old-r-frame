@@ -2,13 +2,13 @@
 context("names")
 
 test_that("'rownames' returns NULL when absent", {
-    x <- as_dataset(mtcars, key = character())
+    x <- framed(mtcars, key = character())
     expect_equal(rownames(x), NULL)
 })
 
 
 test_that("'rownames<-' is allowd", {
-    x <- as_dataset(mtcars)
+    x <- framed(mtcars)
     rownames(x) <- seq_len(nrow(x))
     expect_equal(rownames(x), as.character(seq_len(nrow(x))))
     expect_equal(keys(x)[[1]], rownames(x))
@@ -16,14 +16,14 @@ test_that("'rownames<-' is allowd", {
 
 
 test_that("'rownames<- NULL' is allowed", {
-    x <- as_dataset(mtcars)
+    x <- framed(mtcars)
     rownames(x) <- NULL
-    expect_equal(x, as_dataset(mtcars, key = character()))
+    expect_equal(x, framed(mtcars, key = character()))
 })
 
 
 test_that("'dimnames[[1]]<-' is allowed", {
-    x <- as_dataset(mtcars)
+    x <- framed(mtcars)
 
     rn <- seq_len(nrow(x))
     cn <- names(x)
@@ -34,33 +34,33 @@ test_that("'dimnames[[1]]<-' is allowed", {
 
 
 test_that("'dimnames[[1]]<-' NULL is allowed", {
-    x <- as_dataset(mtcars)
+    x <- framed(mtcars)
     dimnames(x) <- list(NULL, names(x))
-    expect_equal(x, as_dataset(mtcars, key = character()))
+    expect_equal(x, framed(mtcars, key = character()))
 })
 
 test_that("'dimnames<-' NULL is allowed", {
-    x <- as_dataset(mtcars)
+    x <- framed(mtcars)
     dimnames(x) <- NULL
     expect_equal(rownames(x), NULL)
     expect_equal(colnames(x), NULL)
 })
 
 test_that("'dimnames<-' fails for incorrect number of dimensions", {
-    x <- as_dataset(mtcars)
+    x <- framed(mtcars)
     expect_error(dimnames(x) <- list(NULL, names(x), NULL),
                  "'dimnames' length \\(3\\) must be 2")
 })
 
 
 test_that("'names' does not include key", {
-    x <- as_dataset(mtcars)
+    x <- framed(mtcars)
     expect_equal(names(x), names(mtcars))
 })
 
 
 test_that("'names<-' does not error if key already has name", {
-    x <- as_dataset(mtcars)
+    x <- framed(mtcars)
     nm <- c("name", names(x)[-1])
     names(x) <- nm
     expect_equal(names(x), nm)

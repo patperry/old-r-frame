@@ -29,24 +29,24 @@ dataset <- function(...)
         }
     }
     names(x) <- names
-    as_dataset(x)
+    framed(x)
 }
 
 
-as_dataset <- function(x, key = NULL, ...)
+framed <- function(x, key = NULL, ...)
 {
-    UseMethod("as_dataset")
+    UseMethod("framed")
 }
 
 
-as_dataset.default <- function(x, key = NULL, ...)
+framed.default <- function(x, key = NULL, ...)
 {
     x <- as.data.frame(x, optional = TRUE, stringsAsFactors = FALSE)
-    as_dataset(x, key, ...)
+    framed(x, key, ...)
 }
 
 
-as_dataset.data.frame <- function(x, key = NULL, ...)
+framed.data.frame <- function(x, key = NULL, ...)
 {
     if (!is.data.frame(x)) {
         stop("argument is not a valid data frame")
@@ -60,7 +60,7 @@ as_dataset.data.frame <- function(x, key = NULL, ...)
     }
 
     l <- as.list(x)
-    x <- as_dataset(l, key, ...)
+    x <- framed(l, key, ...)
 
     if (!is.null(rn)) {
         row.names(x) <- rn
@@ -70,7 +70,7 @@ as_dataset.data.frame <- function(x, key = NULL, ...)
 }
 
 
-as_dataset.list <- function(x, key = NULL, ...)
+framed.list <- function(x, key = NULL, ...)
 {
     if (!is.list(x)) {
         stop("argument is not a list")
@@ -125,7 +125,7 @@ as_dataset.list <- function(x, key = NULL, ...)
 }
 
 
-as_dataset.dataset <- function(x, key = NULL, ...)
+framed.dataset <- function(x, key = NULL, ...)
 {
     if (!is_dataset(x)) {
         stop("argument is not a valid dataset")
