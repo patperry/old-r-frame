@@ -73,40 +73,24 @@ row_subset <- function(x, i, drop = TRUE)
         if (is.null(keys)) {
             stop("cannot index rows with list when 'keys' is NULL")
         }
-        rows <- key_index(keys, i)
+        rows <- key_slice(keys, i)
     } else {
         drop <- FALSE
         r <- length(dim(i))
-        if (r <= 1) {
-            if (!is.numeric(i) && !is.logical(i)) {
-                i <- as.character(i)
+        if ((r <= 1) && (is.numeric(i) || is.logical(i))) {
+            if (is.logical(i) && length(i) != nrow(x)) {
+                stop(sprintf("index mask length (%.0f) must match number of rows (%.0f)", length(i), nrow(x)))
             }
-            if (is.character(i)) {
-                if (is.null(keys)) {
-                    stop("cannot index rows with character when 'keys' is NULL")
-                }
-                rows <- key_index(keys, i)
-            } else {
-                rows <- seq_len(n)
-                rows <- rows[i]
-                if (anyNA(rows)) {
-                    j <- which(is.na(rows))[[1L]]
-                    if (is.character(i)) {
-                        stop(sprintf(
-                            "selected row entry %.0f (\"%s\") does not exist",
-                            j, i[[j]]))
-                    }
-                    stop(sprintf("row selection entry %.0f is NA", j))
-                }
-            }
-        } else if (r == 2) {
-            i <- as_dataset(i, flat = TRUE)
-            if (is.null(keys)) {
-                stop("cannot index rows with matrix when 'keys' is NULL")
-            }
-            rows <- key_index(keys, i)
+            rows <- seq_len(n)
+            rows <- rows[i]
         } else {
-            stop(sprintf("cannot index rows with rank-%.0f array", r))
+            rows <- key_index(keys, i)
+        }
+
+        if (anyNA(rows)) {
+            j <- which(is.na(rows))[[1L]]
+            stop(sprintf("selected row entry %.0f (\"%s\") does not exist",
+                         j, as.character(i[[j]])))
         }
     }
 
@@ -183,6 +167,8 @@ column_subset <- function(x, i)
 }
 
 
+
+
 `[.dataset` <- function(x, ..., drop = TRUE)
 {
     if (!is_dataset(x)) {
@@ -241,6 +227,14 @@ column_subset <- function(x, i)
 
     x
 }
+
+
+rowid <- function(x, i)
+{
+    keys <- keys(x)
+    key_index(keys, i)
+}
+
 
 
 `[[<-.dataset` <- function(x, i, value)

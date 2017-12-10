@@ -198,18 +198,74 @@ key_decode <- function(x, composite = TRUE)
 
 key_index <- function(x, i)
 {
-    if (is.list(i)) {
-        if (length(x) != length(i)) {
-            stop(sprintf("number of index components (%.0f) must match number of key components (%.0f)", length(i), length(x)))
-        }
+    if (is.null(i)) {
+        return(NULL)
+    }
 
-        if (!is.null(oldClass(i))) {
-            i <- key_encode(i)
+    d <- dim(i)
+    r <- length(d)
+
+    if (r <= 1L) {
+        ni <- length(i)
+    } else if (r == 2L) {
+        ni <- nrow(i)
+    } else if (r > 2L) {
+        stop(sprintf("cannot index with rank-%.0f array", r))
+    }
+
+    if (r == 2L) {
+        if (ncol(i) != ncol(x)) {
+            stop(sprintf("number of index components (%.0f) must match number of key components (%.0f)", ncol(i), ncol(x)))
         }
     }
 
-    n <- nrow(x)
+    if (is.null(x)) {
+        return(rep(NA_integer_, ni))
+    }
 
+    if (r == 2L) {
+        i <- key_encode(i)
+    }
+
+    n <- nrow(x)
+    id <- seq_len(n)
+    names(id) <- key_encode(x)
+    id <- id[as.character(i)]
+    names(id) <- NULL
+
+    return(id)
+}
+
+
+key_slice <- function(x, i)
+{
+    if (length(x) != length(i)) {
+        stop(sprintf("number of index components (%.0f) must match number of key components (%.0f)", length(i), length(x)))
+    }
+
+    n <- nrow(x)
+    mask <- rep(TRUE, n)
+    for (k in seq_along(i)) {
+        ik <- i[[k]]
+        if (is.null(ik)) {
+            next
+        }
+        xk <- x[[k]]
+        if (is.integer(xk)) {
+            ik <- as.integer(ik)
+        } else if (is.numeric(xk)) {
+            ik <- as.numeric(ik)
+        } else {
+            ik <- as_utf8(as.character(ik))
+        }
+        mask <- mask & (xk %in% ik)
+    }
+    ix <- which(mask)
+}
+
+
+key_junk <- function()
+{
     if (is.character(i)) {
         ix <- seq_len(n)
         if (is.character(i)) {
@@ -227,21 +283,7 @@ key_index <- function(x, i)
             stop(sprintf("row selection entry %.0f is NA", j))
         }
     } else if (is.list(i)) {
-        mask <- rep(TRUE, n)
-        for (k in seq_along(i)) {
-            ik <- i[[k]]
-            if (is.null(ik)) {
-                next
-            }
-            xk <- x[[k]]
-            storage.mode(ik) <- storage.mode(xk)
-            if (is.character(ik)) {
-                ik <- as_utf8(ik)
-            }
-            mask <- mask & (xk %in% ik)
-        }
-        ix <- which(mask)
-    } else {
+           } else {
         stop(sprintf("invalid index type: \"%s\"", class(i)))
     }
     ix

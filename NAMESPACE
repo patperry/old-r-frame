@@ -33,6 +33,7 @@ export(keylevels.dataset)
 export(`keys<-`)
 export(`keys<-.dataset`)
 export(print.dataset)
+export(rowid)
 
 ## Deprecated
 # (none)
