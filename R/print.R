@@ -47,6 +47,7 @@ new_format_control <- function(chars = NULL, digits = NULL,
 
     control$banner    <- if (control$utf8) "\u2550" else "="
     control$ellipsis  <- if (control$utf8) "\u2026" else "..."
+    control$times     <- if (control$utf8) "\u00d7" else "x"
     control$vellipsis <- if (control$utf8) "\u22ee" else "."
     control$vline     <- if (control$utf8) "\u2502" else "|"
 
@@ -122,6 +123,22 @@ col_width <- function(name, x, control, limit = NULL)
     min(limit, w)
 }
 
+format_list <- function(x, width, control)
+{
+    times <- control$times
+    y <-
+    vapply(x, FUN.VALUE = "", function(elt) {
+        cl <- class(elt)[[1L]]
+        d <- dim(elt)
+        if (!is.null(d)) {
+            paste(cl, paste0(d, collapse = times))
+        } else {
+            cl
+        }
+    })
+    utf8_format(y, justify = control$justify, width = width,
+                quote = control$quote)
+}
 
 format_vector <- function(name, x, ..., control, indent, wrap)
 {
@@ -147,12 +164,14 @@ format_vector <- function(name, x, ..., control, indent, wrap)
         cl <- class(x)
     }
 
-    # format character specially, otherwise use S3
+    # format character and list specially, otherwise use S3
     if (is.character(x) && (identical(cl, "character")
                             || identical(cl, "AsIs"))) {
         y <- utf8_format(x, chars = chars, justify = control$justify,
                          width = width, na.encode = control$na.encode,
                          quote = control$quote, na.print = control$na.print)
+    } else if (is.list(x) && identical(cl, "list")) {
+        y <- format_list(x, width, control)
     } else {
         y <- format(x, ..., chars = chars, na.encode = control$na.encode,
                     quote = control$quote, na.print = control$na.print,
