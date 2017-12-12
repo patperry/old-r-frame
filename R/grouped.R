@@ -12,42 +12,27 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-grouped <- function(x, by = NULL, do = NULL, ...)
+grouped <- function(x, by = NULL, ...)
 {
-    xlab <- NULL
-    if (is.null(do)) {
-        do <- function(x) x
-        xlab <- "data"
-    } else if (!is.function(do)) {
-        stop("'do' argument should be a function (or NULL)")
-    }
-
     x <- framed(x)
-    args <- c(list(NULL), list(...))
+    exprs <- list(...)
 
+    # split into parts
     if (is.null(by)) {
-        args[[1L]] <- x
-        y <- list(do.call(do, args))
-        ans <- framed(list(y))
+        y <- framed(list(list(x)))
     } else {
         by <- framed(by)
         g <- key_encode(by)
-        y <- split(x, g)
-        nm <- names(y)
-        k <- key_decode(nm, composite = length(by) > 1L)
-        for (i in seq_along(k)) {
-            storage.mode(k[[i]]) <- storage.mode(by[[i]])
+        xg <- split(x, g)
+        nm <- names(xg)
+
+        keys <- key_decode(nm, composite = length(by) > 1L)
+        for (i in seq_along(keys)) {
+            storage.mode(keys[[i]]) <- storage.mode(by[[i]])
         }
-        if (is.null(names(by)) && length(k) == 1L) {
-            names(k) <- "group"
-        } else {
-            names(k) <- names(by)
-        }
-        ans <- framed(list(y), framed(k))
+        names(keys) <- names(by)
+        y <- framed(list(xg), framed(keys))
     }
 
-    if (!is.null(xlab)) {
-        names(ans) <- xlab
-    }
-    ans
+    y
 }
