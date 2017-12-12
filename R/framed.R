@@ -25,6 +25,12 @@ framed.default <- function(x, keys = NULL, ...)
 }
 
 
+framed.NULL <- function(x, keys = NULL, ...)
+{
+    NULL
+}
+
+
 framed.data.frame <- function(x, keys = NULL, ...)
 {
     if (!is.data.frame(x)) {

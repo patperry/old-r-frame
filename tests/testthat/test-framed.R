@@ -1,6 +1,10 @@
 
 context("framed")
 
+test_that("'framed NULL is NULL", {
+    expect_equal(framed(NULL), NULL)
+})
+
 test_that("'dataset' allows NULL names", {
     x <- framed(list(1, 2, 3))
     expect_equal(names(x), NULL)
