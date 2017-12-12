@@ -57,7 +57,7 @@ keys.dataset <- function(x)
     # validate key names, compute display string
     names <- names(value)
     if (is.null(names)) {
-        nstrs <- rep("", length(names))
+        nstrs <- rep("", length(value))
     } else {
         i <- which(is.na(names))
         if (length(i) > 0) {

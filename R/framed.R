@@ -70,7 +70,9 @@ framed.list <- function(x, keys = NULL, ...)
     nr <- nrow_dataset(x)
     cols <- lapply(x, as_column, nr)
     if (!is.null(keys) && length(dim(keys)) < 2L) {
-        j <- as_keys("keys", keys, names)
+        with_rethrow({
+            j <- as_keys("keys", keys, names)
+        })
         if (length(j) > 0) {
             keys <- framed(cols[j])
             cols <- cols[-j]

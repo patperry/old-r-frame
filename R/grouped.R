@@ -26,7 +26,18 @@ grouped <- function(x, by = NULL, do = NULL, ...)
 
     if (is.null(by)) {
         args[[1L]] <- x
-        y <- do.call(do, args)
-        framed(list(list(y)))
+        y <- list(do.call(do, args))
+        framed(list(y))
+    } else {
+        by <- framed(by)
+        g <- key_encode(by)
+        y <- split(x, g)
+        nm <- names(y)
+        k <- key_decode(nm, composite = length(by) > 1L)
+        for (i in seq_along(k)) {
+            storage.mode(k[[i]]) <- storage.mode(by[[i]])
+        }
+        names(k) <- names(by)
+        framed(list(y), framed(k))
     }
 }

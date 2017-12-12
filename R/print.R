@@ -421,17 +421,21 @@ print.dataset <- function(x, rows = 20L, wrap = 0L, ..., number = TRUE,
 
     keys <- keys(x)[seq_len(n), , drop = FALSE]
     if (!is.null(keys)) {
+        knames <- names(keys)
+        if (is.null(knames)) {
+            knames <- as.character(seq_along(keys))
+        }
         kb <- mapply(function(k, w)
                          utf8_format(k, width = w,
                                      chars = .Machine$integer.max,
                                      justify = "left"),
-                     keys, vapply(names(keys), utf8_width, 0),
+                     keys, vapply(knames, utf8_width, 0),
                      SIMPLIFY = FALSE, USE.NAMES = FALSE)
         kh <- mapply(function(n, col)
                         utf8_format(n, width = max(0, utf8_width(col)),
                                     chars = .Machine$integer.max,
                                     justify = "left"),
-                     names(keys), kb, USE.NAMES = FALSE)
+                     knames, kb, USE.NAMES = FALSE)
 
         kb <- do.call(paste, c(kb, sep = gap))
         kh <- paste(kh, collapse = gap)
