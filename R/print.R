@@ -126,16 +126,19 @@ col_width <- function(name, x, control, limit = NULL)
 format_list <- function(x, width, control)
 {
     times <- control$times
-    y <-
-    vapply(x, FUN.VALUE = "", function(elt) {
-        cl <- class(elt)[[1L]]
+    y <- vapply(x, FUN.VALUE = "", function(elt) class(elt)[[1L]])
+    d <- vapply(x, FUN.VALUE = "", function(elt) {
         d <- dim(elt)
         if (!is.null(d)) {
-            paste(cl, paste0(d, collapse = times))
+            paste(paste0(d, collapse = times))
         } else {
-            cl
+            ""
         }
     })
+    if (any(nzchar(d))) {
+        d <- utf8_format(d, justify = "right")
+        y <- paste(y, d)
+    }
     utf8_format(y, justify = control$justify, width = width,
                 quote = control$quote)
 }
