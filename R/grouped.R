@@ -12,10 +12,39 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-grouped <- function(x, by = NULL, ...)
+unnest <- function(x)
 {
+    # TODO: better error checking
+
+    n <- length(x)
+    y <- x[[1L]]
+
+    if (is.list(y) && is.null(oldClass(y))) {
+        y <- as.list(y)
+        nc <- length(y)
+        for (j in seq_len(nc)) {
+            xj <- lapply(x, `[[`, j)
+            y[[j]] <- unnest(xj)
+        }
+    } else if (length(y) == 1L) {
+        cl <- class(y)
+        length(y) <- n
+        for (i in seq.int(2L, length.out = n - 1L)) {
+            y[[i]] <- x[[i]]
+        }
+    } else {
+        y <- x
+    }
+    y
+}
+
+grouped <- function(x, by = NULL, do = NULL, ...)
+{
+    if (is.null(x)) {
+        return(x)
+    }
+
     x <- framed(x)
-    exprs <- list(...)
 
     # split into parts
     if (is.null(by)) {
@@ -24,6 +53,11 @@ grouped <- function(x, by = NULL, ...)
         by <- framed(by)
         g <- key_encode(by)
         xg <- split(x, g)
+
+        if (length(xg) == 0L) {
+            return(NULL)
+        }
+
         nm <- names(xg)
 
         keys <- key_decode(nm, composite = length(by) > 1L)
@@ -32,6 +66,12 @@ grouped <- function(x, by = NULL, ...)
         }
         names(keys) <- names(by)
         y <- framed(list(xg), framed(keys))
+    }
+
+    if (!is.null(do)) {
+        # TODO: don't use lapply in case ... has arg named X or FUN
+        val <- lapply(X = y[[1L]], FUN = do, ...)
+        y <- framed(unnest(val), keys(y))
     }
 
     y

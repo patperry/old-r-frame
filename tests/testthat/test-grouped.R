@@ -1,5 +1,9 @@
 context("grouped")
 
+test_that("'grouped(NULL)' works", {
+    expect_equal(grouped(NULL), NULL)
+})
+
 test_that("'grouped(,NULL, NULL)' puts in list", {
     x <- grouped(mtcars)
     y <- framed(list(list(framed(mtcars))))
@@ -17,7 +21,12 @@ test_that("'grouped(,integer,NULL)' splits", {
 })
 
 
-if (FALSE) {
+test_that("'grouped(,integer(0),NULL)' works", {
+    x <- grouped(mtcars[0,], dataset(group = integer()))
+    expect_equal(x, NULL)
+})
+
+
 test_that("'grouped' works with scalar function on whole", {
     xg <- grouped(mtcars)
     x <- framed(sapply(xg[[1]], nrow), keys(xg))
@@ -35,4 +44,3 @@ test_that("'grouped' works with scalar function on parts", {
     y <- grouped(mtcars, dataset(group = group), nrow)
     expect_equal(x, y)
 })
-}
