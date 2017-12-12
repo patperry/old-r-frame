@@ -14,20 +14,21 @@
 
 grouped <- function(x, by = NULL, do = NULL, ...)
 {
-    x <- framed(x)
-
+    xlab <- NULL
     if (is.null(do)) {
         do <- function(x) x
+        xlab <- "data"
     } else if (!is.function(do)) {
         stop("'do' argument should be a function (or NULL)")
     }
 
+    x <- framed(x)
     args <- c(list(NULL), list(...))
 
     if (is.null(by)) {
         args[[1L]] <- x
         y <- list(do.call(do, args))
-        framed(list(y))
+        ans <- framed(list(y))
     } else {
         by <- framed(by)
         g <- key_encode(by)
@@ -37,7 +38,16 @@ grouped <- function(x, by = NULL, do = NULL, ...)
         for (i in seq_along(k)) {
             storage.mode(k[[i]]) <- storage.mode(by[[i]])
         }
-        names(k) <- names(by)
-        framed(list(y), framed(k))
+        if (is.null(names(by)) && length(k) == 1L) {
+            names(k) <- "group"
+        } else {
+            names(k) <- names(by)
+        }
+        ans <- framed(list(y), framed(k))
     }
+
+    if (!is.null(xlab)) {
+        names(ans) <- xlab
+    }
+    ans
 }
