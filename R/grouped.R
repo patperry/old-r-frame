@@ -26,7 +26,7 @@ unnest <- function(x)
             xj <- lapply(x, `[[`, j)
             y[[j]] <- unnest(xj)
         }
-    } else if (length(y) == 1L) {
+    } else if (length(y) == 1L && (is.atomic(y) || is.list(y) || isS4(y))) {
         cl <- class(y)
         length(y) <- n
         for (i in seq.int(2L, length.out = n - 1L)) {
