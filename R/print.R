@@ -226,7 +226,7 @@ format_matrix <- function(name, x, ..., control, indent, wrap)
     nc <- ncol(x)
     names <- colnames(x)
     if (is.null(names)) {
-        names <- as.character(seq_len(nc))
+        names <- paste0("[,", as.character(seq_len(nc)), "]")
     }
     y <- vector("list", nc)
     trunc <- FALSE
@@ -426,7 +426,7 @@ print.dataset <- function(x, rows = 20L, wrap = 0L, ..., number = TRUE,
     if (!is.null(keys)) {
         knames <- names(keys)
         if (is.null(knames)) {
-            knames <- as.character(seq_along(keys))
+            knames <- paste0("[,", as.character(seq_along(keys)), "]")
         }
         kb <- mapply(function(k, w)
                          utf8_format(k, width = w,

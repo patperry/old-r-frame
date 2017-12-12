@@ -126,9 +126,12 @@ test_that("'print' can handle matrix columns", {
     ctype <- switch_ctype("C")
     on.exit(Sys.setlocale("LC_CTYPE", ctype), add = TRUE)
 
-    x <- dataset(x = matrix(letters, 2, 13),
-                 X = matrix(LETTERS, 2, 13),
-                 Z = matrix(letters, 2, 13))
+    cn <- as.character(1:13)
+    rn <- as.character(1:2)
+    dn <- list(rn, cn)
+    x <- dataset(x = matrix(letters, 2, 13, dimnames = dn),
+                 X = matrix(LETTERS, 2, 13, dimnames = dn),
+                 Z = matrix(letters, 2, 13, dimnames = dn))
 
     lines <- c(
 '  ==============x============== ==============X============== =======Z=======',
@@ -146,9 +149,12 @@ test_that("'print' can handle matrix columns with tail", {
     ctype <- switch_ctype("C")
     on.exit(Sys.setlocale("LC_CTYPE", ctype), add = TRUE)
 
-    x <- dataset(x = matrix(letters, 2, 13),
-                 X = matrix(LETTERS, 2, 13),
-                 Z = matrix(letters, 2, 13),
+    cn <- as.character(1:13)
+    rn <- as.character(1:2)
+    dn <- list(rn, cn)
+    x <- dataset(x = matrix(letters, 2, 13, dimnames = dn),
+                 X = matrix(LETTERS, 2, 13, dimnames = dn),
+                 Z = matrix(letters, 2, 13, dimnames = dn),
                  z = c("a", "b"))
 
     lines <- c(
@@ -183,15 +189,18 @@ test_that("'print' can handle narrow grouped columns", {
 
 
 test_that("'print' can handle matrix with one column", {
+    ctype <- switch_ctype("C")
+    on.exit(Sys.setlocale("LC_CTYPE", ctype), add = TRUE)
+              
     x <- dataset(x = matrix(5:8, 4, 1))
 
     lines <- c(
-'  x',
-'  1',
-'1 5',
-'2 6',
-'3 7',
-'4 8')
+'  =x==',
+'  [,1]',
+'1    5',
+'2    6',
+'3    7',
+'4    8')
 
     expect_equal(strsplit(capture_output(print(x)), "\n")[[1]], lines)
 })
