@@ -37,11 +37,16 @@ dimnames.dataset <- function(x)
 
 row.names.dataset <- function(x)
 {
-    keys <- attr(x, "keys")
+    keys <- keys(x)
     if (is.null(keys)) {
         NULL
     } else {
-        key_encode(keys)
+        nm <- names(keys)
+        if (identical(nm, "name")) {
+            as.character(keys[[1L]])
+        } else {
+            NULL
+        }
     }
 }
 

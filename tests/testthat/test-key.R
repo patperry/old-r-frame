@@ -177,11 +177,11 @@ test_that("'row.names' works if key is set", {
 })
 
 
-test_that("'rownames' works for multiple keys", {
-    ds <- framed(list(x = c(1, 1, 2, 2), y = c(1, 2, 1, 2)),
-                     key = c("x", "y"))
-    expect_equal(rownames(ds), c("1,1", "1,2", "2,1", "2,2"))
-    expect_equal(row.names(ds), c("1,1", "1,2", "2,1", "2,2"))
+test_that("'rownames' gives NULL for multiple keys", {
+    ds <- framed(list(name = c(1, 1, 2, 2), y = c(1, 2, 1, 2)),
+                      key = c("name", "y"))
+    expect_equal(rownames(ds), NULL)
+    expect_equal(row.names(ds), NULL)
 })
 
 
