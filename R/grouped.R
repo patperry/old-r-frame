@@ -41,16 +41,21 @@ unnest <- function(x)
 grouped <- function(x, by = NULL, do = NULL, ...)
 {
     if (is.null(x)) {
-        return(x)
+        return(NULL)
     }
 
     x <- framed(x)
+    with_rethrow({
+        by <- as_by("by", by, "x", x)
+    })
+    if (!(is.null(do) || is.function(do))) {
+        stop("'do' must by a function or NULL")
+    }
 
     # split into parts
     if (is.null(by)) {
         y <- framed(list(list(x)))
     } else {
-        by <- framed(by)
         g <- key_encode(by)
         xg <- split(x, g)
 

@@ -222,7 +222,30 @@ as_names <- function(name, value, n)
 }
 
 
-as_key_cols <- function(name, value, x)
+as_by <- function(name, value, xname, x)
+{
+    if (is.null(value)) {
+        return(NULL)
+    }
+
+    if (length(dim(value)) < 2L) {
+        j <- as_by_cols(name, value, x)
+        by <- x[, j, drop = FALSE]
+        keys(by) <- NULL
+    } else {
+        by <- framed(value, integer())
+        nby <- nrow(by)
+        nx <- if (is.null(x)) 0 else nrow(x)
+        if (nby != nx) {
+            stop(sprintf("'%s' rows (%.0f) must match 'x' rows (%.0f)",
+                         name, nby, xname, nx))
+        }
+    }
+    by
+}
+
+
+as_by_cols <- function(name, value, x)
 {
     if (is.null(value)) {
         return(NULL)
@@ -239,9 +262,6 @@ as_key_cols <- function(name, value, x)
     if (anyNA(value)) {
         stop(sprintf("'%s' contains NA", name))
     }
-    if (anyDuplicated(value)) {
-        stop(sprintf("'%s' contains duplicates", name))
-    }
     if (!is.numeric(value)) {
         index <- match(value, names)
         i <- which(is.na(index))
@@ -257,6 +277,20 @@ as_key_cols <- function(name, value, x)
             stop(sprintf("'%s' refers to column with invalid index (%.0f)",
                          name, index[[i[[1]]]]))
         }
+    }
+    index
+}
+
+
+as_key_cols <- function(name, value, x)
+{
+    if (is.null(value)) {
+        return(NULL)
+    }
+
+    index <- as_by_cols(name, value, x)
+    if (anyDuplicated(index)) {
+        stop(sprintf("'%s' contains duplicates", name))
     }
     index
 }
