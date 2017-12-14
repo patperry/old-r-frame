@@ -140,7 +140,7 @@ keylevels.dataset <- function(x)
     if (is.null(keys)) {
         NULL
     } else {
-        lapply(keys, function(elt) unique(as_utf8(as.character(elt))))
+        lapply(keys, function(elt) unique(elt))
     }
 }
 
