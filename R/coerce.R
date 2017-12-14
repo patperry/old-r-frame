@@ -211,7 +211,7 @@ as_names <- function(name, value, n)
     }
 
     if (length(value) != n) {
-        stop(sprintf("%s length (%d) must match number of columns (%d)",
+        stop(sprintf("%s length (%.0f) must match number of columns (%.0f)",
                      name, length(value), n))
     }
 
