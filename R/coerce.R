@@ -241,6 +241,25 @@ as_by <- function(name, value, xname, x)
                          name, nby, xname, nx))
         }
     }
+
+    for (i in seq_along(by)) {
+        bi <- by[[i]]
+        if (is.logical(bi)) {
+           # pass
+        } else if (is.numeric(bi)) {
+            if (any(is.nan(bi))) {
+                stop(sprintf("'%s' column %.0f contains NaN", name, i))
+            }
+        } else {
+            bi <- as.character(bi)
+            inv <- which(!utf8_valid(bi))
+            if (length(inv) > 0) {
+                stop(sprintf("'%s' column %.0f, element %.0f is not valid UTF-8",
+                             name, i, inv[[1L]]))
+            }
+            by[[i]] <- as_utf8(bi)
+        }
+    }
     by
 }
 
