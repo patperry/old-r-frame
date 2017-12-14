@@ -262,29 +262,3 @@ key_slice <- function(x, i)
     }
     ix <- which(mask)
 }
-
-
-key_junk <- function()
-{
-    if (is.character(i)) {
-        ix <- seq_len(n)
-        if (is.character(i)) {
-            names(ix) <- key_encode(x)
-        }
-        ix <- ix[i]
-        if (anyNA(ix)) {
-            j <- which(is.na(ix))[[1L]]
-            if (is.character(i)) {
-                stop(sprintf(
-                    "selected row entry %.0f (\"%s\") does not exist",
-                    j, i[[j]]))
-            }
-
-            stop(sprintf("row selection entry %.0f is NA", j))
-        }
-    } else if (is.list(i)) {
-           } else {
-        stop(sprintf("invalid index type: \"%s\"", class(i)))
-    }
-    ix
-}
