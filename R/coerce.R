@@ -222,24 +222,41 @@ as_names <- function(name, value, n)
 }
 
 
-as_keys <- function(name, value, names)
+as_key_cols <- function(name, value, x)
 {
     if (is.null(value)) {
         return(NULL)
     }
 
-    value <- utf8_normalize(as_character_vector(name, value))
+    if (!is.numeric(value)) {
+        value <- as_character_vector(name, value)
+        names <- names(x)
+        if (is.null(names) && length(value) > 0) {
+            stop(sprintf("'%s' refers to named columns but 'names' is NULL",
+                         name))
+        }
+    }
     if (anyNA(value)) {
         stop(sprintf("'%s' contains NA", name))
     }
     if (anyDuplicated(value)) {
         stop(sprintf("'%s' contains duplicates", name))
     }
-    index <- match(value, names)
-    i <- which(is.na(index))
-    if (length(i) > 0) {
-        stop(sprintf("'%s' refers to unknown column \"%s\"", name,
-                     value[[i[[1]]]]))
+    if (!is.numeric(value)) {
+        index <- match(value, names)
+        i <- which(is.na(index))
+        if (length(i) > 0) {
+            stop(sprintf("'%s' refers to unknown column \"%s\"", name,
+                         value[[i[[1]]]]))
+        }
+    } else {
+        n <- length(x)
+        index <- trunc(value)
+        i <- which(index < 1 | index > n)
+        if (length(i) > 0) {
+            stop(sprintf("'%s' refers to column with invalid index (%.0f)",
+                         name, index[[i[[1]]]]))
+        }
     }
     index
 }

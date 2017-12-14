@@ -145,6 +145,28 @@ test_that("'framed' errors for missing key", {
 })
 
 
+test_that("'framed' errors for out-of-range", {
+    expect_error(framed(mtcars, key = c(1, -3)),
+                 "'keys' refers to column with invalid index \\(-3\\)")
+})
+
+
+test_that("'framed' errors for char key when unnamed", {
+    x <- mtcars
+    names(x) <- NULL
+    expect_error(framed(x, key = ""),
+                 "'keys' refers to named columns but 'names' is NULL")
+})
+
+
+test_that("'framed' allows character() key when unnamed", {
+    x <- mtcars
+    names(x) <- NULL
+    expect_equal(framed(x, key = character()),
+                 framed(x, key = integer()))
+})
+
+
 test_that("'framed' works for nested", {
     l <- list(zz = dataset(a = 1:4))
     x <- framed(l)
