@@ -40,13 +40,8 @@ row.names.dataset <- function(x)
     keys <- keys(x)
     if (is.null(keys)) {
         NULL
-    } else {
-        nm <- names(keys)
-        if (identical(nm, "name")) {
-            as.character(keys[[1L]])
-        } else {
-            NULL
-        }
+    } else if (length(keys) == 1 && is.character(keys[[1L]])) {
+        keys[[1L]]
     }
 }
 
