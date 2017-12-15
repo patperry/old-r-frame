@@ -168,7 +168,7 @@ column_subset <- function(x, i)
 
 
 
-
+# signature is ... instead of i, j, ... to allow columns named 'i' or 'j'
 `[.dataset` <- function(x, ..., drop = TRUE)
 {
     if (!is_dataset(x)) {
@@ -179,6 +179,10 @@ column_subset <- function(x, i)
     args <- match.call()[-1]
     if (!missing(drop)) {
         args <- args[-length(args)]
+    }
+
+    if (!is.logical(drop) && length(drop) == 1 && !is.na(drop)) {
+        stop("'drop' must be TRUE or FALSE")
     }
 
     miss <- vapply(args, identical, NA, quote(expr=))
@@ -215,14 +219,13 @@ column_subset <- function(x, i)
         x
     } else if (n == 1L) {
         x <- column_subset(x, index[[1L]])
-    } else {
-        i <- index[-n]
-        j <- index[[n]]
-        if (length(i) == 1L) {
-            i <- i[[1L]]
-        }
+    } else if (n == 2L) {
+        i <- index[[1L]]
+        j <- index[[2L]]
         x <- column_subset(x, j)
         x <- row_subset(x, i, drop)
+    } else {
+        stop("incorrect number of dimensions")
     }
 
     x
