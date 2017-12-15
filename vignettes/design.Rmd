@@ -13,52 +13,39 @@ and an object storing data points should provide access to this context. The
 data points with labels (the `"row.names"`), but it is not flexible
 enough to handle cases where the context involves more than one attribute. We
 fix this by replacing the `"row.names"` attribute of a `data.frame` with a new
-attribute, `"keys"`, that stores potentially multi-attribute labels
+attribute, `"keys"`, that stores potentially multi-component labels
 (*composite keys*) that identify each row in the data set.
 
 
-This package takes the view a *variable* as a map (function) between two sets,
-called the *frame* (domain) and the *type* (domain) of the variable. We refer
-to members of the *frame* as *keys* and members of the *type* as *values*. A
-*data point* is a (variable, key, value) triple. This differs from the "tidy"
-view of data that considers a data point to be a (variable, value) pair. We
-believe that the context of the value is important and helpful, especially for
-linking downstream analyses to the original data sources.
+This package takes the view that a *variable* is a map (function) between two
+sets, called the *frame* (domain) and the *type* (domain) of the variable. We
+refer to members of the *frame* as *keys* and members of the *type* as
+*values*. A *data point* is a (variable, key, value) triple. This differs from
+the "tidy" view of data that considers a data point to be a (variable, value)
+pair. We believe that the context of the value is important and helpful,
+especially for linking downstream analyses to the original data sources.
 
 
 ## Keys
 
 ### Requirements
 
-We allow two types of keys: simple and composite. A simple key is a
-valid UTF-8 string; `NA` is not allowed by the empty string is. A composite
-string is a tuple of simple keys, each of which is called a component or
-attribute of the key. There are two reasons for requiring that keys be
-composed of strings:
-
- 1. To use keys as as object names, it will be necessary to convert them to
-    strings.
-
- 2. To distinguish access-by-key from access-by-index, keys cannot have type
-    `integer` or `double`. The expression `x[3,]` needs to unambigously
-    refer to the third row in `x`, not the row with key 3.
-
-Requiring that keys be strings may impose some efficiency penalty (both time
-and space). If it can be demonstrated that the penalty is substantial, then in
-the future we may allow for integer keys, using a special key class do make
-indexing operations unambiguous.
-
+We allow two types of keys: simple and composite. A simple key is one of the
+following basic R types: logical, integer, double, complex, or character. For
+character keys, we require that the value be encoded in valid UTF-8.  A
+composite string is a tuple of simple keys, each of which is called a
+component or attribute of the key.
 
 Beyond the type constraints, we require that each key (or composite key in the
 case of multi-attribute keys) correspond to a single data point. To this end,
-we require that the keys (or composite keys) be unique non-missing values.  We
-do not require that keys be unique after Unicode normalization, and we allow
-the empty string (`""`) as a key value.
+we require that the keys (or composite keys) be unique values.  We do not
+require that keys be unique after Unicode normalization, and we allow the
+empty string (`""`) as a key.
 
 
 ### Component names
 
-An `m`-attribute key can optionally have names for the attributes. For
+An `m`-component key can optionally have names for the attributes. For
 example, if we frame a set of hourly measurements by a two-component key,
 we can optionally name these components, say `"day"` and `"hour"`. It is not
 necessary that we give the components names. Making component names optional
@@ -69,70 +56,22 @@ from a `data.frame` with `row.names` to a keyed data set with an anonymous
 key (taken from the `row.names`).
 
 
-### Conversion to string
-
-For compatibility with other R objects that support `"names"`
-but not composite keys, it is essential to have a well-defined mapping between
-composite keys and string representations of them. For a scalar key `k`, we
-use they key itself as its string representation. For composite key
-`(k1, k2, ..., km)`, we first escaping reverse solidus (`\`, U+005C) and
-comma (`,`, U+002C) by preceding these characters with a reverse solidus.
-The `key_escape` function performs the escaping, and the `key_unescape`
-function reverses it:
-
-```{r}
-key_escape(c("Jones, Henrietta", "\\/", ",,,"))
-key_unescape(c("Jones\\, Henrietta", "\\\\/", "\\,\\,\\,"))
-```
-
-We then concatenate the escaped strings `s1, s2, ..., sm` together, separating
-the components with unescaped commas. The `key_encode` function performs the
-conversion for us, and the `key_decode` with `composite = TRUE`  (the default)
-reverses it:
-
-```{r}
-# 3-component composite key
-(s <- key_encode(list(c("Jones, Henrietta", "X, Mx.", "Box, George"),
-                      c("\\/", "", "2\\b"),
-                      c("92", "2", "17"))))
-key_decode(s)
-```
-
-Note, that for scalar keys we do not escape reverse solidus and
-comma characters. Thus, the string "Jones, Henrietta" cannot unambiguously
-be decoded to a key without knowing whether the key is composite or not:
-
-```{r}
-key_decode("Jones, Henrieta")
-key_decode("Jones, Henrieta", composite = FALSE)
-```
-
-This ambiguity is unfortunate, but as we will see in the sequel, this
-ambiguity is necessary if we want indexing to behave consistently with scalar
-and composite keys.
-
-
-## Data tables
+## Data sets
 
 We provide the `dataset` type as an extension of `data.frame` that allows
 specifying keys for the rows. We construct a dataset as in the following
 example:
 
 ```{r}
-x <- dataset(a = letters, b = rnorm(26), c = 2 * b)
+(x <- dataset(a = letters, b = rnorm(26), c = 1:26))
 ```
 
-Here, we evaluate columns sequentially in an environment that includes the
-preceding results. Columns can be vector-like or matrix-like (having one or
-two dimensions). At construction time, we can specify that one or more of the
-columns should be used for the key by giving their names to the `key`
-argument:
+Columns can be vector-like or matrix-like (having one or two dimensions). This
+allows for the possibility of having nested datasets within datasets:
 
 ```{r}
-y <- dataset(a = letters, b = rnorm(26), c = 2 * b, key = c("c", "a"))
+(y <- dataset(nested = x, simple = rpois(26, 1.2)))
 ```
-
-
 
 
 ## Indexing
@@ -148,10 +87,9 @@ that `keys(x[i,])` has unique rows. The added column is the appearance number
 of each row in `x[i,]`. We demonstrate this behavior below:
 
 ```{r}
-x <- dataset(k = letters, a = 1:26, key = "k")[c(1, 2, 1, 1, 3, 2), ]
-keys(x)
+x <- dataset(a = 1:26)
+keys(x) <- letters
+x[c(1, 2, 1, 1, 3, 2), ]
 ```
 
 ### Key subscript
-
-When `i` is not numeric or logical, we 
