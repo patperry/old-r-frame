@@ -38,6 +38,19 @@ unnest <- function(x)
     y
 }
 
+
+groups <- function(x)
+{
+    enc <- key_encode(x)
+    g <- factor(enc)
+    id <- as.integer(g)
+    uniq <- which(!duplicated(id))
+    types <- uniq[order(id[uniq])]
+    keys <- x[types, , drop = FALSE]
+    list(id = id, keys = keys)
+}
+
+
 grouped <- function(x, by = NULL, do = NULL, ...)
 {
     if (is.null(x)) {
@@ -56,21 +69,14 @@ grouped <- function(x, by = NULL, do = NULL, ...)
     if (is.null(by)) {
         y <- framed(list(list(x)))
     } else {
-        g <- key_encode(by)
-        xg <- split(x, g)
+        g <- groups(by)
+        xg <- split(x, g$id)
 
         if (length(xg) == 0L) {
             return(NULL)
         }
 
-        nm <- names(xg)
-
-        keys <- key_decode(nm, composite = length(by) > 1L)
-        for (i in seq_along(keys)) {
-            storage.mode(keys[[i]]) <- storage.mode(by[[i]])
-        }
-        names(keys) <- names(by)
-        y <- framed(list(xg), framed(keys))
+        y <- framed(list(xg), g$keys)
     }
 
     if (!is.null(do)) {
