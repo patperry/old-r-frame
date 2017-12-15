@@ -77,11 +77,23 @@ row_subset <- function(x, i, drop = TRUE)
     } else {
         drop <- FALSE
         r <- length(dim(i))
-        if ((r <= 1) && (is.numeric(i) || is.logical(i))) {
-            if (is.logical(i) && length(i) != nrow(x)) {
-                stop(sprintf("index mask length (%.0f) must match number of rows (%.0f)", length(i), nrow(x)))
-            }
+        if (r <= 1) {
             rows <- seq_len(n)
+            if (is.numeric(i)) {
+                # pass
+            } else if (is.logical(i)) {
+                if (length(i) != nrow(x)) {
+                    stop(sprintf("index mask length (%.0f) must match number of rows (%.0f)", length(i), nrow(x)))
+                }
+                # pass
+            } else {
+                rn <- rownames(x)
+                if (is.null(rn)) {
+                    stop("cannot index with character with 'rownames' is NULL")
+                }
+                i <- as.character(i)
+                names(rows) <- rn
+            }
             rows <- rows[i]
         } else {
             rows <- key_index(keys, i)
