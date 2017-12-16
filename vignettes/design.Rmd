@@ -63,14 +63,14 @@ specifying keys for the rows. We construct a dataset as in the following
 example:
 
 ```{r}
-(x <- dataset(a = letters[1:5], b = rnorm(5), c = 3 * -2:2))
+(x <- dataset(a = letters[10:14], b = rnorm(5), c = 3 * -2:2))
 ```
 
 Columns can be vector-like or matrix-like (having one or two dimensions). This
 allows for the possibility of having nested datasets within datasets:
 
 ```{r}
-(y <- dataset(nested = x, simple = runif(5)))
+(y <- dataset(nest = x, simple = runif(5)))
 ```
 
 
