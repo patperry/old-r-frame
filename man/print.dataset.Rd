@@ -59,7 +59,7 @@ Printing and formatting data sets.
     \item{width}{integer scalar specifying the minimum field width,
         or \code{NULL} for no minimum.}
 
-    \item{item}{integer scalar specifying the indent in spaces preceding
+    \item{indent}{integer scalar specifying the indent in spaces preceding
         the formatted object, or \code{NULL} for none.}
 
     \item{line}{integer scalar specifying the line width in spaces, or
