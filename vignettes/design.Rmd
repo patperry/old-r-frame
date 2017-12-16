@@ -25,6 +25,9 @@ the "tidy" view of data that considers a data point to be a (variable, value)
 pair. We believe that the context of the value is important and helpful,
 especially for linking downstream analyses to the original data sources.
 
+```{r}
+library(frame)
+```
 
 ## Keys
 
