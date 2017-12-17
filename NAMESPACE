@@ -39,12 +39,14 @@ export(rowid)
 
 ## New S3 methods
 S3method(keys, dataset)
+S3method(keys, default)
 S3method(`keys<-`, dataset)
 S3method(keylevels, default)
 S3method(framed, default)
 S3method(framed, data.frame)
 S3method(framed, dataset)
 S3method(framed, list)
+S3method(framed, NULL)
 S3method(grouped, default)
 
 ## Base S3 methods
