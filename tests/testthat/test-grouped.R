@@ -16,7 +16,7 @@ test_that("'grouped(,integer,NULL)' splits", {
     group <- sample(1:5, nrow(mtcars), replace = TRUE)
     x <- grouped(mtcars, dataset(group = group))
     l <- lapply(split(mtcars, group), framed)
-    y <- framed(list(l), keys = dataset(group = names(l)))
+    y <- framed(list(l), keys = dataset(group = as.integer(names(l))))
     expect_equal(x, y)
 })
 

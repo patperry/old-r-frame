@@ -39,81 +39,11 @@ keys.dataset <- function(x)
         stop("argument is not a valid dataset object")
     }
 
-    if (is.null(value)) {
-        attr(x, "keys") <- NULL
-        return(x)
-    }
+    with_rethrow({
+        value <- as_keys("keys", value, x)
+    })
 
-    n <- nrow(x)
-    value <- framed(value)
-    keys(value) <- NULL
-
-    # validate key length
-    if (length(value) > .Machine$integer.max) {
-        stop(sprintf("number of key columns exceeds maximum (%d)",
-                     .Machine$integer.max))
-    }
-
-    # validate key names, compute display string
-    names <- names(value)
-    if (is.null(names)) {
-        nstrs <- rep("", length(value))
-    } else {
-        i <- which(is.na(names))
-        if (length(i) > 0) {
-            stop(sprintf("key column name %d is missing", i))
-        }
-        nstrs <- vapply(names, function(nm)
-                            if (is.null(nm)) "" else sprintf(" (\"%s\")", nm), "")
-    }
-
-    # validate columns convert to UTF-8
-    for (i in seq_along(value)) {
-        elt <- value[[i]]
-        nm <- nstrs[[i]]
-
-        d <- dim(elt)
-        if (length(d) > 1) {
-            stop(sprintf("key column %d%s is not a vector", i, nm))
-        }
-
-        if (length(elt) != n) {
-            stop(sprintf("key column %d%s length (%.0f) not equal to number of rows (%.0f)",
-                         i, nm, length(elt), n))
-        }
-
-        elt <- as.character(elt)
-        j <- which(!utf8_valid(elt))
-        if (length(j) > 0) {
-            stop(sprintf(
-                "key column %d%s cannot be converted to UTF-8 (entry %.0f is invalid)",
-                i, nm, j[[1]]))
-        }
-        value[[i]] <- as_utf8(elt)
-    }
-
-    if (length(value) == 1) {
-        i <- which(duplicated(value[[1]]))
-        if (length(i) > 0) {
-            j <- which(value[[1]] == value[[1]][[i[[1]]]])
-            stopifnot(length(j) > 1)
-            stop(sprintf("key set has duplicate entries (%.0f and %.0f)",
-                         j[[1]], j[[2]]))
-        }
-    } else {
-        kv <- key_encode(value)
-        i <- which(duplicated(kv))
-        if (length(i) > 0) {
-            j <- which(kv == kv[[i[[1]]]])
-            stopifnot(length(j) > 1)
-            stop(sprintf("key set has duplicate rows (%.0f and %.0f)",
-                         j[[1]], j[[2]]))
-        }
-    }
-
-    # set the key
-    attr(x, "keys") <- structure(value, class = c("dataset", "data.frame"),
-                                 row.names = .set_row_names(n))
+    attr(x, "keys") <- value
     x
 }
 

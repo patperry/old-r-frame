@@ -429,7 +429,7 @@ print.dataset <- function(x, rows = 20L, wrap = 0L, ..., number = TRUE,
             knames <- paste0("[,", as.character(seq_along(keys)), "]")
         }
         kb <- mapply(function(k, w)
-                         utf8_format(k, width = w,
+                         utf8_format(as.character(k), width = w,
                                      chars = .Machine$integer.max,
                                      justify = "left"),
                      keys, vapply(knames, utf8_width, 0),

@@ -59,7 +59,7 @@ grouped <- function(x, by = NULL, do = NULL, ...)
 
     x <- framed(x)
     with_rethrow({
-        by <- as_by("by", by, "x", x)
+        by <- as_by("by", by, x)
     })
     if (!(is.null(do) || is.function(do))) {
         stop("'do' must by a function or NULL")

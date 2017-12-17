@@ -51,7 +51,7 @@ row.names.dataset <- function(x)
     if (is.null(value)) {
         keys(x) <- NULL
     } else {
-        keys(x) <- list(name = value)
+        keys(x) <- dataset(name = as.character(value))
     }
     x
 }

@@ -104,14 +104,7 @@ framed.dataset <- function(x, keys = NULL, ...)
     if (!is_dataset(x)) {
         stop("argument is not a valid dataset")
     }
-    if (is.null(keys)) {
-        nr <- nrow(x)
-        names <- names(x)
-        attributes(x) <- NULL
-        names(x) <- names
-        x <- structure(x, class = c("dataset", "data.frame"),
-                       row.names = .set_row_names(nr))
-    } else {
+    if (!is.null(keys)) {
         l <- as.list(x)
         x <- framed(l, keys, ...)
     }

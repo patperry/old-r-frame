@@ -121,7 +121,7 @@ row_subset <- function(x, i, drop = TRUE)
                 copy[[k]] <- copy[[k]] + 1L
                 newkey[[j]] <- copy[[k]]
             }
-            keys[[length(keys) + 1L]] <- as.character(newkey)
+            keys[[length(keys) + 1L]] <- newkey
         }
     }
 

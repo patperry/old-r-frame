@@ -73,27 +73,27 @@ test_that("'framed' on data.frame uses row names special column as key", {
 
 test_that("'key' errors for vector columns", {
     expect_error(framed(list(x = matrix(1:4, 4, 1)), key = "x"),
-                 "key column 1 \\(\"x\"\\) is not a vector")
+                 "'keys' column 1 \\(\"x\"\\) is not a vector")
 })
 
 
 test_that("'key' errors for invalid UTF-8", {
     x <- "fa\xE7ile"; Encoding(x) <- "UTF-8"
     expect_error(framed(list(x = x), key = "x"),
-                 "key column 1 \\(\"x\"\\) cannot be converted to UTF-8 \\(entry 1 is invalid\\)")
+                 "'keys' column 1 \\(\"x\"\\) cannot be encoded in valid UTF-8 \\(entry 1 is invalid\\)")
 })
 
 
 test_that("'key' errors for single if not unique", {
     expect_error(framed(list(x = c(1, 2, 3, 2)), key = "x"),
-                 "key set has duplicate entries \\(2 and 4\\)")
+                 "'keys' has duplicate entries \\(2 and 4\\)")
 })
 
 
 test_that("'key' errors for multiple if not unique", {
     expect_error(framed(list(x = c(1, 1, 2, 2), y = c(1, 2, 1, 1)),
                             key = c("x", "y")),
-                 "key set has duplicate rows \\(3 and 4\\)")
+                 "'keys' has duplicate rows \\(3 and 4\\)")
 })
 
 
@@ -110,17 +110,17 @@ test_that("'key<-' NULL works ", {
 test_that("'key<-' errors for invalid key", {
     expect_error(framed(list(x = c(1, 1, 2, 2), y = c(1, 2, 1, 1)),
                             key = c("x", "y")),
-                 "key set has duplicate rows \\(3 and 4\\)")
+                 "'keys' has duplicate rows \\(3 and 4\\)")
 })
 
 
 test_that("'key<-' errors for key with duplicates", {
     expect_error(framed(mtcars, key = "vs"),
-                 "key set has duplicate entries \\(1 and 2\\)")
+                 "'keys' has duplicate entries \\(1 and 2\\)")
 
     x <- framed(mtcars)
     expect_error(keys(x) <- mtcars[,"vs",drop=FALSE],
-                 "key set has duplicate entries \\(1 and 2\\)")
+                 "'keys' has duplicate entries \\(1 and 2\\)")
 })
 
 
@@ -155,7 +155,7 @@ test_that("'keylevels' gives unique values for length-1 key", {
 test_that("'keylevels' gives unique values for length-2 key", {
     ds <- framed(list(x = c(letters, letters), y = rep(1:13, each = 4)),
                      key = c("x", "y"))
-    expect_equal(keylevels(ds), list(x = letters, y = as.character(1:13)))
+    expect_equal(keylevels(ds), list(x = letters, y = 1:13))
 })
 
 

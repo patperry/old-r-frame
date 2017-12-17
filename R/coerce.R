@@ -222,49 +222,76 @@ as_names <- function(name, value, n)
 }
 
 
-as_by <- function(name, value, xname, x)
+as_by <- function(name, value, x)
 {
-    if (is.null(value)) {
+    if (is.null(value) || length(value) == 0L) {
         return(NULL)
     }
 
+    n <- if (is.null(x)) 0L else dim(x)[[1L]]
+
     if (length(dim(value)) < 2L) {
         j <- as_by_cols(name, value, x)
-        by <- x[, j, drop = FALSE]
-        keys(by) <- NULL
+        value <- framed(x[, j, drop = FALSE])
     } else {
-        by <- framed(value, integer())
-        nby <- nrow(by)
-        nx <- if (is.null(x)) 0 else nrow(x)
-        if (nby != nx) {
-            stop(sprintf("'%s' rows (%.0f) must match 'x' rows (%.0f)",
-                         name, nby, xname, nx))
+        value <- framed(value)
+        nv <- dim(value)[[1L]]
+        if (nv != n) {
+            stop(sprintf("'%s' rows (%.0f) must match data rows (%.0f)",
+                         name, nv, n))
         }
     }
 
-    for (i in seq_along(by)) {
-        bi <- by[[i]]
-        # convert to basic types
-        if (is.logical(bi)) {
-            bi <- as.logical(bi)
-        } else if (is.numeric(bi)) {
-            if (!is.null(oldClass(bi))) {
-                bi <- as.numeric(bi)
-            }
-        } else if (is.complex(bi)) {
-            bi <- as.complex(bi)
-        } else {
-            bi <- as.character(bi)
-            inv <- which(!utf8_valid(bi))
-            if (length(inv) > 0) {
-                stop(sprintf("'%s' column %.0f, element %.0f is not valid UTF-8",
-                             name, i, inv[[1L]]))
-            }
-            bi <- as_utf8(bi)
-        }
-        by[[i]] <- bi
+    keys(value) <- NULL
+
+    # validate key length
+    if (length(value) > .Machine$integer.max) {
+        stop(sprintf("'%s' number columns exceeds maximum (%d)",
+                     name, .Machine$integer.max))
     }
-    by
+
+    # validate key names, compute display string
+    names <- names(value)
+    if (is.null(names)) {
+        nstrs <- rep("", length(value))
+    } else {
+        i <- which(is.na(names))
+        if (length(i) > 0) {
+            stop(sprintf("'%s' column name %d is missing", name, i))
+        }
+        nstrs <- vapply(names, function(nm)
+                            if (is.null(nm)) "" else sprintf(" (\"%s\")", nm), "")
+    }
+
+    for (i in seq_along(value)) {
+        elt <- value[[i]]
+        nm <- nstrs[[i]]
+
+        d <- dim(elt)
+        if (length(d) > 1) {
+            stop(sprintf("'%s' column %d%s is not a vector", name, i, nm))
+        }
+
+        # convert to basic types
+        if (is.logical(elt)) {
+            elt <- as.logical(elt)
+        } else if (is.numeric(elt)) {
+            if (!is.null(oldClass(elt))) {
+                elt <- as.numeric(elt)
+            }
+        } else if (is.complex(elt)) {
+            elt <- as.complex(elt)
+        } else {
+            elt <- as.character(elt)
+            inv <- which(!utf8_valid(elt))
+            if (length(inv) > 0) {
+                stop(sprintf("'%s' column %d%s cannot be encoded in valid UTF-8 (entry %.0f is invalid)", name, i, nm, inv[[1L]]))
+            }
+            elt <- as_utf8(elt)
+        }
+        value[[i]] <- elt
+    }
+    value
 }
 
 
@@ -302,6 +329,37 @@ as_by_cols <- function(name, value, x)
         }
     }
     index
+}
+
+
+as_keys <- function(name, value, x)
+{
+    if (is.null(value)) {
+        return(NULL)
+    }
+
+    value <- as_by(name, value, x)
+
+    if (length(value) == 1) {
+        i <- which(duplicated(value[[1]]))
+        if (length(i) > 0) {
+            j <- which(value[[1]] == value[[1]][[i[[1]]]])
+            stopifnot(length(j) > 1)
+            stop(sprintf("'%s' has duplicate entries (%.0f and %.0f)",
+                         name, j[[1]], j[[2]]))
+        }
+    } else {
+        kv <- key_encode(value)
+        i <- which(duplicated(kv))
+        if (length(i) > 0) {
+            j <- which(kv == kv[[i[[1]]]])
+            stopifnot(length(j) > 1)
+            stop(sprintf("'%s' has duplicate rows (%.0f and %.0f)",
+                         name, j[[1]], j[[2]]))
+        }
+    }
+
+    value
 }
 
 
