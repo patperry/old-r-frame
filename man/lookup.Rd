@@ -1,11 +1,9 @@
 \name{lookup}
 \alias{lookup}
 \alias{lookup.default}
-\alias{keys<-}
-\alias{keys<-.dataset}
-\title{Data Keys}
+\title{Data Key Lookup}
 \description{
-Get or set the keys associated with a set of values.
+Find rows with specified keys.
 }
 \usage{
 lookup(x, keys, default = NA_integer_, ...)
