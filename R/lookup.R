@@ -20,8 +20,10 @@ lookup <- function(x, keys, default = NA_integer_, ...)
 
 lookup.default <- function(x, keys, default = NA_integer_, ...)
 {
-    xkeys <- keys(x)
-    keys <- framed(keys)
+    x <- framed(x)
+    with_rethrow({
+        keys <- as_keys("keys", keys)
+    })
 
     if (length(default) != 1) {
         stop("'default' must have length 1")
@@ -34,5 +36,5 @@ lookup.default <- function(x, keys, default = NA_integer_, ...)
         default <- as.integer(default)
     }
 
-    key_index(xkeys, keys, default)
+    key_index(keys, x, default)
 }

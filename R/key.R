@@ -39,8 +39,9 @@ keys.dataset <- function(x)
         stop("argument is not a valid dataset object")
     }
 
+    n <- dim(x)[[1L]]
     with_rethrow({
-        value <- as_keys("keys", value, x)
+        value <- as_keys("keys", value, n)
     })
 
     attr(x, "keys") <- value

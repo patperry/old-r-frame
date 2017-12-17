@@ -222,19 +222,21 @@ as_names <- function(name, value, n)
 }
 
 
-as_by <- function(name, value, x)
+as_by <- function(name, value, n = NA_integer_)
 {
     if (is.null(value) || length(value) == 0L) {
         return(NULL)
     }
 
-    n <- if (is.null(x)) 0L else dim(x)[[1L]]
-
     value <- framed(value)
     nv <- dim(value)[[1L]]
-    if (nv != n) {
-        stop(sprintf("'%s' rows (%.0f) must match data rows (%.0f)",
-                         name, nv, n))
+    if (!is.na(n)) {
+        if (nv != n) {
+            stop(sprintf("'%s' rows (%.0f) must match data rows (%.0f)",
+                             name, nv, n))
+        } else {
+            n <- nv
+        }
     }
 
     keys(value) <- NULL
@@ -327,13 +329,13 @@ as_by_cols <- function(name, value, x)
 }
 
 
-as_keys <- function(name, value, x)
+as_keys <- function(name, value, n = NA_integer_)
 {
     if (is.null(value)) {
         return(NULL)
     }
 
-    value <- as_by(name, value, x)
+    value <- as_by(name, value, n)
 
     if (length(value) == 1) {
         i <- which(duplicated(value[[1]]))
