@@ -1,7 +1,6 @@
 \name{keylevels}
 \alias{keylevels}
 \alias{keylevels.default}
-\alias{keylevels.dataset}
 \title{Data Key Levels}
 \description{
 Get the set of unique key levels in a data set.

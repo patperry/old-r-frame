@@ -53,14 +53,36 @@ groups <- function(x)
 
 grouped <- function(x, by = NULL, do = NULL, ...)
 {
+    UseMethod("grouped")
+}
+
+
+grouped.default <- function(x, by = NULL, do = NULL, ...)
+{
     if (is.null(x)) {
         return(NULL)
     }
 
     x <- framed(x)
-    with_rethrow({
-        by <- as_by("by", by, x)
-    })
+
+    if (is.null(by)) {
+       # pass
+    } else if (length(dim(by)) < 2L) {
+        with_rethrow({
+            j <- as_by_cols("by", by, x)
+        })
+        if (length(j) > 0) {
+            by <- x[j]
+            x <- x[-j]
+        } else {
+            by <- NULL
+        }
+    } else {
+        with_rethrow({
+            by <- as_by("by", by, x)
+        })
+    }
+
     if (!(is.null(do) || is.function(do))) {
         stop("'do' must by a function or NULL")
     }

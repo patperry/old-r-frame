@@ -11,12 +11,46 @@ test_that("'grouped(,NULL, NULL)' puts in list", {
 })
 
 
+test_that("'grouped(,integer(), NULL)' works", {
+    x <- grouped(mtcars, integer())
+    y <- grouped(mtcars)
+    expect_equal(x, y)
+})
+
+
+test_that("'grouped(,character(), NULL)' works", {
+    x <- grouped(mtcars, character())
+    y <- grouped(mtcars)
+    expect_equal(x, y)
+})
+
+
 test_that("'grouped(,integer,NULL)' splits", {
     set.seed(0)
     group <- sample(1:5, nrow(mtcars), replace = TRUE)
-    x <- grouped(mtcars, dataset(group = group))
+    x <- grouped(mtcars, dataset(group))
     l <- lapply(split(mtcars, group), framed)
     y <- framed(list(l), keys = dataset(group = as.integer(names(l))))
+    expect_equal(x, y)
+})
+
+
+test_that("'grouped(,name,NULL)' removes column", {
+    x <- grouped(mtcars, c("gear", "cyl"))
+    by <- framed(mtcars)[, c("gear", "cyl")]
+    x1 <- framed(mtcars)[, -match(c("gear", "cyl"), names(mtcars))]
+    l <- split(x1, by)
+    keys <- matrix(as.numeric(unlist(strsplit(names(l), "\\."))),
+                   ncol = 2, byrow = 2,
+                   dimnames = list(NULL, c("gear", "cyl")))
+    y <- framed(list(l), keys = framed(keys))
+    expect_equal(x, y[keys(x),])
+})
+
+
+test_that("'grouped(,char,NULL)' removes column", {
+    x <- grouped(mtcars, c(5, 1, 2))
+    y <- grouped(mtcars, names(mtcars)[c(5, 1, 2)])
     expect_equal(x, y)
 })
 

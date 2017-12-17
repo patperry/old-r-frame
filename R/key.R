@@ -65,15 +65,6 @@ keylevels.default <- function(x)
 }
 
 
-keylevels.dataset <- function(x)
-{
-    if (!is_dataset(x)) {
-        stop("argument is not a valid dataset object")
-    }
-    keylevels.default(x)
-}
-
-
 key_escape <- function(x)
 {
     x <- as_utf8(as.character(x))
