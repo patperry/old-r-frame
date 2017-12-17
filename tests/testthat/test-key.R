@@ -77,12 +77,6 @@ test_that("'key' errors for vector columns", {
 })
 
 
-test_that("'key' errors for NA", {
-    expect_error(framed(list(x = c(1:4, NA)), key = "x"),
-                 "key column 1 \\(\"x\"\\) has a missing value \\(entry 5\\)")
-})
-
-
 test_that("'key' errors for invalid UTF-8", {
     x <- "fa\xE7ile"; Encoding(x) <- "UTF-8"
     expect_error(framed(list(x = x), key = "x"),

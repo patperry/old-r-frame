@@ -82,12 +82,6 @@ keys.dataset <- function(x)
                          i, nm, length(elt), n))
         }
 
-        j <- which(is.na(elt))
-        if (length(j) > 0) {
-            stop(sprintf("key column %d%s has a missing value (entry %.0f)",
-                         i, nm, j[[1]]))
-        }
-
         elt <- as.character(elt)
         j <- which(!utf8_valid(elt))
         if (length(j) > 0) {
