@@ -5,7 +5,7 @@
 \alias{framed.default}
 \alias{framed.list}
 \alias{framed.NULL}
-\title{Framed Variables}
+\title{Framed Data}
 \description{
 Convert a set of values to a dataset that has keys identifying the rows.
 }
@@ -54,4 +54,3 @@ framed(x, key = "col1")
 # use a different set of keys
 framed(mtcars, keys = dataset(key = 2 * (1:nrow(mtcars))))
 }
-\keyword{classes}
