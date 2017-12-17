@@ -1,7 +1,13 @@
 TODO
 ====
 
+Bugs
+----
+
+ (no known bugs)
+
+
 Features
 --------
- 
- * Implement `framed(,flat=TRUE)`.
+
+ * Implement all key-handling code in C
