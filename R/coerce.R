@@ -338,6 +338,7 @@ as_keys <- function(name, value, x)
         return(NULL)
     }
 
+    value <- framed(value)
     value <- as_by(name, value, x)
 
     if (length(value) == 1) {
