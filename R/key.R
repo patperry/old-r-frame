@@ -54,18 +54,23 @@ keylevels <- function(x)
 }
 
 
-keylevels.dataset <- function(x)
+keylevels.default <- function(x)
 {
-    if (!is_dataset(x)) {
-        stop("argument is not a valid dataset object")
-    }
-
     keys <- keys(x)
     if (is.null(keys)) {
         NULL
     } else {
         lapply(keys, function(elt) unique(elt))
     }
+}
+
+
+keylevels.dataset <- function(x)
+{
+    if (!is_dataset(x)) {
+        stop("argument is not a valid dataset object")
+    }
+    keylevels.default(x)
 }
 
 
