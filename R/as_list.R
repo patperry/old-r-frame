@@ -12,6 +12,18 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+
+as.data.frame.dataset <- function(x, row.names = NULL, ...,
+                                  stringsAsFactors = FALSE)
+{
+    if (missing(row.names)) {
+        row.names <- row.names(x)
+    }
+    as.data.frame(as.list(x, flat = TRUE), row.names = row.names, ...,
+                  stringsAsFactors = stringsAsFactors)
+}
+
+
 as.list.dataset <- function(x, ..., flat = FALSE, path = FALSE)
 {
     with_rethrow({
