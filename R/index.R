@@ -244,10 +244,10 @@ column_subset <- function(x, i)
 }
 
 
-rowid <- function(x, i)
+rowid <- function(x, keys)
 {
-    keys <- keys(x)
-    key_index(keys, i)
+    xkeys <- keys(x)
+    key_index(xkeys, keys)
 }
 
 
