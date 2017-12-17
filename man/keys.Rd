@@ -32,7 +32,7 @@ drop the keys.
     \code{keys(x)} is a dataset with the same number of rows as \code{x}.
 }
 \seealso{
-\code{\link{keylevels}}, \code{\link{framed}}.
+\code{\link{lookup}}, \code{\link{keylevels}}, \code{\link{framed}}.
 }
 \examples{
 # data.frame objects do not have keys

@@ -31,7 +31,8 @@ export(keylevels.default)
 export(`keys<-`)
 export(`keys<-.dataset`)
 export(print.dataset)
-export(rowid)
+export(lookup)
+export(lookup.default)
 
 ## Deprecated
 # (none)
@@ -48,6 +49,7 @@ S3method(framed, dataset)
 S3method(framed, list)
 S3method(framed, NULL)
 S3method(grouped, default)
+S3method(lookup, default)
 
 ## Base S3 methods
 

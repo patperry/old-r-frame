@@ -244,14 +244,6 @@ column_subset <- function(x, i)
 }
 
 
-rowid <- function(x, keys)
-{
-    xkeys <- keys(x)
-    key_index(xkeys, keys)
-}
-
-
-
 `[[<-.dataset` <- function(x, i, value)
 {
     cl <- oldClass(x)

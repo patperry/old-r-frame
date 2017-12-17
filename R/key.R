@@ -116,7 +116,7 @@ key_decode <- function(x, composite = TRUE)
 }
 
 
-key_index <- function(x, i)
+key_index <- function(x, i, default = NA_integer_)
 {
     if (is.null(i)) {
         return(NULL)
@@ -140,7 +140,7 @@ key_index <- function(x, i)
     }
 
     if (is.null(x)) {
-        return(rep(NA_integer_, ni))
+        return(rep(default, ni))
     }
 
     if (r == 2L) {
@@ -151,6 +151,7 @@ key_index <- function(x, i)
     id <- seq_len(n)
     names(id) <- key_encode(x)
     id <- id[as.character(i)]
+    id[is.na(id)] <- default
     names(id) <- NULL
 
     return(id)
