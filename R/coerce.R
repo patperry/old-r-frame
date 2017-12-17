@@ -230,16 +230,11 @@ as_by <- function(name, value, x)
 
     n <- if (is.null(x)) 0L else dim(x)[[1L]]
 
-    if (length(dim(value)) < 2L) {
-        j <- as_by_cols(name, value, x)
-        value <- framed(x[, j, drop = FALSE])
-    } else {
-        value <- framed(value)
-        nv <- dim(value)[[1L]]
-        if (nv != n) {
-            stop(sprintf("'%s' rows (%.0f) must match data rows (%.0f)",
+    value <- framed(value)
+    nv <- dim(value)[[1L]]
+    if (nv != n) {
+        stop(sprintf("'%s' rows (%.0f) must match data rows (%.0f)",
                          name, nv, n))
-        }
     }
 
     keys(value) <- NULL
@@ -338,7 +333,6 @@ as_keys <- function(name, value, x)
         return(NULL)
     }
 
-    value <- framed(value)
     value <- as_by(name, value, x)
 
     if (length(value) == 1) {
