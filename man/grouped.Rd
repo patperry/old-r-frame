@@ -12,7 +12,7 @@ grouped(x, by = NULL, do = NULL, ...)
 \arguments{
 \item{x}{object to be grouped.}
 
-\item{keys}{a dataset of grouping factors for the rows, identifiers for the columns
+\item{by}{a dataset of grouping factors for the rows, identifiers for the columns
     in \code{x} to group by, or \code{NULL}.}
 
 \item{do}{function to apply to each group, or \code{NULL}.}
@@ -34,10 +34,10 @@ using the \code{by} argument:
     \code{dataset} and used as the grouping factor;
 
     \item if \code{NULL}, then the all rows in \code{x} get grouped together.
-  }
 }
 Aside from the behavior for \code{by = NULL}, the argument behaves similarly
 to the \code{keys} argument to the \code{\link{framed}} function.
+}
 \value{
 A dataset object with values equal to the result of the \code{do} function on
 each group and keys equal to the unique grouping factor values. Or, if
