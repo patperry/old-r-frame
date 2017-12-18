@@ -241,3 +241,9 @@ test_that("indexing with named key works", {
     expect_equal(x[col = "y", row = "c", drop = FALSE],
                  x[with(keys(x), col == "y" & row == "c"),])
 })
+
+
+test_that("indexing with name 'x' works", {
+    x <- framed(list(x=2:6, y = 6:10), keys = "x")
+    expect_equal(x[x = c(3, 5),], x[c(2, 4),])
+})

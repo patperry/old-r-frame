@@ -183,26 +183,34 @@ column_subset <- function(x, i)
 # signature is ... instead of i, j, ... to allow columns named 'i' or 'j'
 `[.dataset` <- function(x, ..., drop = TRUE)
 {
-    if (!is_dataset(x)) {
-        stop("argument is not a valid dataset")
-    }
-
-    # https://stackoverflow.com/a/47316520/6233565
-    args <- match.call()[-1]
+    # quote arguments, except for 'drop'
+    args <- sys.call()[-1]
     if (!missing(drop)) {
-        args <- args[-length(args)]
+        ix <- match("drop", names(args))
+        args <- args[-ix]
     }
 
-    if (!is.logical(drop) && length(drop) == 1 && !is.na(drop)) {
-        stop("'drop' must be TRUE or FALSE")
+    # handle case when 'x' is a named argument
+    if ("x" %in% names(args)) {
+        x <- ..1
     }
 
+    # evaluate remaining arguments, replacing missing with NULL
+    # https://stackoverflow.com/a/47316520/6233565
     miss <- vapply(args, identical, NA, quote(expr=))
     args[miss] <- list(NULL)
     args[[1L]] <- quote(list)
     index <- eval.parent(args)
     n <- length(index)
     names <- names(index)
+
+    if (!is_dataset(x)) {
+        stop("argument is not a valid dataset")
+    }
+
+    if (!is.logical(drop) && length(drop) == 1L && !is.na(drop)) {
+        stop("'drop' must be TRUE or FALSE")
+    }
 
     if (!is.null(names)) {
         empty <- !nzchar(names)
