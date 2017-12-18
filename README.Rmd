@@ -114,6 +114,9 @@ You can index a dataset just like a `data.frame`, and you can also index or
 slice a dataset by key.
 
 ```{r}
+# full dataset
+print(x)
+
 # index with a matrix of keys
 x[dataset(c("y", "x"), c(3, 1)),]
 
