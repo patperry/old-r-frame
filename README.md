@@ -17,6 +17,7 @@ frame
 that allows you to keep track of the context associated with the values by
 specifying a single- or multi-component key for each row.
 
+
 The package is built around the idea that a data point consists of a
 (variable, key, value) triple identifying an attribute, target, and value.
 This notion of data in this package differs from Wickham's notion of "tidy"
@@ -26,6 +27,11 @@ individuals and makes it easier to identify the sources giving rise to
 downstream results.  R `data.frame` objects have partial support for keys
 through their `rownames`; the `dataset` object extends this support by
 allowing multi-component keys of any atomic type.
+
+
+**Note:** This package is currently experimental and its API is unstable. If
+certain operations do not behave as you expect or if you have suggestions for
+improvement, please [file an issue][issues].
 
 
 Installation
@@ -54,22 +60,86 @@ Usage
 
 ### Datasets
 
-The package provides a `dataset` type analogous to a `data.frame` that allows
-arbitrary matrix-like columns, including nested datasets.
+The `dataset` type is like a `data.frame` but it allows arbitrary matrix-like
+columns, including sparse matrices and nested datasets.
 
 
+```r
+# dataset with a sparse matrix column
+(x <- dataset(age = c(35, 70, 12, 42),
+              color = c("red", "blue", "black", "green"),
+              matrix = Matrix::sparseMatrix(i = c(1, 1, 2, 3, 3, 4),
+                                            j = c(3, 2, 1, 3, 2, 1),
+                                            x = c(2.8, -1.3, 7.1, 0.1, -5.1, 3.8),
+                                            dimnames = list(NULL, c("a", "b", "c"))))
+
+# dataset with a dataset column
+(y <- dataset(value = rnorm(4), nested = x))
+#> Error: <text>:11:0: unexpected end of input
+#> 9: # dataset with a dataset column
+#> 10: (y <- dataset(value = rnorm(4), nested = x))
+#>    ^
+```
 
 ### Keys
 
 Datasets can have keys that uniquely identify each row.
 
 
+```r
+# set single-component keys
+keys(y) <- c("w", "x", "y", "z")
+#> Error in keys(y) <- c("w", "x", "y", "z"): object 'y' not found
 
-### Slicing
+# set multi-component keys
+keys(x) <- list(major = c("x", "x", "y", "y"),
+                minor = c(1, 2, 1, 3))
+#> Error in keys(x) <- list(major = c("x", "x", "y", "y"), minor = c(1, 2, : object 'x' not found
 
-You can slice a dataset by key value.
+# get the keys
+keys(x)
+#> Error in keys(x): object 'x' not found
+
+# convert a data.frame, taking keys from the row names
+framed(mtcars[1:5,])
+#>   name                 mpg cyl disp  hp drat    wt  qsec vs am gear carb
+#> 1 Mazda RX4         │ 21.0   6  160 110 3.90 2.620 16.46  0  1    4    4
+#> 2 Mazda RX4 Wag     │ 21.0   6  160 110 3.90 2.875 17.02  0  1    4    4
+#> 3 Datsun 710        │ 22.8   4  108  93 3.85 2.320 18.61  1  1    4    1
+#> 4 Hornet 4 Drive    │ 21.4   6  258 110 3.08 3.215 19.44  1  0    3    1
+#> 5 Hornet Sportabout │ 18.7   8  360 175 3.15 3.440 17.02  0  0    3    2
+
+# take keys from a set of columns
+framed(mtcars[1:5,], c("disp", "wt"))
+#>   disp wt       mpg cyl  hp drat  qsec vs am gear carb
+#> 1 160  2.62  │ 21.0   6 110 3.90 16.46  0  1    4    4
+#> 2 160  2.875 │ 21.0   6 110 3.90 17.02  0  1    4    4
+#> 3 108  2.32  │ 22.8   4  93 3.85 18.61  1  1    4    1
+#> 4 258  3.215 │ 21.4   6 110 3.08 19.44  1  0    3    1
+#> 5 360  3.44  │ 18.7   8 175 3.15 17.02  0  0    3    2
+```
+
+### Indexing and slicing
+
+You can index a dataset just like a `data.frame`, and you can also index or
+slice a dataset by key.
 
 
+```r
+# index with a matrix of keys
+x[dataset(c("y", "x"), c(2, 1)),]
+#> Error in eval(expr, envir, enclos): object 'x' not found
+
+# slice by key value
+x[major = "y",]
+#> Error in eval(expr, envir, enclos): object 'x' not found
+x[major = c("x", "y"), minor = 3,]
+#> Error in eval(expr, envir, enclos): object 'x' not found
+
+# suppress dimension dropping with I()
+x[major = I("y"),]
+#> Error in eval(expr, envir, enclos): object 'x' not found
+```
 
 ### Grouping
 

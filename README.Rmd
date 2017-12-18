@@ -24,6 +24,7 @@ frame
 that allows you to keep track of the context associated with the values by
 specifying a single- or multi-component key for each row.
 
+
 The package is built around the idea that a data point consists of a
 (variable, key, value) triple identifying an attribute, target, and value.
 This notion of data in this package differs from Wickham's notion of "tidy"
@@ -33,6 +34,11 @@ individuals and makes it easier to identify the sources giving rise to
 downstream results.  R `data.frame` objects have partial support for keys
 through their `rownames`; the `dataset` object extends this support by
 allowing multi-component keys of any atomic type.
+
+
+**Note:** This package is currently experimental and its API is unstable. If
+certain operations do not behave as you expect or if you have suggestions for
+improvement, please [file an issue][issues].
 
 
 Installation
@@ -61,10 +67,20 @@ Usage
 
 ### Datasets
 
-The package provides a `dataset` type analogous to a `data.frame` that allows
-arbitrary matrix-like columns, including nested datasets.
+The `dataset` type is like a `data.frame` but it allows arbitrary matrix-like
+columns, including sparse matrices and nested datasets.
 
 ```{r}
+# dataset with a sparse matrix column
+(x <- dataset(age = c(35, 70, 12, 42),
+              color = c("red", "blue", "black", "green"),
+              matrix = Matrix::sparseMatrix(i = c(1, 1, 2, 3, 3, 4),
+                                            j = c(3, 2, 1, 3, 2, 1),
+                                            x = c(2.8, -1.3, 7.1, 0.1, -5.1, 3.8),
+                                            dimnames = list(NULL, c("a", "b", "c"))))
+
+# dataset with a dataset column
+(y <- dataset(value = rnorm(4), nested = x))
 ```
 
 ### Keys
@@ -72,13 +88,38 @@ arbitrary matrix-like columns, including nested datasets.
 Datasets can have keys that uniquely identify each row.
 
 ```{r}
+# set single-component keys
+keys(y) <- c("w", "x", "y", "z")
+
+# set multi-component keys
+keys(x) <- list(major = c("x", "x", "y", "y"),
+                minor = c(1, 2, 1, 3))
+
+# get the keys
+keys(x)
+
+# convert a data.frame, taking keys from the row names
+framed(mtcars[1:5,])
+
+# take keys from a set of columns
+framed(mtcars[1:5,], c("disp", "wt"))
 ```
 
-### Slicing
+### Indexing and slicing
 
-You can slice a dataset by key value.
+You can index a dataset just like a `data.frame`, and you can also index or
+slice a dataset by key.
 
 ```{r}
+# index with a matrix of keys
+x[dataset(c("y", "x"), c(2, 1)),]
+
+# slice by key value
+x[major = "y",]
+x[major = c("x", "y"), minor = 3,]
+
+# suppress dimension dropping with I()
+x[major = I("y"),]
 ```
 
 ### Grouping
