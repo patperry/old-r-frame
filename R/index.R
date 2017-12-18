@@ -13,44 +13,6 @@
 #  limitations under the License.
 
 
-# Indexing Modes
-#
-# Single
-# x[j] columns indicated by j
-#
-# Multiple
-# x[cbind(k1,k2),] all columns with keys in the specified rows
-# x[cbind(k1,k2),j] columns j with specified rows
-# x[i,j] (numeric i) rows with index i, columns j
-# x[i,j] (logical i) rows with i TRUE, columns j
-# x[i,j] (vector i) rows with names as.character(i), columns j
-# x[k1,,j] rows with keys in k1, columns j
-# x[k1,k2,j] rows with keys in k1 x k2, columns j
-
-# If #index == 1 (x[j]) then equivalent to x[,j].
-#
-# If #index == 2 (x[i,j])
-#   case i is missing:
-#      same as x[j]
-#   case i is a matrix:
-#      ncol(i) = nkey, rows identify rows in x; no dups allowed
-#   case i is logical vector:
-#      length(i) == nrow(x), rows identify rows in x
-#   case i is numeric vector:
-#      entries of i are row numbers in x; no dups allowed
-#   case i other vector:
-#      as_utf8(as.character(i)) is row name
-#
-# If #index == nkey + 1 (x[k1,k2,k3,j])
-#      as_utf8(as.character(ki)) compared against keylevels(x)[[i]]
-#      keep rows with first key in k1,
-#                 and second key in k2,
-#                 and second key in k3
-#      missing ki includes all
-#
-# TODO: for consistency, need rownames(x) == keylevels[[1]] when nkey == 1
-#
-
 elt_subset <- function(x, i)
 {
     if (length(dim(x)) <= 1) {
@@ -71,7 +33,8 @@ row_subset <- function(x, i)
 
     if (is.list(i) && is.null(oldClass(i))) {
         if (is.null(keys)) {
-            stop("cannot index rows with list when 'keys' is NULL")
+            stop("cannot index rows with list when 'keys' is NULL",
+                 call. = FALSE)
         }
         sl <- key_slice(keys, i)
         rows <- sl$rows
@@ -85,33 +48,50 @@ row_subset <- function(x, i)
                 # pass
             } else if (is.logical(i)) {
                 if (length(i) != nrow(x)) {
-                    stop(sprintf("index mask length (%.0f) must match number of rows (%.0f)", length(i), nrow(x)))
+                    stop(sprintf("index mask length (%.0f) must match number of rows (%.0f)", length(i), nrow(x)),
+                         call. = FALSE)
                 }
                 # pass
             } else {
                 rn <- rownames(x)
                 if (is.null(rn)) {
-                    stop("cannot index with character with 'rownames' is NULL")
+                    stop("cannot index with character with 'rownames' is NULL",
+                         call. = FALSE)
                 }
                 i <- as.character(i)
                 names(rows) <- rn
             }
             rows <- rows[i]
         } else {
+            if (is.null(keys)) {
+                stop("cannot index rows with matrix when 'keys' is NULL",
+                     call. = FALSE)
+            }
             rows <- key_index(keys, i)
         }
 
         if (anyNA(rows)) {
             j <- which(is.na(rows))[[1L]]
+            # TODO: better label
+            lab <- if (length(dim(i)) <= 1) {
+                paste(as.character(i[[j]]), collapse = ",")
+            } else {
+                paste(as.character(i[j, ]), collapse = ",")
+            }
             stop(sprintf("selected row entry %.0f (\"%s\") does not exist",
-                         j, as.character(i[[j]])))
+                         j, lab),
+                 call. = FALSE)
         }
     }
 
     if (!is.null(keys)) {
         # remove sliced keys
         if (!is.null(drop)) {
-            keys <- keys[rows, !drop, drop = FALSE]
+            if (all(drop)) {
+                keys <- NULL
+            } else {
+                keys <- keys[rows, !drop, drop = FALSE]
+            }
         } else {
             keys <- keys[rows, , drop = FALSE]
         }
