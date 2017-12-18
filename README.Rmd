@@ -123,10 +123,11 @@ x[dataset(c("y", "x"), c(3, 1)),]
 # slice by key value
 x[major = "y",]
 
-x[major = c("x", "y"), minor = 3,]
+# slice by key set
+x[minor = c(1, 2),]
 
 # suppress dimension dropping with I()
-x[major = I("y"),]
+x[major = I("y"), minor = c(1, 2),]
 ```
 
 ### Grouping

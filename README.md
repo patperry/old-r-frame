@@ -162,17 +162,19 @@ x[major = "y",]
 #> 1     │  12 black    0.0   -5.1    0.1
 #> 3     │  42 green    3.8    0.0    0.0
 
-x[major = c("x", "y"), minor = 3,]
-#>                   ═══════matrix═══════
-#> major   age color      a      b      c
-#> y     │  42 green    3.8      0      0
-
-# suppress dimension dropping with I()
-x[major = I("y"),]
+# slice by key set
+x[minor = c(1, 2),]
 #>                         ═══════matrix═══════
 #> major minor   age color      a      b      c
+#> x     1     │  35 red      0.0   -1.3    2.8
+#> x     2     │  70 blue     7.1    0.0    0.0
 #> y     1     │  12 black    0.0   -5.1    0.1
-#> y     3     │  42 green    3.8    0.0    0.0
+
+# suppress dimension dropping with I()
+x[major = I("y"), minor = c(1, 2),]
+#>                         ═══════matrix═══════
+#> major minor   age color      a      b      c
+#> y     1     │  12 black      0   -5.1    0.1
 ```
 
 ### Grouping
