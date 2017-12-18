@@ -13,9 +13,19 @@ frame
 [![CRAN RStudio Mirror Downloads][cranlogs-badge]][cran]
 
 
-*frame* is an R package providing an extension to the `data.frame` type
-that makes it easy to affix sampling frames to variables. It also provides
-a nice print function than the `data.frame` default.
+*frame* is an R package providing a `dataset` type analogous to `data.frame`
+that allows you to keep track of the context associated with the values by
+specifying a single- or multi-component key for each row.
+
+The package is built around the idea that a data point consists of a
+(variable, key, value) triple identifying an attribute, target, and value.
+This notion of data in this package differs from Wickham's notion of "tidy"
+data, which allows only (variable, value) pairs.  Having explicit support for
+keys makes it easier to link different measurements made on the same set of
+individuals and makes it easier to identify the sources giving rise to
+downstream results.  R `data.frame` objects have partial support for keys
+through their `rownames`; the `dataset` object extends this support by
+allowing multi-component keys of any atomic type.
 
 
 Installation
@@ -42,11 +52,37 @@ devtools::install_github("patperry/r-frame")
 Usage
 -----
 
+### Datasets
+
+The package provides a `dataset` type analogous to a `data.frame` that allows
+arbitrary matrix-like columns, including nested datasets.
+
+
+
+### Keys
+
+Datasets can have keys that uniquely identify each row.
+
+
+
+### Slicing
+
+You can slice a dataset by key value.
+
+
+
+### Grouping
+
+You can also perform computations on groups defined by one or more columns;
+the result is a dataset with the unique grouping factor values as keys.
+
+
+
 
 Citation
 --------
 
-Cite *utf8* with the following BibTeX entry:
+Cite *frame* with the following BibTeX entry:
 
     @Manual{,
         title = {frame: Data with Context},
