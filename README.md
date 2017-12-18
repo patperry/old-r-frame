@@ -115,7 +115,7 @@ keys(x)
 
 # convert a data.frame, taking keys from the row names
 framed(mtcars[1:5,])
-#> name                 mpg cyl disp  hp drat    wt  qsec vs am gear carb
+#> name              │  mpg cyl disp  hp drat    wt  qsec vs am gear carb
 #> Mazda RX4         │ 21.0   6  160 110 3.90 2.620 16.46  0  1    4    4
 #> Mazda RX4 Wag     │ 21.0   6  160 110 3.90 2.875 17.02  0  1    4    4
 #> Datsun 710        │ 22.8   4  108  93 3.85 2.320 18.61  1  1    4    1
@@ -124,7 +124,7 @@ framed(mtcars[1:5,])
 
 # take keys from a set of columns
 framed(mtcars[1:5,], c("disp", "wt"))
-#> disp wt       mpg cyl  hp drat  qsec vs am gear carb
+#> disp wt    │  mpg cyl  hp drat  qsec vs am gear carb
 #> 160  2.62  │ 21.0   6 110 3.90 16.46  0  1    4    4
 #> 160  2.875 │ 21.0   6 110 3.90 17.02  0  1    4    4
 #> 108  2.32  │ 22.8   4  93 3.85 18.61  1  1    4    1
@@ -141,7 +141,7 @@ Index a dataset just like a `data.frame`, or use key values to index or slice.
 # full dataset
 print(x)
 #>                         ═══════matrix═══════
-#> major minor   age color      a      b      c
+#> major minor │ age color      a      b      c
 #> x     1     │  35 red      0.0   -1.3    2.8
 #> x     2     │  70 blue     7.1    0.0    0.0
 #> y     1     │  12 black    0.0   -5.1    0.1
@@ -150,21 +150,21 @@ print(x)
 # index with a matrix of keys
 x[dataset(c("y", "x"), c(3, 1)),]
 #>                         ═══════matrix═══════
-#> major minor   age color      a      b      c
+#> major minor │ age color      a      b      c
 #> y     3     │  42 green    3.8    0.0    0.0
 #> x     1     │  35 red      0.0   -1.3    2.8
 
 # slice by key value
 x[major = "y",]
 #>                   ═══════matrix═══════
-#> minor   age color      a      b      c
+#> minor │ age color      a      b      c
 #> 1     │  12 black    0.0   -5.1    0.1
 #> 3     │  42 green    3.8    0.0    0.0
 
 # slice by key set
 x[minor = c(1, 2),]
 #>                         ═══════matrix═══════
-#> major minor   age color      a      b      c
+#> major minor │ age color      a      b      c
 #> x     1     │  35 red      0.0   -1.3    2.8
 #> x     2     │  70 blue     7.1    0.0    0.0
 #> y     1     │  12 black    0.0   -5.1    0.1
@@ -172,7 +172,7 @@ x[minor = c(1, 2),]
 # suppress dimension dropping with I()
 x[major = I("y"), minor = c(1, 2),]
 #>                         ═══════matrix═══════
-#> major minor   age color      a      b      c
+#> major minor │ age color      a      b      c
 #> y     1     │  12 black      0   -5.1    0.1
 ```
 
@@ -186,7 +186,7 @@ performing a computation on each group.
 # split the rows into groups defined by unique ('cyl', 'gear') combinations;
 # the grouping factors are the keys for the result
 grouped(mtcars, c("cyl", "gear"))
-#> cyl gear   [,1]        
+#> cyl gear │ [,1]        
 #> 4   3    │ dataset  1×9
 #> 4   4    │ dataset  8×9
 #> 4   5    │ dataset  2×9
@@ -201,7 +201,7 @@ grouped(mtcars, c("cyl", "gear"), function(x)
         list(n   = nrow(x),
              mpg = mean(x$mpg),
              hp  = mean(x$hp)))
-#> cyl gear    n    mpg       hp
+#> cyl gear │  n    mpg       hp
 #> 4   3    │  1 21.500  97.0000
 #> 4   4    │  8 26.925  76.0000
 #> 4   5    │  2 28.200 102.0000
