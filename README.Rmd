@@ -112,10 +112,11 @@ slice a dataset by key.
 
 ```{r}
 # index with a matrix of keys
-x[dataset(c("y", "x"), c(2, 1)),]
+x[dataset(c("y", "x"), c(3, 1)),]
 
 # slice by key value
 x[major = "y",]
+
 x[major = c("x", "y"), minor = 3,]
 
 # suppress dimension dropping with I()
@@ -124,10 +125,19 @@ x[major = I("y"),]
 
 ### Grouping
 
-You can also perform computations on groups defined by one or more columns;
-the result is a dataset with the unique grouping factor values as keys.
+You can also split the rows according to groups defined by one or more columns,
+optionally performing a computation on each group.
 
 ```{r}
+# split the rows into groups defined by unique ('cyl', 'gear') combinations;
+# the grouping factors are the keys for the result
+grouped(mtcars, c("cyl", "gear"))
+
+# perform a computation on all groups
+grouped(mtcars, c("cyl", "gear"), function(x)
+        list(n   = nrow(x),
+             mpg = mean(x$mpg),
+             hp  = mean(x$hp)))
 ```
 
 

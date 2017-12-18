@@ -81,13 +81,13 @@ columns, including sparse matrices and nested datasets.
 
 # dataset with a dataset column
 (y <- dataset(value = rnorm(4), nested = x))
-#>                ══════════════nested══════════════
-#>                              ═══════matrix═══════
-#>          value    age color       a      b      c
-#> 1  0.003240323     35 red       0.0   -1.3    2.8
-#> 2 -0.229444563     70 blue      7.1    0.0    0.0
-#> 3 -0.537865420     12 black     0.0   -5.1    0.1
-#> 4 -0.816031154     42 green     3.8    0.0    0.0
+#>               ══════════════nested══════════════
+#>                             ═══════matrix═══════
+#>         value    age color       a      b      c
+#> 1 -0.08390600     35 red       0.0   -1.3    2.8
+#> 2  1.97779783     70 blue      7.1    0.0    0.0
+#> 3  0.03981233     12 black     0.0   -5.1    0.1
+#> 4  0.08253069     42 green     3.8    0.0    0.0
 ```
 
 ### Keys
@@ -138,8 +138,11 @@ slice a dataset by key.
 
 ```r
 # index with a matrix of keys
-x[dataset(c("y", "x"), c(2, 1)),]
-#> Error in row_subset(x, i): selected row entry 1 ("y") does not existselected row entry 1 ("x") does not exist
+x[dataset(c("y", "x"), c(3, 1)),]
+#>                           ═══════matrix═══════
+#>   major minor   age color      a      b      c
+#> 1 y     3     │  42 green    3.8    0.0    0.0
+#> 2 x     1     │  35 red      0.0   -1.3    2.8
 
 # slice by key value
 x[major = "y",]
@@ -147,6 +150,7 @@ x[major = "y",]
 #>   minor   age color      a      b      c
 #> 1 1     │  12 black    0.0   -5.1    0.1
 #> 2 3     │  42 green    3.8    0.0    0.0
+
 x[major = c("x", "y"), minor = 3,]
 #>                     ═══════matrix═══════
 #>   major   age color      a      b      c
@@ -162,10 +166,39 @@ x[major = I("y"),]
 
 ### Grouping
 
-You can also perform computations on groups defined by one or more columns;
-the result is a dataset with the unique grouping factor values as keys.
+You can also split the rows according to groups defined by one or more columns,
+optionally performing a computation on each group.
 
 
+```r
+# split the rows into groups defined by unique ('cyl', 'gear') combinations;
+# the grouping factors are the keys for the result
+grouped(mtcars, c("cyl", "gear"))
+#>   cyl gear   [,1]        
+#> 1 4   3    │ dataset  1×9
+#> 2 4   4    │ dataset  8×9
+#> 3 4   5    │ dataset  2×9
+#> 4 6   3    │ dataset  2×9
+#> 5 6   4    │ dataset  4×9
+#> 6 6   5    │ dataset  1×9
+#> 7 8   3    │ dataset 12×9
+#> 8 8   5    │ dataset  2×9
+
+# perform a computation on all groups
+grouped(mtcars, c("cyl", "gear"), function(x)
+        list(n   = nrow(x),
+             mpg = mean(x$mpg),
+             hp  = mean(x$hp)))
+#>   cyl gear    n    mpg       hp
+#> 1 4   3    │  1 21.500  97.0000
+#> 2 4   4    │  8 26.925  76.0000
+#> 3 4   5    │  2 28.200 102.0000
+#> 4 6   3    │  2 19.750 107.5000
+#> 5 6   4    │  4 19.750 116.5000
+#> 6 6   5    │  1 19.700 175.0000
+#> 7 8   3    │ 12 15.050 194.1667
+#> 8 8   5    │  2 15.400 299.5000
+```
 
 
 Citation

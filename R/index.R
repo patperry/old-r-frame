@@ -22,6 +22,16 @@ elt_subset <- function(x, i)
     }
 }
 
+key_format <- function(i)
+{
+    l <- as.list(i, flat = TRUE)
+    s <- lapply(l, function(elt)
+                if (is.logical(elt) || is.numeric(elt) || is.complex(elt))
+                    as.character(elt)
+                else paste0('"', as.character(elt), '"'))
+    paste(s, collapse = ", ")
+}
+
 row_subset <- function(x, i)
 {
     if (is.null(i)) {
@@ -72,13 +82,8 @@ row_subset <- function(x, i)
 
         if (anyNA(rows)) {
             j <- which(is.na(rows))[[1L]]
-            # TODO: better label
-            lab <- if (length(dim(i)) <= 1) {
-                paste(as.character(i[[j]]), collapse = ",")
-            } else {
-                paste(as.character(i[j, ]), collapse = ",")
-            }
-            stop(sprintf("selected row entry %.0f (\"%s\") does not exist",
+            lab <- key_format(if (length(dim(i)) <= 1) i[[j]] else i[j,])
+            stop(sprintf("selected row entry %.0f (%s) does not exist",
                          j, lab),
                  call. = FALSE)
         }
