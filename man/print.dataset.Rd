@@ -6,7 +6,7 @@
 Printing and formatting data sets.
 }
 \usage{
-\method{print}{dataset}(x, rows = 20L, wrap = 0L, ..., number = TRUE,
+\method{print}{dataset}(x, rows = 20L, wrap = 0L, ..., number = NULL,
       chars = NULL, digits = NULL, quote = FALSE, na.print = NULL,
       print.gap = NULL, display = TRUE)
 
@@ -26,7 +26,8 @@ Printing and formatting data sets.
         A negative or missing value indicates no upper limit.}
 
     \item{number}{logical scalar indicating whether to print row numbers
-        for the output.}
+        for the output, or \code{NULL} to number when \code{keys(x)} is
+        \code{NULL}.}
 
     \item{chars}{maximum number of character units to display; see
         \code{\link{utf8_format}}.}

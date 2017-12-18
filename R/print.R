@@ -377,10 +377,20 @@ format.dataset <- function(x, rows = NULL, wrap = NULL, ..., chars = NULL,
 }
 
 
-print.dataset <- function(x, rows = 20L, wrap = 0L, ..., number = TRUE,
+print.dataset <- function(x, rows = 20L, wrap = 0L, ..., number = NULL,
                           chars = NULL, digits = NULL, quote = FALSE,
                           na.print = NULL, print.gap = NULL, display = TRUE)
 {
+    if (is.null(x)) {
+        return(invisible(NULL))
+    } else if (!is_dataset(x)) {
+        stop("argument is not a data set")
+    }
+
+    if (is.null(number)) {
+        number <- is.null(keys(x))
+    }
+
     with_rethrow({
         rows <- as_rows("rows", rows)
         wrap <- as_integer_scalar("wrap", wrap)
@@ -389,12 +399,6 @@ print.dataset <- function(x, rows = 20L, wrap = 0L, ..., number = TRUE,
                                       quote = quote, na.print = na.print,
                                       print.gap = print.gap, display = display)
     })
-
-    if (is.null(x)) {
-        return(invisible(NULL))
-    } else if (!is.data.frame(x)) {
-        stop("argument is not a data frame")
-    }
 
     n <- nrow(x)
     style <- new_format_style(control)

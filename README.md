@@ -81,13 +81,13 @@ columns, including sparse matrices and nested datasets.
 
 # dataset with a dataset column
 (y <- dataset(value = rnorm(4), nested = x))
-#>               ══════════════nested══════════════
-#>                             ═══════matrix═══════
-#>         value    age color       a      b      c
-#> 1 -0.08390600     35 red       0.0   -1.3    2.8
-#> 2  1.97779783     70 blue      7.1    0.0    0.0
-#> 3  0.03981233     12 black     0.0   -5.1    0.1
-#> 4  0.08253069     42 green     3.8    0.0    0.0
+#>             ══════════════nested══════════════
+#>                           ═══════matrix═══════
+#>       value    age color       a      b      c
+#> 1 0.5665851     35 red       0.0   -1.3    2.8
+#> 2 1.8342954     70 blue      7.1    0.0    0.0
+#> 3 0.8854701     12 black     0.0   -5.1    0.1
+#> 4 0.2650816     42 green     3.8    0.0    0.0
 ```
 
 ### Keys
@@ -113,21 +113,21 @@ keys(x)
 
 # convert a data.frame, taking keys from the row names
 framed(mtcars[1:5,])
-#>   name                 mpg cyl disp  hp drat    wt  qsec vs am gear carb
-#> 1 Mazda RX4         │ 21.0   6  160 110 3.90 2.620 16.46  0  1    4    4
-#> 2 Mazda RX4 Wag     │ 21.0   6  160 110 3.90 2.875 17.02  0  1    4    4
-#> 3 Datsun 710        │ 22.8   4  108  93 3.85 2.320 18.61  1  1    4    1
-#> 4 Hornet 4 Drive    │ 21.4   6  258 110 3.08 3.215 19.44  1  0    3    1
-#> 5 Hornet Sportabout │ 18.7   8  360 175 3.15 3.440 17.02  0  0    3    2
+#> name                 mpg cyl disp  hp drat    wt  qsec vs am gear carb
+#> Mazda RX4         │ 21.0   6  160 110 3.90 2.620 16.46  0  1    4    4
+#> Mazda RX4 Wag     │ 21.0   6  160 110 3.90 2.875 17.02  0  1    4    4
+#> Datsun 710        │ 22.8   4  108  93 3.85 2.320 18.61  1  1    4    1
+#> Hornet 4 Drive    │ 21.4   6  258 110 3.08 3.215 19.44  1  0    3    1
+#> Hornet Sportabout │ 18.7   8  360 175 3.15 3.440 17.02  0  0    3    2
 
 # take keys from a set of columns
 framed(mtcars[1:5,], c("disp", "wt"))
-#>   disp wt       mpg cyl  hp drat  qsec vs am gear carb
-#> 1 160  2.62  │ 21.0   6 110 3.90 16.46  0  1    4    4
-#> 2 160  2.875 │ 21.0   6 110 3.90 17.02  0  1    4    4
-#> 3 108  2.32  │ 22.8   4  93 3.85 18.61  1  1    4    1
-#> 4 258  3.215 │ 21.4   6 110 3.08 19.44  1  0    3    1
-#> 5 360  3.44  │ 18.7   8 175 3.15 17.02  0  0    3    2
+#> disp wt       mpg cyl  hp drat  qsec vs am gear carb
+#> 160  2.62  │ 21.0   6 110 3.90 16.46  0  1    4    4
+#> 160  2.875 │ 21.0   6 110 3.90 17.02  0  1    4    4
+#> 108  2.32  │ 22.8   4  93 3.85 18.61  1  1    4    1
+#> 258  3.215 │ 21.4   6 110 3.08 19.44  1  0    3    1
+#> 360  3.44  │ 18.7   8 175 3.15 17.02  0  0    3    2
 ```
 
 ### Indexing and slicing
@@ -139,29 +139,29 @@ slice a dataset by key.
 ```r
 # index with a matrix of keys
 x[dataset(c("y", "x"), c(3, 1)),]
-#>                           ═══════matrix═══════
-#>   major minor   age color      a      b      c
-#> 1 y     3     │  42 green    3.8    0.0    0.0
-#> 2 x     1     │  35 red      0.0   -1.3    2.8
+#>                         ═══════matrix═══════
+#> major minor   age color      a      b      c
+#> y     3     │  42 green    3.8    0.0    0.0
+#> x     1     │  35 red      0.0   -1.3    2.8
 
 # slice by key value
 x[major = "y",]
-#>                     ═══════matrix═══════
-#>   minor   age color      a      b      c
-#> 1 1     │  12 black    0.0   -5.1    0.1
-#> 2 3     │  42 green    3.8    0.0    0.0
+#>                   ═══════matrix═══════
+#> minor   age color      a      b      c
+#> 1     │  12 black    0.0   -5.1    0.1
+#> 3     │  42 green    3.8    0.0    0.0
 
 x[major = c("x", "y"), minor = 3,]
-#>                     ═══════matrix═══════
-#>   major   age color      a      b      c
-#> 1 y     │  42 green    3.8      0      0
+#>                   ═══════matrix═══════
+#> major   age color      a      b      c
+#> y     │  42 green    3.8      0      0
 
 # suppress dimension dropping with I()
 x[major = I("y"),]
-#>                           ═══════matrix═══════
-#>   major minor   age color      a      b      c
-#> 1 y     1     │  12 black    0.0   -5.1    0.1
-#> 2 y     3     │  42 green    3.8    0.0    0.0
+#>                         ═══════matrix═══════
+#> major minor   age color      a      b      c
+#> y     1     │  12 black    0.0   -5.1    0.1
+#> y     3     │  42 green    3.8    0.0    0.0
 ```
 
 ### Grouping
@@ -174,30 +174,30 @@ optionally performing a computation on each group.
 # split the rows into groups defined by unique ('cyl', 'gear') combinations;
 # the grouping factors are the keys for the result
 grouped(mtcars, c("cyl", "gear"))
-#>   cyl gear   [,1]        
-#> 1 4   3    │ dataset  1×9
-#> 2 4   4    │ dataset  8×9
-#> 3 4   5    │ dataset  2×9
-#> 4 6   3    │ dataset  2×9
-#> 5 6   4    │ dataset  4×9
-#> 6 6   5    │ dataset  1×9
-#> 7 8   3    │ dataset 12×9
-#> 8 8   5    │ dataset  2×9
+#> cyl gear   [,1]        
+#> 4   3    │ dataset  1×9
+#> 4   4    │ dataset  8×9
+#> 4   5    │ dataset  2×9
+#> 6   3    │ dataset  2×9
+#> 6   4    │ dataset  4×9
+#> 6   5    │ dataset  1×9
+#> 8   3    │ dataset 12×9
+#> 8   5    │ dataset  2×9
 
 # perform a computation on all groups
 grouped(mtcars, c("cyl", "gear"), function(x)
         list(n   = nrow(x),
              mpg = mean(x$mpg),
              hp  = mean(x$hp)))
-#>   cyl gear    n    mpg       hp
-#> 1 4   3    │  1 21.500  97.0000
-#> 2 4   4    │  8 26.925  76.0000
-#> 3 4   5    │  2 28.200 102.0000
-#> 4 6   3    │  2 19.750 107.5000
-#> 5 6   4    │  4 19.750 116.5000
-#> 6 6   5    │  1 19.700 175.0000
-#> 7 8   3    │ 12 15.050 194.1667
-#> 8 8   5    │  2 15.400 299.5000
+#> cyl gear    n    mpg       hp
+#> 4   3    │  1 21.500  97.0000
+#> 4   4    │  8 26.925  76.0000
+#> 4   5    │  2 28.200 102.0000
+#> 6   3    │  2 19.750 107.5000
+#> 6   4    │  4 19.750 116.5000
+#> 6   5    │  1 19.700 175.0000
+#> 8   3    │ 12 15.050 194.1667
+#> 8   5    │  2 15.400 299.5000
 ```
 
 
