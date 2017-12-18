@@ -165,22 +165,35 @@ key_slice <- function(x, i)
         stop(sprintf("number of index components (%.0f) must match number of key components (%.0f)", length(i), length(x)))
     }
 
-    n <- nrow(x)
+    n <- dim(x)[[1L]]
+    ni <- length(i)
     mask <- rep(TRUE, n)
-    for (k in seq_along(i)) {
+
+    drop <- logical(ni)
+    for (k in seq_len(ni)) {
         ik <- i[[k]]
         if (is.null(ik)) {
             next
         }
         xk <- x[[k]]
+
+        if (length(ik) == 1L && class(ik)[[1L]] != "AsIs") {
+            drop[[k]] <- TRUE
+        }
+
         if (is.integer(xk)) {
             ik <- as.integer(ik)
         } else if (is.numeric(xk)) {
             ik <- as.numeric(ik)
+        } else if (is.complex(xk)) {
+            ik <- as.complex(ik)
+        } else if (is.logical(xk)) {
+            ik <- as.logical(ik)
         } else {
             ik <- as_utf8(as.character(ik))
         }
         mask <- mask & (xk %in% ik)
     }
     ix <- which(mask)
+    list(rows = ix, drop = drop)
 }

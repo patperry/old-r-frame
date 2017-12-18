@@ -60,7 +60,7 @@ elt_subset <- function(x, i)
     }
 }
 
-row_subset <- function(x, i, drop = TRUE)
+row_subset <- function(x, i)
 {
     if (is.null(i)) {
         return(x)
@@ -73,9 +73,11 @@ row_subset <- function(x, i, drop = TRUE)
         if (is.null(keys)) {
             stop("cannot index rows with list when 'keys' is NULL")
         }
-        rows <- key_slice(keys, i)
+        sl <- key_slice(keys, i)
+        rows <- sl$rows
+        drop <- sl$drop
     } else {
-        drop <- FALSE
+        drop <- NULL
         r <- length(dim(i))
         if (r <= 1) {
             rows <- seq_len(n)
@@ -107,11 +109,13 @@ row_subset <- function(x, i, drop = TRUE)
     }
 
     if (!is.null(keys)) {
-        if (drop) {
-            keep <- vapply(i, function(k) length(k) != 1, FALSE)
-            keys <- keys[, keep, drop = FALSE]
+        # remove sliced keys
+        if (!is.null(drop)) {
+            keys <- keys[rows, !drop, drop = FALSE]
+        } else {
+            keys <- keys[rows, , drop = FALSE]
         }
-        keys <- keys[rows, , drop = FALSE]
+
         if (anyDuplicated(rows)) {
             # TODO: implement in C?
             copy <- integer(n)
@@ -181,7 +185,7 @@ column_subset <- function(x, i)
 
 
 # signature is ... instead of i, j, ... to allow columns named 'i' or 'j'
-`[.dataset` <- function(x, ..., drop = TRUE)
+`[.dataset` <- function(x, ..., drop = FALSE)
 {
     # quote arguments, except for 'drop'
     args <- sys.call()[-1]
@@ -234,7 +238,7 @@ column_subset <- function(x, i)
 
         i <- vector("list", length(keys))
         i[ki] <- index
-        x <- row_subset(x, i, drop)
+        x <- row_subset(x, i)
     } else if (n == 0L) {
         x
     } else if (n == 1L) {
@@ -243,7 +247,7 @@ column_subset <- function(x, i)
         i <- index[[1L]]
         j <- index[[2L]]
         x <- column_subset(x, j)
-        x <- row_subset(x, i, drop)
+        x <- row_subset(x, i)
     } else {
         stop("incorrect number of dimensions")
     }
