@@ -62,8 +62,8 @@ Usage
 
 ### Datasets
 
-The `dataset` type is like a `data.frame` but it allows arbitrary matrix-like
-columns, including sparse matrices and nested datasets.
+The `dataset` type is like a `data.frame` but it allows matrix-like columns,
+including sparse matrices and nested datasets.
 
 
 ```r
@@ -94,7 +94,7 @@ columns, including sparse matrices and nested datasets.
 
 ### Keys
 
-Datasets can have keys that uniquely identify each row.
+Datasets can have multi-component keys that uniquely identify each row.
 
 
 ```r
@@ -134,8 +134,7 @@ framed(mtcars[1:5,], c("disp", "wt"))
 
 ### Indexing and slicing
 
-You can index a dataset just like a `data.frame`, and you can also index or
-slice a dataset by key.
+Index a dataset just like a `data.frame`, or use key values to index or slice.
 
 
 ```r
@@ -179,8 +178,8 @@ x[major = I("y"), minor = c(1, 2),]
 
 ### Grouping
 
-You can also split the rows according to groups defined by one or more columns,
-optionally performing a computation on each group.
+Split the rows according to groups defined by one or more columns, optionally
+performing a computation on each group.
 
 
 ```r
