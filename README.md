@@ -71,14 +71,23 @@ columns, including sparse matrices and nested datasets.
               matrix = Matrix::sparseMatrix(i = c(1, 1, 2, 3, 3, 4),
                                             j = c(3, 2, 1, 3, 2, 1),
                                             x = c(2.8, -1.3, 7.1, 0.1, -5.1, 3.8),
-                                            dimnames = list(NULL, c("a", "b", "c"))))
+                                            dimnames = list(NULL, c("a", "b", "c")))))
+#>             ═══════matrix═══════
+#>   age color      a      b      c
+#> 1  35 red      0.0   -1.3    2.8
+#> 2  70 blue     7.1    0.0    0.0
+#> 3  12 black    0.0   -5.1    0.1
+#> 4  42 green    3.8    0.0    0.0
 
 # dataset with a dataset column
 (y <- dataset(value = rnorm(4), nested = x))
-#> Error: <text>:11:0: unexpected end of input
-#> 9: # dataset with a dataset column
-#> 10: (y <- dataset(value = rnorm(4), nested = x))
-#>    ^
+#>                ══════════════nested══════════════
+#>                              ═══════matrix═══════
+#>          value    age color       a      b      c
+#> 1  0.003240323     35 red       0.0   -1.3    2.8
+#> 2 -0.229444563     70 blue      7.1    0.0    0.0
+#> 3 -0.537865420     12 black     0.0   -5.1    0.1
+#> 4 -0.816031154     42 green     3.8    0.0    0.0
 ```
 
 ### Keys
@@ -89,16 +98,18 @@ Datasets can have keys that uniquely identify each row.
 ```r
 # set single-component keys
 keys(y) <- c("w", "x", "y", "z")
-#> Error in keys(y) <- c("w", "x", "y", "z"): object 'y' not found
 
 # set multi-component keys
 keys(x) <- list(major = c("x", "x", "y", "y"),
                 minor = c(1, 2, 1, 3))
-#> Error in keys(x) <- list(major = c("x", "x", "y", "y"), minor = c(1, 2, : object 'x' not found
 
 # get the keys
 keys(x)
-#> Error in keys(x): object 'x' not found
+#>   major minor
+#> 1 x         1
+#> 2 x         2
+#> 3 y         1
+#> 4 y         3
 
 # convert a data.frame, taking keys from the row names
 framed(mtcars[1:5,])
@@ -128,17 +139,25 @@ slice a dataset by key.
 ```r
 # index with a matrix of keys
 x[dataset(c("y", "x"), c(2, 1)),]
-#> Error in eval(expr, envir, enclos): object 'x' not found
+#> Error in row_subset(x, i): selected row entry 1 ("y") does not existselected row entry 1 ("x") does not exist
 
 # slice by key value
 x[major = "y",]
-#> Error in eval(expr, envir, enclos): object 'x' not found
+#>                     ═══════matrix═══════
+#>   minor   age color      a      b      c
+#> 1 1     │  12 black    0.0   -5.1    0.1
+#> 2 3     │  42 green    3.8    0.0    0.0
 x[major = c("x", "y"), minor = 3,]
-#> Error in eval(expr, envir, enclos): object 'x' not found
+#>                     ═══════matrix═══════
+#>   major   age color      a      b      c
+#> 1 y     │  42 green    3.8      0      0
 
 # suppress dimension dropping with I()
 x[major = I("y"),]
-#> Error in eval(expr, envir, enclos): object 'x' not found
+#>                           ═══════matrix═══════
+#>   major minor   age color      a      b      c
+#> 1 y     1     │  12 black    0.0   -5.1    0.1
+#> 2 y     3     │  42 green    3.8    0.0    0.0
 ```
 
 ### Grouping
