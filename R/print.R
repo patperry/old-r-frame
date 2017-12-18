@@ -460,9 +460,9 @@ print.dataset <- function(x, rows = 20L, wrap = 0L, ..., number = NULL,
     row_body <- style$faint(row_body)
 
     if (!is.null(keys)) {
-        row_head <- paste0(row_head, gap, control$vline, gap)
+        row_head <- paste0(row_head, gap, style$faint(control$vline), gap)
         row_width <- row_width + 1 + 2 * utf8_width(gap)
-        row_body <- paste0(row_body, gap, control$vline, gap)
+        row_body <- paste0(row_body, gap, style$faint(control$vline), gap)
     } else if (row_width > 0) {
         row_head <- paste0(row_head, gap)
         row_body <- paste0(row_body, gap)
