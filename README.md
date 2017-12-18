@@ -29,9 +29,11 @@ through their `rownames`; the `dataset` object extends this support by
 allowing multi-component keys of any atomic type.
 
 
-**Note:** This package is currently experimental and its API is unstable. If
-certain operations do not behave as you expect or if you have suggestions for
-improvement, please [file an issue][issues].
+**Note:** *This package is currently experimental and its API is unstable. The
+implementation is incomplete and slow. If this doesn't scare you away and you
+use the package, please help to improve the package by reporting back if you
+find that certain operations do not behave as you expect or if you have
+other suggestions for improvement by [filing an issue][issues].*
 
 
 Installation
@@ -81,13 +83,13 @@ columns, including sparse matrices and nested datasets.
 
 # dataset with a dataset column
 (y <- dataset(value = rnorm(4), nested = x))
-#>             ══════════════nested══════════════
-#>                           ═══════matrix═══════
-#>       value    age color       a      b      c
-#> 1 0.5665851     35 red       0.0   -1.3    2.8
-#> 2 1.8342954     70 blue      7.1    0.0    0.0
-#> 3 0.8854701     12 black     0.0   -5.1    0.1
-#> 4 0.2650816     42 green     3.8    0.0    0.0
+#>              ══════════════nested══════════════
+#>                            ═══════matrix═══════
+#>        value    age color       a      b      c
+#> 1  1.2629543     35 red       0.0   -1.3    2.8
+#> 2 -0.3262334     70 blue      7.1    0.0    0.0
+#> 3  1.3297993     12 black     0.0   -5.1    0.1
+#> 4  1.2724293     42 green     3.8    0.0    0.0
 ```
 
 ### Keys
