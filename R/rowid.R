@@ -12,20 +12,41 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-lookup <- function(x, keys, default = NA_integer_, ...)
+rowid <- function(x, keys, default = NA_integer_, ...)
 {
-    UseMethod("lookup")
+    UseMethod("rowid")
 }
 
 
-lookup.default <- function(x, keys, default = NA_integer_, ...)
+rowid.default <- function(x, keys, default = NA_integer_, ...)
 {
-    if (!is.null(x)) {
-        x <- as_dataset(x)
-    }
-    keys <- as_keyset(keys)
+    x <- as_dataset(x)
+    rowid(x, keys, default, ...)
+}
 
-    if (length(default) != 1) {
+
+rowid.dataset <- function(x, keys, default = NA_integer_, ...)
+{
+    if (!is_dataset(x)) {
+        stop("argument is not a valid dataset object")
+    }
+
+    x <- keys(x)
+    rowid(as_keyset(x), keys, default, ...)
+}
+
+
+rowid.keyset <- function(x, keys, default = NA_integer_, ...)
+{
+    if (!is_keyset(x)) {
+        stop("argument is not a valid keyset object")
+    }
+
+    if (!is.null(keys)) {
+        keys <- as_dataset(keys)
+    }
+
+    if (length(default) != 1L) {
         stop("'default' must have length 1")
     }
     default <- trunc(as.double(default))
@@ -36,5 +57,11 @@ lookup.default <- function(x, keys, default = NA_integer_, ...)
         default <- as.integer(default)
     }
 
-    key_index(keys, x, default)
+    key_index(x, keys, default)
+}
+
+
+lookup <- function(keys, x, default = NA_integer_, ...)
+{
+    rowid(x, keys, default, ...)
 }
