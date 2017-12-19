@@ -1,5 +1,10 @@
 \name{dataset}
 \alias{dataset}
+\alias{as_dataset}
+\alias{as_dataset.data.frame}
+\alias{as_dataset.dataset}
+\alias{as_dataset.default}
+\alias{as_dataset.list}
 \alias{is_dataset}
 \title{Data Set Objects}
 \description{
@@ -8,12 +13,14 @@ Create or test for data set objects.
 \usage{
 dataset(...)
 
+as_dataset(x, ...)
+
 is_dataset(x)
 }
 \arguments{
 \item{\dots}{data set columns for \code{dataset}}
 
-\item{x}{object to be tested.}
+\item{x}{object to be converted or tested.}
 }
 \details{
 These functions are used to create or test for a \code{dataset} object,
@@ -27,11 +34,15 @@ data set object with these columns as variables. The function has similar
 semantics to the \code{\link{data.frame}} function, except that matrix-like
 columns do not get split into vectors and string columns do not get
 converted to factors.
+
+\code{as_dataset} converts \code{x} to a dataset object. This is a generic
+function with a default implementation that converts the result of
+\code{as.data.frame(x)} to a dataset.
     
 \code{is_dataset} tests whether \code{x} is a valid dataset object.
 }
 \value{
-\code{dataset} returns a dataset object.
+\code{dataset} and \code{as_dataset} return a dataset objects.
 
 \code{is_dataset} returns \code{TRUE} or \code{FALSE} depending on
     whether its argument is a valid dataset object or not.
@@ -49,9 +60,11 @@ code <- as.hexmode(0x1f600 + 1:10)
                emoji,
                matrix = matrix(runif(20), 10, 2)))
 
-# set multi-attribute keys for the rows
-keys(ds) <- dataset(k1 = rep(c("a", "b"), each = 5),
-                    k2 = rep(1:5, times = 2))
-print(ds)
+# convert a data.frame
+as_dataset(mtcars)
+
+# test for datasets
+is_dataset(mtcars)
+is_dataset(ds)
 }
 \keyword{classes}
