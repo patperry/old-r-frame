@@ -28,9 +28,9 @@ a \code{dataset} with vector columns of atomic type (logical, integer, double,
 complex, or character) and unique rows. \code{keyset} objects can be used
 as keys on \code{dataset} objects.
 
-Key set objects use themselves as keys: if \code{x} is a \code{keyset}, then
-\code{keys(x)} returns \code{x}. Consequently, you cannot set \code{keys(x)}
-on a \code{keyset}.
+%Key set objects use themselves as keys: if \code{x} is a \code{keyset}, then
+%\code{keys(x)} returns \code{x}. Consequently, you cannot set \code{keys(x)}
+%on a \code{keyset}.
 
 The \code{keyset} function takes a set of columns as arguments and creates a
 key set object with these columns as variables. The function has similar
