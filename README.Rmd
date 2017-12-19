@@ -77,10 +77,10 @@ including sparse matrices and nested datasets.
 # dataset with a sparse matrix column
 (x <- dataset(age = c(35, 70, 12, 42),
               color = c("red", "blue", "black", "green"),
-              matrix = Matrix::sparseMatrix(i = c(1, 1, 2, 3, 3, 4),
-                                            j = c(3, 2, 1, 3, 2, 1),
-                                            x = c(2.8, -1.3, 7.1, 0.1, -5.1, 3.8),
-                                            dimnames = list(NULL, c("a", "b", "c")))))
+              set = Matrix::sparseMatrix(i = c(1, 1, 2, 3, 3, 4),
+                                         j = c(3, 2, 1, 3, 2, 1),
+                                         x = c(2.8, -1.3, 7.1, 0.1, -5.1, 3.8),
+                                         dimnames = list(NULL, c("a", "b", "c")))))
 
 # dataset with a dataset column
 (y <- dataset(value = rnorm(4), nested = x))

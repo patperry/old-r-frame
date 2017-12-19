@@ -70,21 +70,21 @@ including sparse matrices and nested datasets.
 # dataset with a sparse matrix column
 (x <- dataset(age = c(35, 70, 12, 42),
               color = c("red", "blue", "black", "green"),
-              matrix = Matrix::sparseMatrix(i = c(1, 1, 2, 3, 3, 4),
-                                            j = c(3, 2, 1, 3, 2, 1),
-                                            x = c(2.8, -1.3, 7.1, 0.1, -5.1, 3.8),
-                                            dimnames = list(NULL, c("a", "b", "c")))))
-#>             ═══════matrix═══════
-#>   age color      a      b      c
-#> 1  35 red      0.0   -1.3    2.8
-#> 2  70 blue     7.1    0.0    0.0
-#> 3  12 black    0.0   -5.1    0.1
-#> 4  42 green    3.8    0.0    0.0
+              set = Matrix::sparseMatrix(i = c(1, 1, 2, 3, 3, 4),
+                                         j = c(3, 2, 1, 3, 2, 1),
+                                         x = c(2.8, -1.3, 7.1, 0.1, -5.1, 3.8),
+                                         dimnames = list(NULL, c("a", "b", "c")))))
+#>             ════set═════
+#>   age color   a    b   c
+#> 1  35 red   0.0 -1.3 2.8
+#> 2  70 blue  7.1  0.0 0.0
+#> 3  12 black 0.0 -5.1 0.1
+#> 4  42 green 3.8  0.0 0.0
 
 # dataset with a dataset column
 (y <- dataset(value = rnorm(4), nested = x))
 #>              ══════════════nested══════════════
-#>                            ═══════matrix═══════
+#>                            ════════set═════════
 #>        value    age color       a      b      c
 #> 1  1.2629543     35 red       0.0   -1.3    2.8
 #> 2 -0.3262334     70 blue      7.1    0.0    0.0
@@ -116,12 +116,12 @@ keys(x) <- list(major = c("x", "x", "y", "y"),
 
 # show the data keys and values
 print(x)
-#>                         ═══════matrix═══════
-#> major minor │ age color      a      b      c
-#> x     1     │  35 red      0.0   -1.3    2.8
-#> x     2     │  70 blue     7.1    0.0    0.0
-#> y     1     │  12 black    0.0   -5.1    0.1
-#> y     3     │  42 green    3.8    0.0    0.0
+#>                         ════set═════
+#> major minor │ age color   a    b   c
+#> x     1     │  35 red   0.0 -1.3 2.8
+#> x     2     │  70 blue  7.1  0.0 0.0
+#> y     1     │  12 black 0.0 -5.1 0.1
+#> y     3     │  42 green 3.8  0.0 0.0
 ```
 
 ### Indexing and slicing
@@ -132,31 +132,31 @@ Index a dataset just like a `data.frame`, or use key values to index or slice.
 ```r
 # index with a matrix of keys
 x[dataset(c("y", "x"), c(3, 1)),]
-#>                         ═══════matrix═══════
-#> major minor │ age color      a      b      c
-#> y     3     │  42 green    3.8    0.0    0.0
-#> x     1     │  35 red      0.0   -1.3    2.8
+#>                         ════set═════
+#> major minor │ age color   a    b   c
+#> y     3     │  42 green 3.8  0.0 0.0
+#> x     1     │  35 red   0.0 -1.3 2.8
 
 # slice by key value
 x[major = "y",]
-#>                   ═══════matrix═══════
-#> minor │ age color      a      b      c
-#> 1     │  12 black    0.0   -5.1    0.1
-#> 3     │  42 green    3.8    0.0    0.0
+#>                   ════set═════
+#> minor │ age color   a    b   c
+#> 1     │  12 black 0.0 -5.1 0.1
+#> 3     │  42 green 3.8  0.0 0.0
 
 # slice by key set
 x[minor = c(1, 2),]
-#>                         ═══════matrix═══════
-#> major minor │ age color      a      b      c
-#> x     1     │  35 red      0.0   -1.3    2.8
-#> x     2     │  70 blue     7.1    0.0    0.0
-#> y     1     │  12 black    0.0   -5.1    0.1
+#>                         ════set═════
+#> major minor │ age color   a    b   c
+#> x     1     │  35 red   0.0 -1.3 2.8
+#> x     2     │  70 blue  7.1  0.0 0.0
+#> y     1     │  12 black 0.0 -5.1 0.1
 
 # suppress dimension dropping with I()
 x[major = I("y"), minor = c(1, 2),]
-#>                         ═══════matrix═══════
-#> major minor │ age color      a      b      c
-#> y     1     │  12 black      0   -5.1    0.1
+#>                         ════set═════
+#> major minor │ age color   a    b   c
+#> y     1     │  12 black   0 -5.1 0.1
 ```
 
 ### Grouping
