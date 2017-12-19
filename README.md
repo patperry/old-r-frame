@@ -26,7 +26,7 @@ keys makes it easier to link different measurements made on the same set of
 individuals and makes it easier to identify the sources giving rise to
 downstream results.  R `data.frame` objects have partial support for keys
 through their `rownames`; the `dataset` object extends this support by
-allowing multi-component keys of any atomic type.
+allowing non-character and multi-component keys.
 
 
 **Note:** *This package is currently experimental and its API is unstable. The
@@ -169,15 +169,15 @@ performing a computation on each group.
 # split the rows into groups defined by unique ('cyl', 'gear') combinations;
 # the grouping factors are the keys for the result
 grouped(mtcars, c("cyl", "gear"))
-#> cyl gear │ [,1]        
-#> 4   3    │ dataset  1×9
-#> 4   4    │ dataset  8×9
-#> 4   5    │ dataset  2×9
-#> 6   3    │ dataset  2×9
-#> 6   4    │ dataset  4×9
-#> 6   5    │ dataset  1×9
-#> 8   3    │ dataset 12×9
-#> 8   5    │ dataset  2×9
+#> cyl gear │ [,1]           
+#> 4   3    │ [dataset;  1×9]
+#> 4   4    │ [dataset;  8×9]
+#> 4   5    │ [dataset;  2×9]
+#> 6   3    │ [dataset;  2×9]
+#> 6   4    │ [dataset;  4×9]
+#> 6   5    │ [dataset;  1×9]
+#> 8   3    │ [dataset; 12×9]
+#> 8   5    │ [dataset;  2×9]
 
 # perform a computation on all groups
 grouped(mtcars, c("cyl", "gear"), function(x)

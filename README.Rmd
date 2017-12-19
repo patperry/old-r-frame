@@ -34,7 +34,7 @@ keys makes it easier to link different measurements made on the same set of
 individuals and makes it easier to identify the sources giving rise to
 downstream results.  R `data.frame` objects have partial support for keys
 through their `rownames`; the `dataset` object extends this support by
-allowing multi-component keys of any atomic type.
+allowing non-character and multi-component keys.
 
 
 **Note:** *This package is currently experimental and its API is unstable. The
