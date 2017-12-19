@@ -131,14 +131,17 @@ format_list <- function(x, width, control)
         d <- dim(elt)
         if (!is.null(d)) {
             paste(paste0(d, collapse = times))
+        } else if (is.null(oldClass(elt))) {
+            as.character(length(elt))
         } else {
             ""
         }
     })
     if (any(nzchar(d))) {
         d <- utf8_format(d, justify = "right")
-        y <- paste(y, d)
+        y <- paste0(y, "; ", d)
     }
+    y <- paste0("[", y, "]")
     utf8_format(y, justify = control$justify, width = width,
                 quote = control$quote)
 }
