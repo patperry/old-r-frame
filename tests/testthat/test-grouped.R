@@ -1,12 +1,8 @@
 context("grouped")
 
-test_that("'grouped(NULL)' works", {
-    expect_equal(grouped(NULL), NULL)
-})
-
 test_that("'grouped(,NULL, NULL)' puts in list", {
     x <- grouped(mtcars)
-    y <- framed(list(list(framed(mtcars))))
+    y <- framed(list(list(as_dataset(mtcars))))
     expect_equal(x, y)
 })
 
@@ -29,7 +25,7 @@ test_that("'grouped(,integer,NULL)' splits", {
     set.seed(0)
     group <- sample(1:5, nrow(mtcars), replace = TRUE)
     x <- grouped(mtcars, dataset(group))
-    l <- lapply(split(mtcars, group), framed)
+    l <- lapply(split(mtcars, group), as_dataset)
     y <- framed(list(l), keys = dataset(group = as.integer(names(l))))
     expect_equal(x, y)
 })
@@ -37,13 +33,13 @@ test_that("'grouped(,integer,NULL)' splits", {
 
 test_that("'grouped(,name,NULL)' removes column", {
     x <- grouped(mtcars, c("gear", "cyl"))
-    by <- framed(mtcars)[, c("gear", "cyl")]
-    x1 <- framed(mtcars)[, -match(c("gear", "cyl"), names(mtcars))]
+    by <- as_dataset(mtcars)[, c("gear", "cyl")]
+    x1 <- as_dataset(mtcars)[, -match(c("gear", "cyl"), names(mtcars))]
     l <- split(x1, by)
     keys <- matrix(as.numeric(unlist(strsplit(names(l), "\\."))),
                    ncol = 2, byrow = 2,
                    dimnames = list(NULL, c("gear", "cyl")))
-    y <- framed(list(l), keys = framed(keys))
+    y <- framed(list(l), keys)
     expect_equal(x, y[keys(x),])
 })
 

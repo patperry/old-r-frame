@@ -59,17 +59,22 @@ grouped <- function(x, by = NULL, do = NULL, ...)
 
 grouped.default <- function(x, by = NULL, do = NULL, ...)
 {
-    if (is.null(x)) {
-        return(NULL)
-    }
+    x <- as_dataset(x)
+    grouped(x, by, do, ...)
+}
 
-    x <- framed(x)
+
+grouped.dataset <- function(x, by = NULL, do = NULL, ...)
+{
+    if (!is_dataset(x)) {
+        stop("argument is not a valid dataset object")
+    }
 
     if (is.null(by)) {
        # pass
     } else if (length(dim(by)) < 2L) {
         with_rethrow({
-            j <- as_by_cols("by", by, x)
+            j <- as_by_cols("'by'", by, x)
         })
         if (length(j) > 0) {
             by <- x[j]
