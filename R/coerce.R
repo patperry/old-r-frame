@@ -329,37 +329,6 @@ as_by_cols <- function(name, value, x)
 }
 
 
-as_keys <- function(name, value, n = NA_integer_)
-{
-    if (is.null(value)) {
-        return(NULL)
-    }
-
-    value <- as_by(name, value, n)
-
-    if (length(value) == 1) {
-        i <- which(duplicated(value[[1]]))
-        if (length(i) > 0) {
-            j <- which(value[[1]] == value[[1]][[i[[1]]]])
-            stopifnot(length(j) > 1)
-            stop(sprintf("'%s' has duplicate entries (%.0f and %.0f)",
-                         name, j[[1]], j[[2]]))
-        }
-    } else {
-        kv <- key_encode(value)
-        i <- which(duplicated(kv))
-        if (length(i) > 0) {
-            j <- which(kv == kv[[i[[1]]]])
-            stopifnot(length(j) > 1)
-            stop(sprintf("'%s' has duplicate rows (%.0f and %.0f)",
-                         name, j[[1]], j[[2]]))
-        }
-    }
-
-    value
-}
-
-
 as_key_cols <- function(name, value, x)
 {
     if (is.null(value)) {
