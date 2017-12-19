@@ -18,7 +18,8 @@ as_dataset(x, ...)
 is_dataset(x)
 }
 \arguments{
-\item{\dots}{data set columns for \code{dataset}}
+\item{\dots}{columns for \code{dataset}; further arguments passed to or
+    from other methods for \code{as_dataset}.}
 
 \item{x}{object to be converted or tested.}
 }
