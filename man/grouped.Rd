@@ -1,5 +1,6 @@
 \name{grouped}
 \alias{grouped}
+\alias{grouped.dataset}
 \alias{grouped.default}
 \title{Grouped Data and Computations}
 \description{
