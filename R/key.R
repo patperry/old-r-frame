@@ -17,7 +17,10 @@ keys <- function(x)
     UseMethod("keys")
 }
 
-keys.default <- function(x) NULL
+keys.default <- function(x)
+{
+    NULL
+}
 
 keys.dataset <- function(x)
 {
@@ -53,6 +56,12 @@ keys.dataset <- function(x)
 
     attr(x, "keys") <- value
     x
+}
+
+
+`keys<-.keyset` <- function(x, value)
+{
+    stop("setting 'keys' on a keyset object is not allowed")
 }
 
 
