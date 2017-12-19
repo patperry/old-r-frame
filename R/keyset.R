@@ -46,8 +46,7 @@ as_keyset.keyset <- function(x, ...)
 as_keyset.default <- function(x, ...)
 {
     with_rethrow({
-        # ensure vector columns, convert to basic types
-        x <- as_by("key set", x)
+        x <- as_atomset("key set", x)
     })
 
     if (length(x) == 1L) {

@@ -222,7 +222,7 @@ as_names <- function(name, value, n)
 }
 
 
-as_by <- function(name, value, n = NA_integer_)
+as_atomset <- function(name, value, n = NA_integer_)
 {
     if (is.null(value) || length(value) == 0L) {
         return(NULL)

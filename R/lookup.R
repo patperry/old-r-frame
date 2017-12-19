@@ -21,7 +21,7 @@ lookup <- function(x, keys, default = NA_integer_, ...)
 lookup.default <- function(x, keys, default = NA_integer_, ...)
 {
     if (!is.null(x)) {
-        x <- framed(x)
+        x <- as_dataset(x)
     }
     keys <- as_keyset(keys)
 
