@@ -49,7 +49,7 @@ function with a default implementation that converts the result of
     whether its argument is a valid dataset object or not.
 }
 \seealso{
-\code{\link{framed}}, \code{\link{keys}}, \code{\link{print.dataset}}.
+\code{\link{framed}}, \code{\link{keys}}, \code{\link{schema}}.
 }
 \examples{
 # no need for stringsAsFactors = TRUE
