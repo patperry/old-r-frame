@@ -79,7 +79,7 @@ grouped.default <- function(x, by = NULL, do = NULL, ...)
         }
     } else {
         with_rethrow({
-            by <- as_by("by", by, nrow(x))
+            by <- as_by("'by'", by, nrow(x))
         })
     }
 

@@ -29,7 +29,88 @@ dataset <- function(...)
         }
     }
     names(x) <- names
-    framed(x)
+    as_dataset(x)
+}
+
+
+as_dataset <- function(x, ...)
+{
+    UseMethod("as_dataset")
+}
+
+
+as_dataset.dataset <- function(x, ...)
+{
+    if (!is_dataset(x)) {
+        stop("argument is not a valid dataset")
+    }
+    cl <- class(x)
+    i <- match("dataset", cl)
+    if (i > 1L) {
+        cl <- cl[-seq_len(i - 1L)]
+        class(x) <- cl
+    }
+
+    x
+}
+
+
+as_dataset.default <- function(x, ...)
+{
+    x <- as.data.frame(x, optional = TRUE, stringsAsFactors = FALSE)
+    as_dataset(x)
+}
+
+
+as_dataset.data.frame <- function(x, ...)
+{
+    if (!is.data.frame(x)) {
+        stop("argument is not a valid data frame")
+    }
+
+    # convert row names to the first column
+    keys <- if (.row_names_info(x) > 0)
+        keyset(name = row.names(x))
+    else NULL
+
+    l <- as.list(x)
+    x <- framed(l, ...)
+    keys(x) <- keys
+    x
+}
+
+
+as_dataset.list <- function(x, ...)
+{
+    if (!is.list(x)) {
+        stop("argument is not a list")
+    }
+
+    nc <- length(x)
+    with_rethrow({
+        names <- as_names("column name", names(x), nc)
+    })
+    names(x) <- names
+
+    # make sure columns are vectors and matrices only
+    for (i in seq_len(nc)) {
+        elt <- x[[i]]
+        lab <- if (is.null(names)) "" else sprintf(" (\"%s\")", names[[i]])
+        if (is.null(elt)) {
+            stop(sprintf("column %.0f%s is NULL", i, lab))
+        }
+        d <- dim(elt)
+        if (length(d) > 2) {
+            stop(sprintf("column %.0f%s has more than 2 dimensions", i, lab))
+        }
+    }
+
+    # validate column lengths
+    nr <- nrow_dataset(x)
+    cols <- lapply(x, as_column, nr)
+
+    structure(cols, class = c("dataset", "data.frame"),
+              row.names = .set_row_names(nr))
 }
 
 

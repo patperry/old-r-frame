@@ -20,10 +20,10 @@ lookup <- function(x, keys, default = NA_integer_, ...)
 
 lookup.default <- function(x, keys, default = NA_integer_, ...)
 {
-    x <- framed(x)
-    with_rethrow({
-        keys <- as_keys("keys", keys)
-    })
+    if (!is.null(x)) {
+        x <- framed(x)
+    }
+    keys <- as_keyset(keys)
 
     if (length(default) != 1) {
         stop("'default' must have length 1")

@@ -39,10 +39,17 @@ keys.dataset <- function(x)
         stop("argument is not a valid dataset object")
     }
 
-    n <- dim(x)[[1L]]
-    with_rethrow({
-        value <- as_keys("keys", value, n)
-    })
+    if (!is.null(value)) {
+        with_rethrow({
+            value <- as_keyset(value)
+        })
+
+        n <- dim(x)[[1L]]
+        nk <- nrow(value)
+        if (n != nk) {
+            stop(sprintf("key rows (%.0f) must match data rows (%.0f)", nk, n))
+        }
+    }
 
     attr(x, "keys") <- value
     x

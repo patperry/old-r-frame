@@ -66,14 +66,14 @@ test_that("indexing with row number works", {
 
 
 test_that("indexing with row number and 'drop' works", {
-    x <- framed(mtcars)
+    x <- as_dataset(mtcars)
     i <- c(13, 5, 20, 19)
-    expect_equal(x[i, , drop = FALSE], framed(mtcars[i,]))
+    expect_equal(x[i, , drop = FALSE], as_dataset(mtcars[i,]))
 })
 
 
 test_that("indexing with duplicates should not error if key is set", {
-    x <- framed(mtcars)
+    x <- as_dataset(mtcars)
     i <- c(13, 5, 20, 19, 5, 7)
     y <- x[i,]
     z <- framed(mtcars[i,])
@@ -84,28 +84,28 @@ test_that("indexing with duplicates should not error if key is set", {
 
 
 test_that("indexing with row names works", {
-    x <- framed(mtcars)
+    x <- as_dataset(mtcars)
     i <- c(13, 5, 20, 19)
     expect_equal(x[i,], x[rownames(x)[i],])
 })
 
 
 test_that("indexing with column number works", {
-    x <- framed(mtcars)
+    x <- as_dataset(mtcars)
     j <- c(5, 3, 7)
-    expect_equal(x[,j], framed(mtcars[,j]))
+    expect_equal(x[,j], as_dataset(mtcars[,j]))
 })
 
 
 test_that("'length' does not include key columns", {
-    expect_equal(length(framed(mtcars)), length(mtcars))
+    expect_equal(length(as_dataset(mtcars)), length(mtcars))
 })
 
 
 test_that("indexing without keys works", {
-    x <- framed(list(a = letters))
-    expect_equal(framed(x[1:5,,drop = FALSE]),
-                 framed(list(a = letters[1:5])))
+    x <- as_dataset(list(a = letters))
+    expect_equal(as_dataset(x[1:5,,drop = FALSE]),
+                 as_dataset(list(a = letters[1:5])))
 })
 
 

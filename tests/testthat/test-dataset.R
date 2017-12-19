@@ -1,25 +1,15 @@
 
-context("framed")
+context("dataset")
 
-test_that("'framed NULL is NULL", {
-    expect_equal(framed(NULL), NULL)
-})
 
 test_that("'dataset' allows NULL names", {
-    x <- framed(list(1, 2, 3))
+    x <- as_dataset(list(1, 2, 3))
     expect_equal(names(x), NULL)
 })
 
-# Removed; this is no longer the default behavior
-#test_that("'dataset' evaluates columns in order", {
-#    x <- dataset(x = 1:10, y = 2 * x, z = 3 * x, y = x)
-#    l <- list(x = 1:10, y = 2 * (1:10), z = 3 * (1:10), y = 1:10)
-#    expect_equal(x, framed(l))
-#})
 
-
-test_that("'framed.list' errors for non-list inputs", {
-    expect_error(framed.list(NULL),
+test_that("'as_dataset.list' errors for non-list inputs", {
+    expect_error(as_dataset.list(NULL),
                  "argument is not a list")
 })
 
@@ -120,10 +110,10 @@ test_that("'framed' drops matrix row names", {
 })
 
 
-test_that("'framed' can convert data.frame row names", {
+test_that("'as_dataset' can convert data.frame row names", {
     x1 <- data.frame(x = 1:26, row.names = letters)
     x2 <- data.frame(name = letters, x = 1:26, stringsAsFactors = FALSE)
-    expect_equal(framed(x1), framed(x2, keys = "name"))
+    expect_equal(as_dataset(x1), framed(x2, keys = "name"))
 })
 
 

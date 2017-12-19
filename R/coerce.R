@@ -228,12 +228,12 @@ as_by <- function(name, value, n = NA_integer_)
         return(NULL)
     }
 
-    value <- framed(value)
+    value <- as_dataset(value)
     nv <- dim(value)[[1L]]
     if (!is.na(n)) {
         if (nv != n) {
-            stop(sprintf("'%s' rows (%.0f) must match data rows (%.0f)",
-                             name, nv, n))
+            stop(sprintf("%s rows (%.0f) must match data rows (%.0f)",
+                         name, nv, n))
         } else {
             n <- nv
         }
@@ -243,7 +243,7 @@ as_by <- function(name, value, n = NA_integer_)
 
     # validate key length
     if (length(value) > .Machine$integer.max) {
-        stop(sprintf("'%s' number columns exceeds maximum (%d)",
+        stop(sprintf("%s number columns exceeds maximum (%d)",
                      name, .Machine$integer.max))
     }
 
@@ -254,7 +254,7 @@ as_by <- function(name, value, n = NA_integer_)
     } else {
         i <- which(is.na(names))
         if (length(i) > 0) {
-            stop(sprintf("'%s' column name %d is missing", name, i))
+            stop(sprintf("%s column name %d is missing", name, i))
         }
         nstrs <- vapply(names, function(nm)
                             if (is.null(nm)) "" else sprintf(" (\"%s\")", nm), "")
@@ -266,7 +266,7 @@ as_by <- function(name, value, n = NA_integer_)
 
         d <- dim(elt)
         if (length(d) > 1) {
-            stop(sprintf("'%s' column %d%s is not a vector", name, i, nm))
+            stop(sprintf("%s column %d%s is not a vector", name, i, nm))
         }
 
         # convert to basic types
@@ -282,7 +282,7 @@ as_by <- function(name, value, n = NA_integer_)
             elt <- as.character(elt)
             inv <- which(!utf8_valid(elt))
             if (length(inv) > 0) {
-                stop(sprintf("'%s' column %d%s cannot be encoded in valid UTF-8 (entry %.0f is invalid)", name, i, nm, inv[[1L]]))
+                stop(sprintf("%s column %d%s cannot be encoded in valid UTF-8 (entry %.0f is invalid)", name, i, nm, inv[[1L]]))
             }
             elt <- as_utf8(elt)
         }
