@@ -1,7 +1,6 @@
 \name{lookup}
 \alias{lookup}
 \alias{rowid}
-\alias{rowid.dataset}
 \alias{rowid.default}
 \alias{rowid.keyset}
 \title{Data Key Lookup}
@@ -37,8 +36,9 @@ coerced to the appropriate types.
 
 \code{lookup} calls \code{rowid} with its arguments swapped.
 
-\code{rowid} function is a generic function with implementations for
-\code{dataset} and \code{keyset}.
+\code{rowid} function is a generic function with an implementation for
+\code{keyset}. The default implementation for other objects is to call
+\code{rowid} on the result of \code{as_keyset(keys(x))}.
 }
 \value{
 A vector of row indices in \code{x} for the corresponding rows in the

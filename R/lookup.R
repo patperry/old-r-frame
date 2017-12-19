@@ -18,12 +18,8 @@ rowid <- function(x, keys, default = NA_integer_, ...)
 }
 
 
-rowid.dataset <- function(x, keys, default = NA_integer_, ...)
+rowid.default <- function(x, keys, default = NA_integer_, ...)
 {
-    if (!is_dataset(x)) {
-        stop("argument is not a valid dataset object")
-    }
-
     x <- keys(x)
     rowid(as_keyset(x), keys, default, ...)
 }

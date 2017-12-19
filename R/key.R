@@ -77,8 +77,17 @@ keylevels.default <- function(x)
     if (is.null(keys)) {
         NULL
     } else {
-        lapply(keys, function(elt) unique(elt))
+        keylevels(as_keyset(keys))
     }
+}
+
+
+keylevels.keyset <- function(x)
+{
+    if (!is_keyset(x)) {
+        stop("argument is not a valid keyset object")
+    }
+    lapply(x, unique)
 }
 
 
