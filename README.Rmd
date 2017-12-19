@@ -84,6 +84,9 @@ including sparse matrices and nested datasets.
 
 # dataset with a dataset column
 (y <- dataset(value = rnorm(4), nested = x))
+
+# convert a data.frame
+as_dataset(mtcars[1:5,])
 ```
 
 ### Keys
@@ -98,14 +101,8 @@ keys(y) <- c("w", "x", "y", "z")
 keys(x) <- list(major = c("x", "x", "y", "y"),
                 minor = c(1, 2, 1, 3))
 
-# get the keys
-keys(x)
-
-# convert a data.frame, taking keys from the row names
-framed(mtcars[1:5,])
-
-# take keys from a set of columns
-framed(mtcars[1:5,], c("disp", "wt"))
+# show the data keys and values
+print(x)
 ```
 
 ### Indexing and slicing
@@ -113,9 +110,6 @@ framed(mtcars[1:5,], c("disp", "wt"))
 Index a dataset just like a `data.frame`, or use key values to index or slice.
 
 ```{r}
-# full dataset
-print(x)
-
 # index with a matrix of keys
 x[dataset(c("y", "x"), c(3, 1)),]
 

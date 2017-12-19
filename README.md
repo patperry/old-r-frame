@@ -90,6 +90,15 @@ including sparse matrices and nested datasets.
 #> 2 -0.3262334     70 blue      7.1    0.0    0.0
 #> 3  1.3297993     12 black     0.0   -5.1    0.1
 #> 4  1.2724293     42 green     3.8    0.0    0.0
+
+# convert a data.frame
+as_dataset(mtcars[1:5,])
+#> name              │  mpg cyl disp  hp drat    wt  qsec vs am gear carb
+#> Mazda RX4         │ 21.0   6  160 110 3.90 2.620 16.46  0  1    4    4
+#> Mazda RX4 Wag     │ 21.0   6  160 110 3.90 2.875 17.02  0  1    4    4
+#> Datsun 710        │ 22.8   4  108  93 3.85 2.320 18.61  1  1    4    1
+#> Hornet 4 Drive    │ 21.4   6  258 110 3.08 3.215 19.44  1  0    3    1
+#> Hornet Sportabout │ 18.7   8  360 175 3.15 3.440 17.02  0  0    3    2
 ```
 
 ### Keys
@@ -105,31 +114,14 @@ keys(y) <- c("w", "x", "y", "z")
 keys(x) <- list(major = c("x", "x", "y", "y"),
                 minor = c(1, 2, 1, 3))
 
-# get the keys
-keys(x)
-#>   major minor
-#> 1 x         1
-#> 2 x         2
-#> 3 y         1
-#> 4 y         3
-
-# convert a data.frame, taking keys from the row names
-framed(mtcars[1:5,])
-#> name              │  mpg cyl disp  hp drat    wt  qsec vs am gear carb
-#> Mazda RX4         │ 21.0   6  160 110 3.90 2.620 16.46  0  1    4    4
-#> Mazda RX4 Wag     │ 21.0   6  160 110 3.90 2.875 17.02  0  1    4    4
-#> Datsun 710        │ 22.8   4  108  93 3.85 2.320 18.61  1  1    4    1
-#> Hornet 4 Drive    │ 21.4   6  258 110 3.08 3.215 19.44  1  0    3    1
-#> Hornet Sportabout │ 18.7   8  360 175 3.15 3.440 17.02  0  0    3    2
-
-# take keys from a set of columns
-framed(mtcars[1:5,], c("disp", "wt"))
-#> disp wt    │  mpg cyl  hp drat  qsec vs am gear carb
-#> 160  2.62  │ 21.0   6 110 3.90 16.46  0  1    4    4
-#> 160  2.875 │ 21.0   6 110 3.90 17.02  0  1    4    4
-#> 108  2.32  │ 22.8   4  93 3.85 18.61  1  1    4    1
-#> 258  3.215 │ 21.4   6 110 3.08 19.44  1  0    3    1
-#> 360  3.44  │ 18.7   8 175 3.15 17.02  0  0    3    2
+# show the data keys and values
+print(x)
+#>                         ═══════matrix═══════
+#> major minor │ age color      a      b      c
+#> x     1     │  35 red      0.0   -1.3    2.8
+#> x     2     │  70 blue     7.1    0.0    0.0
+#> y     1     │  12 black    0.0   -5.1    0.1
+#> y     3     │  42 green    3.8    0.0    0.0
 ```
 
 ### Indexing and slicing
@@ -138,15 +130,6 @@ Index a dataset just like a `data.frame`, or use key values to index or slice.
 
 
 ```r
-# full dataset
-print(x)
-#>                         ═══════matrix═══════
-#> major minor │ age color      a      b      c
-#> x     1     │  35 red      0.0   -1.3    2.8
-#> x     2     │  70 blue     7.1    0.0    0.0
-#> y     1     │  12 black    0.0   -5.1    0.1
-#> y     3     │  42 green    3.8    0.0    0.0
-
 # index with a matrix of keys
 x[dataset(c("y", "x"), c(3, 1)),]
 #>                         ═══════matrix═══════
