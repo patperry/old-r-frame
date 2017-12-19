@@ -1,14 +1,14 @@
 context("lookup")
 
 test_that("'lookup' with scalar key works", {
-    i <- lookup(c("Valiant", "Fiat 128", "Delorean"), mtcars)
+    i <- lookup(c("Valiant", "Fiat 128", "Delorean"), as_dataset(mtcars))
     j <- match(c("Valiant", "Fiat 128", "Delorean"), rownames(mtcars))
     expect_equal(i, j)              
 })
 
 
 test_that("'lookup' with NULL works", {
-    keys <- rownames(mtcars)
+    keys <- as_keyset(rownames(mtcars))
     expect_equal(lookup(NULL, keys), NULL)
 })
 
@@ -40,7 +40,7 @@ test_that("'lookup' with many wrong type works", {
 
 
 test_that("'lookup' errors for invalid key", {
-    keys <- rownames(mtcars)
+    keys <- as_keyset(rownames(mtcars))
     expect_error(lookup(NULL, keys, c(-1, 0)), "'default' must have length 1")
     expect_error(lookup(NULL, keys, NaN), "'default' cannot be NaN or Inf")
 })

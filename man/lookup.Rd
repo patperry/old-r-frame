@@ -38,8 +38,7 @@ coerced to the appropriate types.
 \code{lookup} calls \code{rowid} with its arguments swapped.
 
 \code{rowid} function is a generic function with implementations for
-\code{dataset} and \code{keyset}; the default implementation coerces \code{x}
-via \code{as_dataset} and calls \code{rowid} on the result.
+\code{dataset} and \code{keyset}.
 }
 \value{
 A vector of row indices in \code{x} for the corresponding rows in the
@@ -52,10 +51,11 @@ A vector of row indices in \code{x} for the corresponding rows in the
 }
 \examples{
 # single-component key
-lookup(c("Valiant", "Fiat 128", "Delorean"), mtcars)
+x <- as_dataset(mtcars)
+lookup(c("Valiant", "Fiat 128", "Delorean"), x)
 
 # rowid is similar, but has arguments swapped
-rowid(mtcars, c("Valiant", "Fiat 128", "Delorean"))
+rowid(x, c("Valiant", "Fiat 128", "Delorean"))
 
 # multi-component keys
 keys <- keyset(k1 = rep(LETTERS[1:4], each = 8), k2 = rep(1:8, 4))

@@ -18,13 +18,6 @@ rowid <- function(x, keys, default = NA_integer_, ...)
 }
 
 
-rowid.default <- function(x, keys, default = NA_integer_, ...)
-{
-    x <- as_dataset(x)
-    rowid(x, keys, default, ...)
-}
-
-
 rowid.dataset <- function(x, keys, default = NA_integer_, ...)
 {
     if (!is_dataset(x)) {
