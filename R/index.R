@@ -22,6 +22,7 @@ elt_subset <- function(x, i)
     }
 }
 
+
 key_format <- function(i)
 {
     l <- as.list(i, flat = TRUE)
@@ -32,19 +33,15 @@ key_format <- function(i)
     paste(s, collapse = ", ")
 }
 
-row_subset <- function(x, i)
-{
-    if (is.null(i)) {
-        return(x)
-    }
 
+as_row_index <- function(x, i)
+{
     n <- nrow(x)
     keys <- keys(x)
-
+    
     if (is.list(i) && is.null(oldClass(i))) {
         if (is.null(keys)) {
-            stop("cannot index rows with list when 'keys' is NULL",
-                 call. = FALSE)
+            stop("cannot index rows with list when 'keys' is NULL")
         }
         sl <- key_slice(keys, i)
         rows <- sl$rows
@@ -58,15 +55,14 @@ row_subset <- function(x, i)
                 # pass
             } else if (is.logical(i)) {
                 if (length(i) != nrow(x)) {
-                    stop(sprintf("index mask length (%.0f) must match number of rows (%.0f)", length(i), nrow(x)),
-                         call. = FALSE)
+                    stop(sprintf("index mask length (%.0f) must match number of rows (%.0f)",
+                                 length(i), nrow(x)))
                 }
                 # pass
             } else {
                 rn <- rownames(x)
                 if (is.null(rn)) {
-                    stop("cannot index with character with 'rownames' is NULL",
-                         call. = FALSE)
+                    stop("cannot index with character with 'rownames' is NULL")
                 }
                 i <- as.character(i)
                 names(rows) <- rn
@@ -74,8 +70,7 @@ row_subset <- function(x, i)
             rows <- rows[i]
         } else {
             if (is.null(keys)) {
-                stop("cannot index rows with matrix when 'keys' is NULL",
-                     call. = FALSE)
+                stop("cannot index rows with matrix when 'keys' is NULL")
             }
             rows <- key_index(keys, i)
         }
@@ -83,11 +78,25 @@ row_subset <- function(x, i)
         if (anyNA(rows)) {
             j <- which(is.na(rows))[[1L]]
             lab <- key_format(if (length(dim(i)) <= 1) i[[j]] else i[j,])
-            stop(sprintf("selected row entry %.0f (%s) does not exist",
-                         j, lab),
-                 call. = FALSE)
+            stop(sprintf("selected row entry %.0f (%s) does not exist", j, lab))
         }
     }
+
+    list(rows = rows, drop = drop)
+}
+
+
+row_subset <- function(x, i)
+{
+    if (is.null(i)) {
+        return(x)
+    }
+
+    keys <- keys(x)
+    index <- as_row_index(x, i)
+
+    rows <- index$rows
+    drop <- index$drop
 
     if (!is.null(keys)) {
         # remove sliced keys
@@ -103,6 +112,7 @@ row_subset <- function(x, i)
 
         if (anyDuplicated(rows)) {
             # TODO: implement in C?
+            n <- nrow(x)
             copy <- integer(n)
             newkey <- integer(length(rows))
             for (j in seq_along(rows)) {
@@ -123,12 +133,8 @@ row_subset <- function(x, i)
 }
 
 
-column_subset <- function(x, i)
+as_col_index <- function(x, i)
 {
-    if (is.null(i)) {
-        return(x)
-    }
-
     n <- length(x)
     if (is.logical(i) && length(i) != n) {
         stop(sprintf(
@@ -151,6 +157,18 @@ column_subset <- function(x, i)
         }
     }
 
+    cols
+}
+
+
+column_subset <- function(x, i)
+{
+    if (is.null(i)) {
+        return(x)
+    }
+
+    i <- as_col_index(x, i)
+    
     # downcast for list `[`; no elegant way to do this
     # https://stackoverflow.com/a/20639018/6233565
     rn <- attr(x, "row.names")
@@ -158,7 +176,7 @@ column_subset <- function(x, i)
     cl <- oldClass(x)
     class(x) <- NULL
 
-    x <- x[cols]
+    x <- x[i]
 
     attr(x, "row.names") <- rn
     attr(x, "keys") <- keys
@@ -241,11 +259,154 @@ column_subset <- function(x, i)
 }
 
 
+`[<-.dataset` <- function(x, i, j, value)
+{
+    if (!all(names(sys.call()) %in% c("", "value"))) {
+        stop("named arguments are not allowed")
+    }
+
+    if (!is_dataset(x)) {
+        stop("argument is not a valid dataset object")
+    }
+
+    if (nargs() < 4L) { # x[] <- value or x[i] <- value
+        if (missing(i)) {
+            i <- NULL
+        }
+        replace_cols(x, i, value)
+    } else if (missing(i)) { # x[,] <- value or x[,j] <- value
+        if (missing(j)) {
+            j <- NULL
+        }
+        replace_cols(x, j, value)
+    } else { # x[i,] <- value or x[i,j] <- value
+        if (missing(j)) {
+            j <- NULL
+        }
+        replace_cells(x, i, j, value)
+    }
+}
+
+
+replace_cols <- function(x, i, value)
+{
+    if (is.null(value)) {
+        if (is.null(i)) {
+            i <- seq_along(x)
+        } else {
+            i <- as_col_index(x, i)
+        }
+
+        # downcast to list
+        cl <- class(x)
+        keys <- attr(x, "keys")
+        rn <- attr(x, "row.names")
+        class(x) <- NULL
+
+        x[i] <- NULL
+        
+        # restore
+        attr(x, "row.names") <- rn
+        attr(x, "keys") <- keys
+        class(x) <- cl
+
+        x
+    } else {
+        replace_cells(x, NULL, i, value)
+    }
+}
+
+
+replace_cells <- function(x, i, j, value)
+{
+    if (is.null(i)) {
+        i <- seq_len(nrow(x))
+    } else {
+        i <- as_row_index(x, i)$rows
+    }
+    if (is.null(j)) {
+        j <- seq_along(x)
+    } else {
+        j <- as_col_index(x, j)
+    }
+
+    ni <- length(i)
+    nj <- length(j)
+    dv <- dim(value)
+    rv <- length(dv)
+
+    if ((asis <- class(value)[[1L]] == "AsIs")) {
+        class(value) <- class(value)[-1L]
+    }
+
+    if (rv < 2L) {
+        nv <- if (asis) 1L else length(value)
+        if (nv == ni * nj) {
+            recycle <- FALSE
+        } else if (nv == ni || nv == 1L) {
+            recycle <- TRUE
+        } else {
+            stop(sprintf("replacement has %.0f items, need %.0f", nv, ni * nj))
+        }
+    } else if (rv == 2L) {
+        if (!(dv[[1L]] == ni && dv[[2L]] == nj)) {
+            stop(sprintf("replacement has dimensions %.0fx%.0f, need %.0fx%.0f",
+                         dv[[1L]], dv[[2L]], ni, nj))
+        }
+    } else {
+        stop(sprintf("replacement cannot be a rank-%.0f array", length(dv)))
+    }
+
+    if (ni == 0 || nj == 0) {
+        return(x)
+    }
+
+    if (rv < 2L) {
+        if (recycle) {
+            for (k in seq_along(j)) {
+                jk <- j[[k]]
+                if (length(dim(x[[jk]])) <= 1L) {
+                    x[[jk]][i] <- value
+                } else {
+                    x[[jk]][i,] <- value
+                }
+            }
+        } else {
+            off <- 0L
+            for (k in seq_along(j)) {
+                ix <- (off + 1L):(off + ni)
+                jk <- j[[k]]
+                if (length(dim(x[[jk]])) <= 1L) {
+                    x[[jk]][i] <- value[ix]
+                } else {
+                    x[[jk]][i,] <- value[ix]
+                }
+                off <- off + ni
+            }
+        }
+    } else {
+        for (k in seq_along(j)) {
+            jk <- j[[k]]
+            if (length(dim(x[[jk]])) <= 1L) {
+                x[[jk]][i] <- value[, k, drop = TRUE]
+            } else {
+                x[[jk]][i,] <- value[, k, drop = TRUE]
+            }
+        }
+    }
+
+    x
+}
+
+
+
 `[[<-.dataset` <- function(x, i, value)
 {
-    cl <- oldClass(x)
-    class(x) <- NULL
+    # downcast to list
+    keys <- attr(x, "keys")
     n <- .row_names_info(x, 2L)
+    cl <- class(x)
+    class(x) <- NULL
 
     if (!is.null(value)) {
         r <- length(dim(value))
@@ -260,7 +421,10 @@ column_subset <- function(x, i)
     }
 
     x[[i]] <- value
+
+    # restore
     class(x) <- cl
+    attr(x, "keys") <- keys
     x
 }
 

@@ -162,3 +162,16 @@ test_that("'framed' works for nested", {
     x <- framed(l)
     expect_equal(x, dataset(zz = dataset(a = 1:4)))
 })
+
+
+test_that("'as_dataset' works with no colums", {
+    x <- mtcars
+    x[] <- NULL
+    x <- as_dataset(x)
+
+    expect_equal(nrow(x), nrow(mtcars))
+    expect_equal(names(x), character())
+    expect_equal(length(x), 0)
+    expect_equal(rownames(x), rownames(mtcars))
+    expect_true(is_dataset(x))
+})

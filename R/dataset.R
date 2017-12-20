@@ -74,7 +74,12 @@ as_dataset.data.frame <- function(x, ...)
     else NULL
 
     l <- as.list(x)
-    x <- framed(l, ...)
+    if (length(l) > 0L) {
+        x <- as_dataset(l, ...)
+    } else {
+        x <- structure(l, class = c("dataset", "data.frame"),
+                       row.names = .set_row_names(nrow(x)))
+    }
     keys(x) <- keys
     x
 }

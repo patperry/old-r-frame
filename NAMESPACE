@@ -11,6 +11,7 @@ importFrom(utils, tail)
 
 ## Exports
 export(`[.dataset`)
+export(`[<-.dataset`)
 export(as.list.dataset)
 export(as_dataset)
 export(as_dataset.data.frame)
@@ -83,6 +84,7 @@ S3method(schema, default)
 ### dataset
 S3method(`$<-`, dataset)
 S3method(`[`, dataset)
+S3method(`[<-`, dataset)
 S3method(`[[<-`, dataset)
 S3method(as.data.frame, dataset)
 S3method(as.list, dataset)
