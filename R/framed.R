@@ -27,16 +27,10 @@ framed.default <- function(x, keys = NULL, ...)
 
 framed.dataset <- function(x, keys = NULL, ...)
 {
-    if (!is_dataset(x)) {
-        stop("argument is not a valid dataset object")
-    }
-
     if (is.null(keys)) {
        # pass
     } else if (length(dim(keys)) < 2L) {
-        with_rethrow({
-            j <- as_key_cols("'keys'", keys, x)
-        })
+        j <- arg_key_cols(x, keys)
         if (length(j) > 0) {
             keys <- as_keyset(x[j])
             x <- x[-j]

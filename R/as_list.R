@@ -16,9 +16,15 @@
 as.data.frame.dataset <- function(x, row.names = NULL, ...,
                                   stringsAsFactors = FALSE)
 {
+    x <- arg_dataset(x)
     if (missing(row.names)) {
         row.names <- row.names(x)
+    } else if (!is.null(row.names)) {
+        row.names <- arg_names(nrow(x), "rows", row.names,
+                               allow_na = FALSE, unique = TRUE)
     }
+    stringsAsFactors <- arg_option(stringsAsFactors)
+
     as.data.frame(as.list(x, flat = TRUE), row.names = row.names, ...,
                   stringsAsFactors = stringsAsFactors)
 }
@@ -26,9 +32,9 @@ as.data.frame.dataset <- function(x, row.names = NULL, ...,
 
 as.list.dataset <- function(x, ..., flat = FALSE, path = FALSE)
 {
-    with_rethrow({
-        flat <- as_option("flat", flat)
-    })
+    x <- arg_dataset(x)
+    flat <- arg_option(flat)
+    path <- arg_option(path)
 
     x <- unclass(x)
     attr(x, "keys") <- NULL

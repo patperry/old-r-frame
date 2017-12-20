@@ -41,9 +41,6 @@ as_dataset <- function(x, ...)
 
 as_dataset.dataset <- function(x, ...)
 {
-    if (!is_dataset(x)) {
-        stop("argument is not a valid dataset")
-    }
     cl <- class(x)
     i <- match("dataset", cl)
     if (i > 1L) {
@@ -64,10 +61,6 @@ as_dataset.default <- function(x, ...)
 
 as_dataset.data.frame <- function(x, ...)
 {
-    if (!is.data.frame(x)) {
-        stop("argument is not a valid data frame")
-    }
-
     # convert row names to the first column
     keys <- if (.row_names_info(x) > 0)
         keyset(name = row.names(x))
@@ -87,17 +80,11 @@ as_dataset.data.frame <- function(x, ...)
 
 as_dataset.list <- function(x, ...)
 {
-    if (!is.list(x)) {
-        stop("argument is not a list")
-    }
-
     nc <- length(x)
-    with_rethrow({
-        names <- as_names("column name", names(x), nc)
-    })
-    names(x) <- names
+    names <- names(x) <- arg_names(nc, "columns", names(x), na = "")
 
     # make sure columns are vectors and matrices only
+    # TODO: refactor
     for (i in seq_len(nc)) {
         elt <- x[[i]]
         lab <- if (is.null(names)) "" else sprintf(" (\"%s\")", names[[i]])

@@ -51,7 +51,9 @@ row.names.dataset <- function(x)
     if (is.null(value)) {
         keys(x) <- NULL
     } else {
-        keys(x) <- dataset(name = as.character(value))
+        value <- arg_names(nrow(x), "rows", as.character(value),
+                           allow_na = FALSE, unique = TRUE)
+        keys(x) <- dataset(name = value)
     }
     x
 }

@@ -13,23 +13,61 @@
 #  limitations under the License.
 
 
-with_rethrow <- function(expr)
+as_column <- function(x, n)
 {
-    parentcall <- sys.call(-1)
-    eval(envir = parent.frame(),
-        withCallingHandlers(expr,
-            error = function(e, call = parentcall) {
-                e$call <- call
-                stop(e)
-            },
-            warning = function(w, call = parentcall) {
-                w$call <- call
-                warning(w)
-                invokeRestart("muffleWarning")
-            },
-            message = function(m, call = parentcall) {
-                m$call <- call
-            }
-        )
-    )
+    # promote scalars
+    if (length(x) == 1 && length(dim(x)) <= 1) {
+        x <- rep(x, n)
+    }
+
+    # drop keys
+    if (!is.null(keys(x))) {
+        keys(x) <- NULL
+    }
+
+    # drop names
+    d <- dim(x)
+    if (is.null(d)) {
+        names(x) <- NULL
+    } else if (length(d) == 1) {
+        dimnames(x) <- NULL
+    } else {
+        rownames(x) <- NULL
+    }
+
+    x
+}
+
+
+nrow_dataset <- function(x)
+{
+    nc <- length(x)
+    if (nc == 0) {
+        return(0L)
+    }
+
+    nr <- vapply(x, nrow_column, 0) # not int since result might overflow
+    i <- which.max(nr)
+    n <- nr[[i]]
+    j <- which(nr != 1 & nr != n)
+    if (length(j) > 0) {
+        names <- names(x)
+        stop(sprintf(
+            "columns %d and %d (\"%s\" and \"%s\") have differing numbers of rows: %.0f and %.0f",
+            i, j[[1]], names[[i]], names[[j[[1]]]],
+            n, nr[[j[[1]]]]))
+    }
+
+    n
+}
+
+
+nrow_column <- function(x)
+{
+    d <- dim(x)
+    if (is.null(d)) {
+        length(x)
+    } else {
+        d[[1]]
+    }
 }

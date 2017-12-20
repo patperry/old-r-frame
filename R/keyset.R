@@ -29,9 +29,6 @@ as_keyset <- function(x, ...)
 
 as_keyset.keyset <- function(x, ...)
 {
-    if (!is_keyset(x)) {
-        stop("argument is not a valid keyset object")
-    }
     cl <- class(x)
     i <- match("keyset", cl)
     if (i > 1L) {
@@ -52,13 +49,7 @@ as_keyset.default <- function(x, ...)
 
 as_keyset.dataset <- function(x, ...)
 {
-    if (!is_dataset(x)) {
-        stop("argument is not a valid dataset object")
-    }
-
-    with_rethrow({
-        x <- as_atomset("key set", x)
-    })
+    x <- arg_atomset(x, "key set")
 
     if (length(x) == 1L) {
         i <- which(duplicated(x[[1L]]))

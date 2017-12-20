@@ -27,9 +27,7 @@ rowid.default <- function(x, keys, default = NA_integer_, ...)
 
 rowid.keyset <- function(x, keys, default = NA_integer_, ...)
 {
-    if (!is_keyset(x)) {
-        stop("argument is not a valid keyset object")
-    }
+    x <- arg_keyset(x)
 
     if (!is.null(keys)) {
         keys <- as_dataset(keys)

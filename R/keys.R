@@ -24,9 +24,6 @@ keys.default <- function(x)
 
 keys.dataset <- function(x)
 {
-    if (!is_dataset(x)) {
-        stop("argument is not a valid dataset object")
-    }
     attr(x, "keys")
 }
 
@@ -38,14 +35,8 @@ keys.dataset <- function(x)
 
 `keys<-.dataset` <- function(x, value)
 {
-    if (!is_dataset(x)) {
-        stop("argument is not a valid dataset object")
-    }
-
     if (!is.null(value)) {
-        with_rethrow({
-            value <- as_keyset(value)
-        })
+        value <- as_keyset(value)
 
         n <- dim(x)[[1L]]
         nk <- nrow(value)
@@ -77,16 +68,13 @@ keylevels.default <- function(x)
     if (is.null(keys)) {
         NULL
     } else {
-        keylevels(as_keyset(keys))
+        keylevels(keys)
     }
 }
 
 
 keylevels.keyset <- function(x)
 {
-    if (!is_keyset(x)) {
-        stop("argument is not a valid keyset object")
-    }
     lapply(x, unique)
 }
 

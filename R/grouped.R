@@ -66,16 +66,12 @@ grouped.default <- function(x, by = NULL, do = NULL, ...)
 
 grouped.dataset <- function(x, by = NULL, do = NULL, ...)
 {
-    if (!is_dataset(x)) {
-        stop("argument is not a valid dataset object")
-    }
+    x <- arg_dataset(x)
 
     if (is.null(by)) {
        # pass
     } else if (length(dim(by)) < 2L) {
-        with_rethrow({
-            j <- as_by_cols("'by'", by, x)
-        })
+        j <- arg_by_cols(x, by)
         if (length(j) > 0) {
             by <- x[j]
             x <- x[-j]
@@ -83,14 +79,14 @@ grouped.dataset <- function(x, by = NULL, do = NULL, ...)
             by <- NULL
         }
     } else {
-        with_rethrow({
-            by <- as_atomset("'by'", by, nrow(x))
-        })
+        by <- arg_atomset(by)
+        if (nrow(by) != nrow(x)) {
+            stop(sprintf("'by' rows (%.0f) must match data rows (%.0f)",
+                         nrow(by), nrow(x)))
+        }
     }
 
-    if (!(is.null(do) || is.function(do))) {
-        stop("'do' must by a function or NULL")
-    }
+    do <- arg_function(do)
 
     # split into parts
     if (is.null(by)) {

@@ -19,16 +19,16 @@ new_format_control <- function(chars = NULL, digits = NULL,
                                display = TRUE, line = NULL)
 {
     control <- list()
-    control$chars <- as_chars("chars", chars)
-    control$digits <- as_digits("digits", digits)
-    control$na.encode <- as_option("na.encode", na.encode)
-    control$quote <- as_option("quote", quote)
-    control$na.print <- as_na_print("na.print", na.print)
-    control$print.gap <- as_print_gap("print.gap", print.gap)
-    control$justify <- as_justify("justify", justify)
-    control$width <- as_integer_scalar("width", width)
-    control$display <- as_option("display", display)
-    control$line <- as_integer_scalar("line", line, nonnegative = TRUE)
+    control$chars <- chars
+    control$digits <- digits
+    control$na.encode <- na.encode
+    control$quote <- quote
+    control$na.print <- na.print
+    control$print.gap <- print.gap
+    control$justify <- justify
+    control$width <- width
+    control$display <- display
+    control$line <- line
     control$ansi <- output_ansi()
     control$utf8 <- output_utf8()
 
@@ -329,20 +329,25 @@ format.dataset <- function(x, rows = NULL, wrap = NULL, ..., chars = NULL,
 {
     if (is.null(x)) {
         return(invisible(NULL))
-    } else if (!is_dataset(x)) {
-        stop("argument is not a valid dataset")
     }
+   
+    x <- arg_dataset(x)
+    rows <- arg_rows(rows)
+    wrap <- arg_integer_scalar(wrap)
+    chars <- arg_chars(chars)
+    na.encode <- arg_option(na.encode)
+    quote <- arg_option(quote)
+    na.print <- arg_na_print(na.print)
+    print.gap <- arg_print_gap(print.gap)
+    justify <- arg_justify(justify)
+    width <- arg_integer_scalar(width)
+    indent <- arg_integer_scalar(indent, nonnegative = TRUE)
+    line <- arg_integer_scalar(line, nonnegative = TRUE)
 
-    with_rethrow({
-        rows <- as_rows("rows", rows)
-        wrap <- as_integer_scalar("wrap", wrap)
-        control <- new_format_control(chars = chars, na.encode = na.encode,
-                                      quote = quote, na.print = na.print,
-                                      print.gap = print.gap, justify = justify,
-                                      width = width, line = line)
-        indent <- as_integer_scalar("indent", indent, nonnegative = TRUE)
-    })
-
+    control <- new_format_control(chars = chars, na.encode = na.encode,
+                                  quote = quote, na.print = na.print,
+                                  print.gap = print.gap, justify = justify,
+                                  width = width, line = line)
     n <- nrow(x)
 
     if (is.null(indent)) {
@@ -386,22 +391,28 @@ print.dataset <- function(x, rows = 20L, wrap = 0L, ..., number = NULL,
 {
     if (is.null(x)) {
         return(invisible(NULL))
-    } else if (!is_dataset(x)) {
-        stop("argument is not a data set")
     }
 
+    x <- arg_dataset(x)
     if (is.null(number)) {
         number <- is.null(keys(x))
+    } else {
+        number <- arg_option(number)
     }
 
-    with_rethrow({
-        rows <- as_rows("rows", rows)
-        wrap <- as_integer_scalar("wrap", wrap)
-        number <- as_option("number", number)
-        control <- new_format_control(chars = chars, digits = digits,
-                                      quote = quote, na.print = na.print,
-                                      print.gap = print.gap, display = display)
-    })
+    rows <- arg_rows(rows)
+    wrap <- arg_integer_scalar(wrap)
+    number <- arg_option(number)
+    chars <- arg_chars(chars)
+    digits <- arg_digits(digits)
+    quote <- arg_option(quote)
+    na.print <- arg_na_print(na.print)
+    print.gap <- arg_print_gap(print.gap)
+    display <- arg_option(display)
+    
+    control <- new_format_control(chars = chars, digits = digits,
+                                  quote = quote, na.print = na.print,
+                                  print.gap = print.gap, display = display)
 
     n <- nrow(x)
     style <- new_format_style(control)
