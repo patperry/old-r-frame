@@ -73,27 +73,27 @@ test_that("'as_dataset' on data.frame uses row names special column as key", {
 
 test_that("'key' errors for vector columns", {
     expect_error(framed(list(x = matrix(1:4, 4, 1)), keys = "x"),
-                 "key set column 1 \\(\"x\"\\) is not a vector")
+                 "argument column 1 \\(\"x\"\\) is not a vector")
 })
 
 
 test_that("'key' errors for invalid UTF-8", {
     x <- "fa\xE7ile"; Encoding(x) <- "UTF-8"
     expect_error(framed(list(x = x), keys = "x"),
-                 "key set column 1 \\(\"x\"\\) cannot be encoded in valid UTF-8 \\(entry 1 is invalid\\)")
+                 "argument column 1 \\(\"x\"\\) cannot be encoded in valid UTF-8 \\(entry 1 is invalid\\)")
 })
 
 
 test_that("'key' errors for single if not unique", {
     expect_error(framed(list(x = c(1, 2, 3, 2)), keys = "x"),
-                 "key set has duplicate entries \\(2 and 4\\)")
+                 "argument has duplicate entries \\(2 and 4\\)")
 })
 
 
 test_that("'key' errors for multiple if not unique", {
     expect_error(framed(list(x = c(1, 1, 2, 2), y = c(1, 2, 1, 1)),
                             keys = c("x", "y")),
-                 "key set has duplicate rows \\(3 and 4\\)")
+                 "argument has duplicate rows \\(3 and 4\\)")
 })
 
 
@@ -110,17 +110,17 @@ test_that("'key<-' NULL works ", {
 test_that("'key<-' errors for invalid key", {
     expect_error(framed(list(x = c(1, 1, 2, 2), y = c(1, 2, 1, 1)),
                         keys = c("x", "y")),
-                 "key set has duplicate rows \\(3 and 4\\)")
+                 "argument has duplicate rows \\(3 and 4\\)")
 })
 
 
 test_that("'key<-' errors for key with duplicates", {
     expect_error(framed(mtcars, keys = "vs"),
-                 "key set has duplicate entries \\(1 and 2\\)")
+                 "argument has duplicate entries \\(1 and 2\\)")
 
     x <- as_dataset(mtcars)
     expect_error(keys(x) <- mtcars[,"vs",drop=FALSE],
-                 "key set has duplicate entries \\(1 and 2\\)")
+                 "argument has duplicate entries \\(1 and 2\\)")
 })
 
 

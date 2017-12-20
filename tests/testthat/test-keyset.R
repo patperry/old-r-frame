@@ -19,7 +19,7 @@ test_that("'keyset' with one component works", {
 test_that("'keyset' with duplicate rows errors", {
     ds <- dataset(name = c("a", "b", "c", "a", "e"))
     expect_error(as_keyset(ds),
-                 "key set has duplicate entries \\(1 and 4\\)")
+                 "argument has duplicate entries \\(1 and 4\\)")
 })
 
 
