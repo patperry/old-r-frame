@@ -186,7 +186,7 @@ column_subset <- function(x, i)
 }
 
 
-arg_index <- function(x, ...)
+arg_index <- function(x, first, lastname)
 {
     # This is a fragile. ideally we'd use match.call(), but we can't do
     # that here since we want to be able to index like x[x = 1], with 'x'
@@ -201,16 +201,17 @@ arg_index <- function(x, ...)
     # get the arguments
     args <- call[-1L]
 
-    # stop off 'drop' argument
+    # stop off 'drop'/'value' argument
+    narg <- length(args)
     argnames <- names(args)
-    if ((ix <- match("drop", argnames, 0L))) {
-        args <- args[-ix]
+    if (identical(argnames[[narg]], lastname)) {
+        args <- args[-narg]
         argnames <- names(args)
     }
 
     # handle case when 'x' is a named argument
     if ("x" %in% argnames) {
-        x <- ..1
+        x <- first
     }
 
     # evaluate remaining arguments, replacing missing with NULL
@@ -270,7 +271,7 @@ arg_index <- function(x, ...)
 # signature is ... instead of i, j, ... to allow columns named 'i' or 'j'
 `[.dataset` <- function(x, ..., drop = FALSE)
 {
-    args <- arg_index(x, ...)
+    args <- arg_index(x, ..1, "drop")
     drop <- arg_option(drop)
 
     x <- args$x
