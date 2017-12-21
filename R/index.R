@@ -190,15 +190,18 @@ arg_index <- function(x, ...)
 {
     # This is a fragile. ideally we'd use match.call(), but we can't do
     # that here since we want to be able to index like x[x = 1], with 'x'
-    # as a named argument.
-    for (n in 1:sys.nframe()) {
+    # as a named argument. Find the first call that isn't forwarding ...
+    for (n in 1L:sys.nframe()) {
         call <- sys.call(-n)
         if (!identical(call[[3L]], quote(expr=...))) {
             break
         }
     }
-    args <- call[-1]
 
+    # get the arguments
+    args <- call[-1L]
+
+    # stop off 'drop' argument
     argnames <- names(args)
     if ((ix <- match("drop", argnames, 0L))) {
         args <- args[-ix]
@@ -215,9 +218,52 @@ arg_index <- function(x, ...)
     miss <- vapply(args, identical, NA, quote(expr=))
     args[miss] <- list(NULL)
     args[[1L]] <- quote(list)
-    index <- eval.parent(args, n + 1)
+    index <- eval.parent(args, n + 1L)
 
-    list(x = x, index = index)
+    # get the call, for error messages
+    n <- length(index)
+    names <- names(index)
+
+    if (!is.null(names)) {
+        empty <- !nzchar(names)
+        if (any(!nzchar(names)[-n])) {
+            stop(simpleError("cannot mix named and unnamed row index arguments",
+                             sys.call(-1L)))
+        }
+
+        if (empty[[n]]) {
+            j <- index[[n]]
+            names <- names[-n]
+            index <- index[-n]
+        } else {
+            j <- NULL
+        }
+
+        # TODO: add keynames
+        keys <- keys(x)
+        ki <- match(names, names(keys))
+        if (anyNA(ki)) {
+            kj <- which(is.na(ki))[[1L]]
+            stop(simpleError(sprintf("selected key \"%s\" does not exist",
+                                     names[[kj]]),
+                             sys.call(-1L)))
+        }
+
+        i <- vector("list", length(keys))
+        i[ki] <- index
+    } else if (n == 0L) {
+        i <- j <- NULL
+    } else if (n == 1L) {
+        i <- NULL
+        j <- index[[1L]]
+    } else if (n == 2L) {
+        i <- index[[1L]]
+        j <- index[[2L]]
+    } else {
+        stop(simpleError("incorrect number of dimensions", sys.call(-1L)))
+    }
+
+    list(x = x, i = i, j = j)
 }
 
 
@@ -225,49 +271,22 @@ arg_index <- function(x, ...)
 `[.dataset` <- function(x, ..., drop = FALSE)
 {
     args <- arg_index(x, ...)
-    x <- args$x
-    index <- args$index
-    n <- length(index)
-    names <- names(index)
+    drop <- arg_option(drop)
 
-    if (!is.logical(drop) && length(drop) == 1L && !is.na(drop)) {
-        stop("'drop' must be TRUE or FALSE")
+    x <- args$x
+    i <- args$i
+    j <- args$j
+
+    if (!is.null(j)) {
+        x <- column_subset(x, j)
     }
 
-    if (!is.null(names)) {
-        empty <- !nzchar(names)
-        if (any(!nzchar(names)[-n])) {
-            stop(sprintf("cannot mix named and unnamed row index arguments"))
-        }
-
-        if (empty[[n]]) {
-            j <- index[[n]]
-            names <- names[-n]
-            index <- index[-n]
-            x <- column_subset(x, j)
-        }
-
-        keys <- keys(x)
-        ki <- match(names, names(keys))
-        if (anyNA(ki)) {
-            kj <- which(is.na(ki))[[1L]]
-            stop(sprintf("selected key \"%s\" does not exist", names[[kj]]))
-        }
-
-        i <- vector("list", length(keys))
-        i[ki] <- index
+    if (!is.null(i)) {
         x <- row_subset(x, i)
-    } else if (n == 0L) {
-        x
-    } else if (n == 1L) {
-        x <- column_subset(x, index[[1L]])
-    } else if (n == 2L) {
-        i <- index[[1L]]
-        j <- index[[2L]]
-        x <- column_subset(x, j)
-        x <- row_subset(x, i)
-    } else {
-        stop("incorrect number of dimensions")
+    }
+
+    if (drop && length(x) == 1L) {
+        x <- x[[1L]]
     }
 
     x
