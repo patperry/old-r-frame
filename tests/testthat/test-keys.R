@@ -57,14 +57,14 @@ test_that("'key' errors for invalid UTF-8", {
 
 test_that("'key' errors for single if not unique", {
     expect_error(framed(list(x = c(1, 2, 3, 2)), keys = "x"),
-                 "argument has duplicate entries \\(2 and 4\\)")
+                 "argument has a duplicate row \\(4\\)")
 })
 
 
 test_that("'key' errors for multiple if not unique", {
     expect_error(framed(list(x = c(1, 1, 2, 2), y = c(1, 2, 1, 1)),
                             keys = c("x", "y")),
-                 "argument has duplicate rows \\(3 and 4\\)")
+                 "argument has a duplicate row \\(4\\)")
 })
 
 
@@ -81,17 +81,17 @@ test_that("'key<-' NULL works ", {
 test_that("'key<-' errors for invalid key", {
     expect_error(framed(list(x = c(1, 1, 2, 2), y = c(1, 2, 1, 1)),
                         keys = c("x", "y")),
-                 "argument has duplicate rows \\(3 and 4\\)")
+                 "argument has a duplicate row \\(4\\)")
 })
 
 
 test_that("'key<-' errors for key with duplicates", {
     expect_error(framed(mtcars, keys = "vs"),
-                 "argument has duplicate entries \\(1 and 2\\)")
+                 "argument has a duplicate row \\(2\\)")
 
     x <- as_dataset(mtcars)
     expect_error(keys(x) <- mtcars[,"vs",drop=FALSE],
-                 "argument has duplicate entries \\(1 and 2\\)")
+                 "argument has a duplicate row \\(2\\)")
 })
 
 

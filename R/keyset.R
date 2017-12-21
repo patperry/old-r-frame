@@ -51,23 +51,8 @@ as_keyset.dataset <- function(x, ...)
 {
     x <- arg_atomset(x, "argument")
 
-    if (length(x) == 1L) {
-        i <- which(duplicated(x[[1L]]))
-        if (length(i) > 0L) {
-            j <- which(x[[1L]] == x[[1L]][[i[[1]]]])
-            stopifnot(length(j) > 1L)
-            stop(sprintf("argument has duplicate entries (%.0f and %.0f)",
-                         j[[1L]], j[[2L]]))
-        }
-    } else {
-        kv <- key_encode(x)
-        i <- which(duplicated(kv))
-        if (length(i) > 0L) {
-            j <- which(kv == kv[[i[[1L]]]])
-            stopifnot(length(j) > 1L)
-            stop(sprintf("argument has duplicate rows (%.0f and %.0f)",
-                         j[[1L]], j[[2L]]))
-        }
+    if ((j <- anyDuplicated(x))) {
+        stop(sprintf("argument has a duplicate row (%.0f)", j))
     }
 
     class(x) <- c("keyset", class(x))
