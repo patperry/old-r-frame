@@ -177,6 +177,40 @@ column_subset <- function(x, i)
     x
 }
 
+arg_slice <- function(keys, args, call = sys.call(-1))
+{
+    names <- names(args)
+    if (is.null(names)) {
+        if (length(args) > 1L) {
+            stop(simpleError("only one unnamed slice argument is allowed", call))
+        }
+        i <- args[[1L]]
+        if (is.null(args)) {
+            return(NULL)
+        }
+        i <- as.list(i)
+        if (length(keys) != length(i)) {
+            stop(simpleError(sprintf("number of index components (%.0f) must match number of key components (%.0f)", length(i), length(keys)), call))
+        }
+    } else {
+        empty <- !nzchar(names)
+        if (any(empty)) {
+            stop(simpleError("cannot mix named and unnamed slice arguments", call))
+        }
+
+        ki <- match(names, names(keys))
+        if (anyNA(ki)) {
+            kj <- which(is.na(ki))[[1L]]
+            stop(simpleError(sprintf("selected key \"%s\" does not exist", names[[kj]]),
+                             call))
+        }
+
+        i <- vector("list", length(keys))
+        i[ki] <- args
+    }
+    i
+}
+
 
 arg_index <- function(x, first, lastname)
 {
@@ -193,7 +227,7 @@ arg_index <- function(x, first, lastname)
     # get the arguments
     args <- call[-1L]
 
-    # stop off 'drop'/'value' argument
+    # split off 'drop'/'value' argument
     narg <- length(args)
     argnames <- names(args)
     if (identical(argnames[[narg]], lastname)) {
@@ -218,31 +252,15 @@ arg_index <- function(x, first, lastname)
     names <- names(index)
 
     if (!is.null(names)) {
+        # x[name=1,] and x[name=1] are both allowed
         empty <- !nzchar(names)
-        if (any(!nzchar(names)[-n])) {
-            stop(simpleError("cannot mix named and unnamed row index arguments",
-                             sys.call(-1L)))
-        }
-
         if (empty[[n]]) {
             j <- index[[n]]
-            names <- names[-n]
             index <- index[-n]
         } else {
             j <- NULL
         }
-
-        keys <- keys(x)
-        ki <- match(names, names(keys))
-        if (anyNA(ki)) {
-            kj <- which(is.na(ki))[[1L]]
-            stop(simpleError(sprintf("selected key \"%s\" does not exist",
-                                     names[[kj]]),
-                             sys.call(-1L)))
-        }
-
-        i <- vector("list", length(keys))
-        i[ki] <- index
+        i <- arg_slice(keys(x), index, sys.call(-1L))
     } else if (n == 0L) {
         i <- j <- NULL
     } else if (n == 1L) {

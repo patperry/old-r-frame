@@ -50,6 +50,9 @@ export(rowid.keyset)
 export(schema)
 export(schema.dataset)
 export(schema.default)
+export(slice)
+export(slice.default)
+export(slice.keyset)
 
 ## Deprecated
 # (none)
@@ -77,6 +80,8 @@ S3method(rowid, default)
 S3method(rowid, keyset)
 S3method(schema, dataset)
 S3method(schema, default)
+S3method(slice, default)
+S3method(slice, keyset)
 
 
 ## Base S3 methods
