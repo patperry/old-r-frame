@@ -182,17 +182,12 @@ key_slice <- function(x, i)
     ni <- length(i)
     mask <- rep(TRUE, n)
 
-    drop <- logical(ni)
     for (k in seq_len(ni)) {
         ik <- i[[k]]
         if (is.null(ik)) {
             next
         }
         xk <- x[[k]]
-
-        if (length(ik) == 1L && class(ik)[[1L]] != "AsIs") {
-            drop[[k]] <- TRUE
-        }
 
         if (is.integer(xk)) {
             ik <- as.integer(ik)
@@ -207,6 +202,6 @@ key_slice <- function(x, i)
         }
         mask <- mask & (xk %in% ik)
     }
-    ix <- which(mask)
-    list(rows = ix, drop = drop)
+
+    which(mask)
 }

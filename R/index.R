@@ -43,9 +43,9 @@ as_row_index <- function(x, i)
         if (is.null(keys)) {
             stop("cannot index rows with list when 'keys' is NULL")
         }
-        sl <- key_slice(keys, i)
-        rows <- sl$rows
-        drop <- sl$drop
+        drop <- vapply(i, function(ik)
+                       length(ik) == 1L && class(ik)[[1L]] != "AsIs", NA)
+        rows <- key_slice(keys, i)
     } else {
         drop <- NULL
         r <- length(dim(i))
@@ -232,7 +232,6 @@ arg_index <- function(x, first, lastname)
             j <- NULL
         }
 
-        # TODO: add keynames
         keys <- keys(x)
         ki <- match(names, names(keys))
         if (anyNA(ki)) {
