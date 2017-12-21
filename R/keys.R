@@ -170,34 +170,3 @@ key_index <- function(x, i, default = NA_integer_)
 
     return(id)
 }
-
-
-key_slice <- function(x, i)
-{
-    n <- dim(x)[[1L]]
-    ni <- length(i)
-    mask <- rep(TRUE, n)
-
-    for (k in seq_len(ni)) {
-        ik <- i[[k]]
-        if (is.null(ik)) {
-            next
-        }
-        xk <- x[[k]]
-
-        if (is.integer(xk)) {
-            ik <- as.integer(ik)
-        } else if (is.numeric(xk)) {
-            ik <- as.numeric(ik)
-        } else if (is.complex(xk)) {
-            ik <- as.complex(ik)
-        } else if (is.logical(xk)) {
-            ik <- as.logical(ik)
-        } else {
-            ik <- as_utf8(as.character(ik))
-        }
-        mask <- mask & (xk %in% ik)
-    }
-
-    which(mask)
-}
