@@ -39,18 +39,6 @@ unnest <- function(x)
 }
 
 
-groups <- function(x)
-{
-    enc <- key_encode(x)
-    g <- factor(enc)
-    id <- as.integer(g)
-    uniq <- which(!duplicated(id))
-    types <- uniq[order(id[uniq])]
-    keys <- x[types, , drop = FALSE]
-    list(id = id, keys = keys)
-}
-
-
 grouped <- function(x, by = NULL, do = NULL, ...)
 {
     UseMethod("grouped")
@@ -92,14 +80,15 @@ grouped.dataset <- function(x, by = NULL, do = NULL, ...)
     if (is.null(by)) {
         y <- framed(list(list(x)))
     } else {
-        g <- groups(by)
-        xg <- split(x, g$id)
+        keys <- distinct(by)
+        g <- lookup(by, keys)
+        xg <- split(x, g)
 
         if (length(xg) == 0L) {
             return(NULL)
         }
 
-        y <- framed(list(xg), g$keys)
+        y <- framed(list(xg), keys)
     }
 
     if (!is.null(do)) {
