@@ -87,12 +87,6 @@ key_escape <- function(x)
 }
 
 
-key_unescape <- function(x)
-{
-    gsub("\\\\(\\\\|,)", "\\1", x)
-}
-
-
 key_encode <- function(x)
 {
     nk <- length(x)

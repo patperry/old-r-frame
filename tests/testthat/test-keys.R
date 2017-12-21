@@ -8,13 +8,6 @@ test_that("'key_escape' handles \\ and ' '", {
 })
 
 
-test_that("'key_unescape' reverses `key_escape", {
-    expect_equal(key_unescape(c("Jones\\, Mx.", "\\\\/", "\\,\\,\\,",
-                                "\\\\\\,\\\\", "")),
-                c("Jones, Mx.", "\\/", ",,,", "\\,\\", ""))
-})
-
-
 test_that("'key_encode' gives NULL for NULL or length 0", {
     expect_equal(key_encode(NULL), NULL)
     expect_equal(key_encode(list()), NULL)
