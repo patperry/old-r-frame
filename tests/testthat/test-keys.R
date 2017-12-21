@@ -1,34 +1,6 @@
 
 context("key")
 
-test_that("'key_escape' handles \\ and ' '", {
-    expect_equal(key_escape(c("Jones, Henrietta", "\\/", ",,,", "\\,\\", "")),
-                 c("Jones\\, Henrietta", "\\\\/", "\\,\\,\\,", "\\\\\\,\\\\",
-                   ""))
-})
-
-
-test_that("'key_encode' gives NULL for NULL or length 0", {
-    expect_equal(key_encode(NULL), NULL)
-    expect_equal(key_encode(list()), NULL)
-})
-
-
-test_that("'key_encode' leaves scalar alone", {
-    k <- c("Jones, Henrieta", "X, Mx.", "Box, George")
-    expect_equal(key_encode(list(k)), k)
-})
-
-
-test_that("'key_encode' escapes and combines others", {
-    k <- list(c("Jones, Henrieta", "X, Mx.", "Box, George"),
-              c("\\/", "", "2\\b"),
-              c("92", "2", "17"))
-    e <- lapply(k, key_escape)
-    s <- paste0(e[[1]], ",", e[[2]], ",", e[[3]])
-    expect_equal(key_encode(k), s)
-})
-
 
 test_that("'as_dataset' on data.frame uses row names as key", {
     x <- as_dataset(mtcars)

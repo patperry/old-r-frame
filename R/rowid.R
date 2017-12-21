@@ -84,8 +84,8 @@ rowid.keyset <- function(x, keys, default = NA_integer_, ...)
 }
 
 
-# this is just a temporary implementation. it works for integer, string,
-# and logical, but not for double or complex. it's also slow.
+# this is just a temporary implementation. it works, but it's really slow,
+# especially for double and complex
 key_index <- function(x, i, default = NA_integer_)
 {
     id <- seq_len(nrow(x))
@@ -104,7 +104,7 @@ key_encode <- function(x)
     if (nk == 0) {
         NULL
     } else if (nk == 1) {
-        as_utf8(as.character(x[[1]]))
+        key_escape(x[[1]])
     } else {
         do.call(paste, c(unname(lapply(x, key_escape)), sep = ","))
     }
@@ -113,7 +113,13 @@ key_encode <- function(x)
 
 key_escape <- function(x)
 {
-    x <- as_utf8(as.character(x))
+    # encode as character
+    if (is.double(x) || is.complex(x)) {
+        x <- format(x, digits = 22)
+    } else {
+        x <- as.character(x)
+    }
+
     # replace '\' with '\\', ',' with '\,'
     gsub("(\\\\|,)", "\\\\\\1", x)
 }
