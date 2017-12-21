@@ -28,4 +28,19 @@ slice.default <- function(x, ...)
 slice.keyset <- function(x, ...)
 {
     i <- arg_slice(x, list(...))
+
+    n <- nrow(x)
+    ni <- length(i)
+    mask <- rep(TRUE, n)
+
+    for (k in seq_len(ni)) {
+        ik <- i[[k]]
+        if (is.null(ik)) {
+            next
+        }
+        xk <- x[[k]]
+        mask <- mask & (xk %in% ik)
+    }
+
+    which(mask)
 }

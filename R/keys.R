@@ -174,10 +174,6 @@ key_index <- function(x, i, default = NA_integer_)
 
 key_slice <- function(x, i)
 {
-    if (length(x) != length(i)) {
-        stop(sprintf("number of index components (%.0f) must match number of key components (%.0f)", length(i), length(x)))
-    }
-
     n <- dim(x)[[1L]]
     ni <- length(i)
     mask <- rep(TRUE, n)

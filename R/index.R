@@ -415,7 +415,7 @@ arg_row_index <- function(x, i, call = sys.call(-1L))
         if (is.null(keys)) {
             stop(simpleError("cannot index rows with list when 'keys' is NULL", call))
         }
-        rows <- key_slice(keys, i)
+        rows <- slice(keys, i)
     } else {
         r <- length(dim(i))
         if (r <= 1) {
@@ -441,7 +441,7 @@ arg_row_index <- function(x, i, call = sys.call(-1L))
             if (is.null(keys)) {
                 stop(simpleError("cannot index rows with matrix when 'keys' is NULL", call))
             }
-            rows <- key_index(keys, i)
+            rows <- rowid(keys, i)
         }
 
         if (anyNA(rows)) {
@@ -457,6 +457,7 @@ arg_row_index <- function(x, i, call = sys.call(-1L))
 
 arg_slice <- function(keys, args, call = sys.call(-1))
 {
+    n <- length(keys)
     names <- names(args)
     if (is.null(names)) {
         if (length(args) > 1L) {
@@ -467,8 +468,8 @@ arg_slice <- function(keys, args, call = sys.call(-1))
             return(NULL)
         }
         i <- as.list(i)
-        if (length(keys) != length(i)) {
-            stop(simpleError(sprintf("number of index components (%.0f) must match number of key components (%.0f)", length(i), length(keys)), call))
+        if (length(i) != n) {
+            stop(simpleError(sprintf("number of index components (%.0f) must match number of key components (%.0f)", length(i), n), call))
         }
     } else {
         empty <- !nzchar(names)
@@ -483,9 +484,43 @@ arg_slice <- function(keys, args, call = sys.call(-1))
                              call))
         }
 
-        i <- vector("list", length(keys))
+        i <- vector("list", n)
         i[ki] <- args
     }
+
+    # convert types, keeping "AsIs" marker if present
+    for (k in seq_len(n)) {
+        ik <- i[[k]]
+
+        if (is.null(ik)) {
+            next
+        }
+
+        if (length(dim(ik)) > 1L) {
+            stop(simpleError(sprintf("cannot slice with rank-%.0f array for key value",
+                                     length(dim(ik))), call))
+        }
+
+        asis <- class(ik)[[1L]] == "AsIs"
+        kk <- keys[[k]]
+
+        if (is.integer(kk)) {
+            ik <- as.integer(ik)
+        } else if (is.logical(kk)) {
+            ik <- as.logical(ik)
+        } else if (is.complex(kk)) {
+            ik <- as.complex(ik)
+        } else if (is.double(kk)) {
+            ik <- as.double(ik)
+        } else {
+            ik <- as_utf8(as.character(ik))
+        }
+        if (asis) {
+            ik <- I(ik)
+        }
+        i[[k]] <- ik
+    }
+
     i
 }
 
