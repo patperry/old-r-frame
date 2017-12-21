@@ -12,6 +12,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+`[[.dataset` <- function(x, i, exact = TRUE)
+{
+    # ignore the 'exact' argument
+    # no fancy subscripting here; maybe add support for that later
+    .subset2(x, i)
+}
 
 `[[<-.dataset` <- function(x, i, value)
 {
@@ -46,7 +52,7 @@
 
 `$.dataset` <- function(x, name)
 {
-    x[[name, exact = TRUE]]
+    x[[name]]
 }
 
 
