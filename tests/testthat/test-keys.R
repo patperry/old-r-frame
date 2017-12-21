@@ -131,6 +131,6 @@ test_that("'keys' gives converted row names", {
 test_that("'keys<-' works with scalar", {
     x <- y <- dataset(a = 1:26)
     keys(x) <- letters
-    keys(y) <- framed(letters)
+    keys(y) <- as_dataset(letters)
     expect_equal(x, y)
 })

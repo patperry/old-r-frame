@@ -77,15 +77,15 @@ Printing and formatting data sets.
 }
 \examples{
 # truncates at 20 rows
-print(framed(mtcars))
+print(as_dataset(mtcars))
 
 # print all rows:
-print(framed(mtcars), -1)
+print(as_dataset(mtcars), -1)
 
 # truncates before wrapping lines
 x <- cbind(mtcars, mtcars, mtcars)
-print(framed(x))
+print(as_dataset(x))
 
 # print all columns:
-print(framed(x), wrap = -1)
+print(as_dataset(x), wrap = -1)
 }

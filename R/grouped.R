@@ -78,7 +78,7 @@ grouped.dataset <- function(x, by = NULL, do = NULL, ...)
 
     # split into parts
     if (is.null(by)) {
-        y <- framed(list(list(x)))
+        y <- as_dataset(list(list(x)))
     } else {
         keys <- distinct(by)
         g <- lookup(by, keys)

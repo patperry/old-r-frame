@@ -2,7 +2,7 @@ context("grouped")
 
 test_that("'grouped(,NULL, NULL)' puts in list", {
     x <- grouped(mtcars)
-    y <- framed(list(list(as_dataset(mtcars))))
+    y <- as_dataset(list(list(as_dataset(mtcars))))
     expect_equal(x, y)
 })
 

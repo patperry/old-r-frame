@@ -12,20 +12,20 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-framed <- function(x, keys = NULL, ...)
+framed <- function(x, keys, ...)
 {
     UseMethod("framed")
 }
 
 
-framed.default <- function(x, keys = NULL, ...)
+framed.default <- function(x, keys, ...)
 {
     x <- as_dataset(x)
     framed(x, keys, ...)
 }
 
 
-framed.dataset <- function(x, keys = NULL, ...)
+framed.dataset <- function(x, keys, ...)
 {
     if (is.null(keys)) {
        # pass

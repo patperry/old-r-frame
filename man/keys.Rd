@@ -40,7 +40,7 @@ drop the keys.
 keys(mtcars)
 
 # when converting a data.frame, keys are taken from the row names (if set)
-x <- framed(mtcars)
+x <- as_dataset(mtcars)
 keys(x)
 
 # 'keys' can be scalar...
