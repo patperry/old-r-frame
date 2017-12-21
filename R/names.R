@@ -42,6 +42,8 @@ row.names.dataset <- function(x)
         NULL
     } else if (length(keys) == 1 && is.character(keys[[1L]])) {
         keys[[1L]]
+    } else {
+        NULL
     }
 }
 
