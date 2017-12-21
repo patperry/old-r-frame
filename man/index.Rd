@@ -1,19 +1,39 @@
-\name{[.dataset}
+\name{Extract.dataset}
 \alias{[.dataset}
+\alias{[[.dataset}
+\alias{$.dataset}
 \alias{[<-.dataset}
+\alias{[[<-.dataset}
+\alias{$<-.dataset}
 \title{Data Set Indexing}
 \description{
 Extract a subset of a data set.
 }
 \usage{
 \S3method{[}{dataset}(x, ..., drop = FALSE)
+\S3method{[[}{dataset}(x, i, exact = TRUE)
+\S3method{$}{dataset}(x, name)
+
 \S3method{[}{dataset}(x, ...) <-  value
+\S3method{[[}{dataset}(x, i) <-  value
+\S3method{$}{dataset}(x, name) <- value
 }
 \arguments{
 \item{x}{a data set object.}
+
+\item{i}{column index, or set of indices specified by id, name, or
+    logical mask.}
+
 \item{...}{row or column selection (see below).}
+
+\item{name}{column name.}
+
 \item{drop}{logical indicating whether to return a column rather than a
     dataset when selecting a single column.}
+
+\item{exact}{ignored.}
+
+\item{value}{replacement column or set of values.}
 }
 \details{
 For a \code{\link{dataset}} object \code{x}, the index operations

@@ -30,4 +30,8 @@ test_that("deleting columns with single index and comma", {
 test_that("setting single column scalar", {
     x <- as_dataset(mtcars)
     y <- mtcars
+    x[,3] <- 7
+    y[,3] <- 7
+
+    expect_equal(x, as_dataset(y))
 })
