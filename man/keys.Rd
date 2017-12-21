@@ -4,6 +4,7 @@
 \alias{keys.default}
 \alias{keys<-}
 \alias{keys<-.dataset}
+\alias{keys<-.keyset}
 \title{Data Keys}
 \description{
 Get or set the keys associated with a set of values.

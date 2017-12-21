@@ -186,19 +186,27 @@ column_subset <- function(x, i)
 }
 
 
-
-# signature is ... instead of i, j, ... to allow columns named 'i' or 'j'
-`[.dataset` <- function(x, ..., drop = FALSE)
+arg_index <- function(x, ...)
 {
-    # quote arguments, except for 'drop'
-    args <- sys.call()[-1]
-    if (!missing(drop)) {
-        ix <- match("drop", names(args))
+    # This is a fragile. ideally we'd use match.call(), but we can't do
+    # that here since we want to be able to index like x[x = 1], with 'x'
+    # as a named argument.
+    for (n in 1:sys.nframe()) {
+        call <- sys.call(-n)
+        if (!identical(call[[3L]], quote(expr=...))) {
+            break
+        }
+    }
+    args <- call[-1]
+
+    argnames <- names(args)
+    if ((ix <- match("drop", argnames, 0L))) {
         args <- args[-ix]
+        argnames <- names(args)
     }
 
     # handle case when 'x' is a named argument
-    if ("x" %in% names(args)) {
+    if ("x" %in% argnames) {
         x <- ..1
     }
 
@@ -207,13 +215,20 @@ column_subset <- function(x, i)
     miss <- vapply(args, identical, NA, quote(expr=))
     args[miss] <- list(NULL)
     args[[1L]] <- quote(list)
-    index <- eval.parent(args)
+    index <- eval.parent(args, n + 1)
+
+    list(x = x, index = index)
+}
+
+
+# signature is ... instead of i, j, ... to allow columns named 'i' or 'j'
+`[.dataset` <- function(x, ..., drop = FALSE)
+{
+    args <- arg_index(x, ...)
+    x <- args$x
+    index <- args$index
     n <- length(index)
     names <- names(index)
-
-    if (!is_dataset(x)) {
-        stop("argument is not a valid dataset")
-    }
 
     if (!is.logical(drop) && length(drop) == 1L && !is.na(drop)) {
         stop("'drop' must be TRUE or FALSE")

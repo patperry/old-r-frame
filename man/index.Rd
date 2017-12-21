@@ -1,11 +1,13 @@
 \name{[.dataset}
 \alias{[.dataset}
+\alias{[<-.dataset}
 \title{Data Set Indexing}
 \description{
 Extract a subset of a data set.
 }
 \usage{
 \S3method{[}{dataset}(x, ..., drop = FALSE)
+\S3method{[}{dataset}(x, i, j) <-  value
 }
 \arguments{
 \item{x}{a data set object.}
