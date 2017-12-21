@@ -294,30 +294,16 @@ arg_index <- function(x, first, lastname)
 }
 
 
-`[<-.dataset` <- function(x, i, j, value)
+`[<-.dataset` <- function(x, ..., value)
 {
-    if (!all(names(sys.call()) %in% c("", "value"))) {
-        stop("named arguments are not allowed")
-    }
+    args <- arg_index(x, ..1, "value")
+    x <- args$x
+    i <- args$i
+    j <- args$j
 
-    if (!is_dataset(x)) {
-        stop("argument is not a valid dataset object")
-    }
-
-    if (nargs() < 4L) { # x[] <- value or x[i] <- value
-        if (missing(i)) {
-            i <- NULL
-        }
-        replace_cols(x, i, value)
-    } else if (missing(i)) { # x[,] <- value or x[,j] <- value
-        if (missing(j)) {
-            j <- NULL
-        }
+    if (is.null(i)) {
         replace_cols(x, j, value)
-    } else { # x[i,] <- value or x[i,j] <- value
-        if (missing(j)) {
-            j <- NULL
-        }
+    } else {
         replace_cells(x, i, j, value)
     }
 }

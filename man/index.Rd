@@ -7,7 +7,7 @@ Extract a subset of a data set.
 }
 \usage{
 \S3method{[}{dataset}(x, ..., drop = FALSE)
-\S3method{[}{dataset}(x, i, j) <-  value
+\S3method{[}{dataset}(x, ...) <-  value
 }
 \arguments{
 \item{x}{a data set object.}
