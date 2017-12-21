@@ -32,7 +32,7 @@
 
     if (!is.null(value)) {
         r <- length(dim(value))
-        if (r > 2) {
+        if (r > 2L) {
             stop("replacement is not a vector or matrix")
         }
         n2 <- nrow_column(value)
