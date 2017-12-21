@@ -26,7 +26,7 @@ corresponding key component.
 }
 \examples{
 # for single-component keys, return all keys, in a list
-x <- framed(mtcars)
+x <- as_dataset(mtcars)
 keylevels(x)
 
 # for mul-component keys, return the unique values in each component
