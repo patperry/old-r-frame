@@ -21,20 +21,9 @@ test_that("'key_encode' gives NULL for NULL or length 0", {
 })
 
 
-test_that("'key_decode' gives NULL for NULL", {
-    expect_equal(key_decode(NULL), NULL)
-})
-
-
 test_that("'key_encode' leaves scalar alone", {
     k <- c("Jones, Henrieta", "X, Mx.", "Box, George")
     expect_equal(key_encode(list(k)), k)
-})
-
-
-test_that("'key_decode' puts no-comma in list", {
-    k <- c("Jones, Henrieta", "X, Mx.", "Box, George")
-    expect_equal(key_decode(k, composite = FALSE), list(k))
 })
 
 
@@ -45,17 +34,6 @@ test_that("'key_encode' escapes and combines others", {
     e <- lapply(k, key_escape)
     s <- paste0(e[[1]], ",", e[[2]], ",", e[[3]])
     expect_equal(key_encode(k), s)
-})
-
-
-test_that("'key_decode' splits and unescapes composites ", {
-    k <- list(c("Jones, Henrieta", "X, Mx.", "Box, George"),
-              c("\\/", "", "2\\b"),
-              c("92", "2", "17"))
-    e <- lapply(k, key_escape)
-    s <- paste0(e[[1]], ",", e[[2]], ",", e[[3]])
-    x <- key_encode(k)
-    expect_equal(key_decode(x), k)
 })
 
 

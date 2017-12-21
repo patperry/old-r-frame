@@ -106,30 +106,6 @@ key_encode <- function(x)
 }
 
 
-key_decode <- function(x, composite = TRUE)
-{
-    if (is.null(x)) {
-        NULL
-    } else if (!composite) {
-        list(x)
-    } else {
-        # split at non-escaped ','
-        # https://stackoverflow.com/a/11819111/6233565
-        parts <- strsplit(x, "(?<!\\\\)(?:\\\\\\\\)*,", perl = TRUE)
-        len <- vapply(parts, length, 0L)
-        nkey <- max(len)
-
-        # pad with NA
-        parts <- lapply(parts, `length<-`, nkey)
-
-        # unescape and transpose
-        k <- split(key_unescape(c(parts, recursive = TRUE)),
-                   rep(seq_len(nkey), length(parts)))
-        unname(k)
-    }
-}
-
-
 key_index <- function(x, i, default = NA_integer_)
 {
     if (is.null(i)) {
