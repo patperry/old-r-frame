@@ -15,6 +15,8 @@
 
 `[[<-.dataset` <- function(x, i, value)
 {
+    x <- as_dataset(x)
+
     # downcast to list
     keys <- attr(x, "keys")
     n <- .row_names_info(x, 2L)
@@ -35,7 +37,7 @@
 
     x[[i]] <- value
 
-    # restore
+    # restore keys, downcast
     class(x) <- cl
     attr(x, "keys") <- keys
     x
@@ -63,7 +65,7 @@
     args <- arg_index(x, ..1, "drop")
     drop <- arg_option(drop)
 
-    x <- args$x
+    x <- as_dataset(args$x)
     i <- args$i
     j <- args$j
 
@@ -142,11 +144,11 @@ row_subset <- function(x, i, call = sys.call(-1L))
         }
     }
 
-    # TODO: use keys setter?
+    # NOTE: result is a dataset
     cols <- lapply(x, elt_subset, rows)
     attr(cols, "row.names") <- .set_row_names(length(rows))
-    attr(cols, "keys") <- keys
-    attr(cols, "class") <- attr(x, "class")
+    attr(cols, "class") <- class(x)
+    keys(cols) <- keys
 
     cols
 }
@@ -169,6 +171,8 @@ elt_subset <- function(x, i)
     x <- args$x
     i <- args$i
     j <- args$j
+
+    x <- as_dataset(x)
 
     if (is.null(i)) {
         replace_cols(x, j, value)
