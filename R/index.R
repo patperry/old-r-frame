@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+
 `[[.dataset` <- function(x, i, exact = TRUE)
 {
     # ignore the 'exact' argument
@@ -19,11 +20,11 @@
     .subset2(x, i)
 }
 
+
 `[[<-.dataset` <- function(x, i, value)
 {
+    # downcast to dataset, then list
     x <- as_dataset(x)
-
-    # downcast to list
     keys <- attr(x, "keys")
     n <- .row_names_info(x, 2L)
     cl <- class(x)
@@ -52,6 +53,7 @@
 
 `$.dataset` <- function(x, name)
 {
+    # NOTE: partial matching on name is not allowed
     x[[name]]
 }
 
@@ -62,7 +64,7 @@
     i <- match(name, names(x), n1)
     x[[i]] <- value
 
-    if (i == n1 && !is.na(name)) {
+    if (i == n1 && !is.na(name) && !nzchar(name)) {
         if (is.null(names(x))) {
             names(x) <- character(n1)
         }
@@ -168,10 +170,10 @@ row_subset <- function(x, i, call = sys.call(-1L))
 
 elt_subset <- function(x, i)
 {
-    if (length(dim(x)) <= 1) {
+    if (length(dim(x)) <= 1L) {
         x[i]
     } else {
-        x[i,,drop = FALSE]
+        x[i, , drop = FALSE]
     }
 }
 
