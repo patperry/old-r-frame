@@ -383,8 +383,13 @@ arg_col_index <- function(x, i, call = sys.call(-1L))
 {
     n <- length(x)
     if (is.logical(i) && length(i) != n) {
-        stop(simpleError(sprintf("selection mask length (%.0f) must equal number of columns (%.0f)",
-                                 length(i), n), call))
+        if (length(i) == 1L) {
+            # recycle scalar
+            i <- rep(i, n)
+        } else {
+            stop(simpleError(sprintf("selection mask length (%.0f) must equal number of columns (%.0f)",
+                                     length(i), n), call))
+        }
     }
 
     cols <- seq_len(n)
