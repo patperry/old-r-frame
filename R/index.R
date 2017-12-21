@@ -88,10 +88,6 @@ as_row_index <- function(x, i)
 
 row_subset <- function(x, i)
 {
-    if (is.null(i)) {
-        return(x)
-    }
-
     keys <- keys(x)
     index <- as_row_index(x, i)
 
@@ -163,10 +159,6 @@ as_col_index <- function(x, i)
 
 column_subset <- function(x, i)
 {
-    if (is.null(i)) {
-        return(x)
-    }
-
     i <- as_col_index(x, i)
     
     # downcast for list `[`; no elegant way to do this
