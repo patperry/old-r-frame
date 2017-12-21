@@ -10,8 +10,11 @@ importFrom(utf8, utf8_width)
 importFrom(utils, tail)
 
 ## Exports
+export(`$.dataset`)
+export(`$<-.dataset`)
 export(`[.dataset`)
 export(`[<-.dataset`)
+export(`[[<-.dataset`)
 export(as.list.dataset)
 export(as_dataset)
 export(as_dataset.data.frame)
@@ -87,6 +90,7 @@ S3method(slice, keyset)
 ## Base S3 methods
 
 ### dataset
+S3method(`$`, dataset)
 S3method(`$<-`, dataset)
 S3method(`[`, dataset)
 S3method(`[<-`, dataset)

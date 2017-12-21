@@ -37,10 +37,16 @@
 
     x[[i]] <- value
 
-    # restore keys, downcast
+    # restore attributes
     class(x) <- cl
     attr(x, "keys") <- keys
     x
+}
+
+
+`$.dataset` <- function(x, name)
+{
+    x[[name, exact = TRUE]]
 }
 
 
