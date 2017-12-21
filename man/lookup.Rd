@@ -3,6 +3,7 @@
 \alias{rowid}
 \alias{rowid.default}
 \alias{rowid.keyset}
+\alias{rowid.NULL}
 \title{Data Key Lookup}
 \description{
 Find rows with specified keys.

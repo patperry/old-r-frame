@@ -186,8 +186,8 @@ arg_enum <- function(choices, value, name = argname(substitute(value)),
     i <- pmatch(value, choices, nomatch = 0L)
     if (all(i == 0L)) {
         stop(simpleError(
-            sprintf("%s must be one of the following: ", name),
-                    paste(dQuote(choices), collapse = ", "), call))
+            sprintf("%s must be one of the following: %s", name,
+                    paste(dQuote(choices), collapse = ", ")), call))
     }
     i <- i[i > 0L]
     choices[[i]]
