@@ -102,41 +102,11 @@ key_encode <- function(x)
 
 key_index <- function(x, i, default = NA_integer_)
 {
-    if (is.null(i)) {
-        return(NULL)
-    }
-
-    d <- dim(i)
-    r <- length(d)
-
-    if (r <= 1L) {
-        ni <- length(i)
-    } else if (r == 2L) {
-        ni <- nrow(i)
-    } else if (r > 2L) {
-        stop(sprintf("cannot index with rank-%.0f array", r))
-    }
-
-    if (r == 2L) {
-        if (ncol(i) != ncol(x)) {
-            stop(sprintf("number of index components (%.0f) must match number of key components (%.0f)", ncol(i), ncol(x)))
-        }
-    }
-
-    if (is.null(x)) {
-        return(rep(default, ni))
-    }
-
-    if (r == 2L) {
-        i <- key_encode(i)
-    }
-
-    n <- nrow(x)
-    id <- seq_len(n)
+    id <- seq_len(nrow(x))
     names(id) <- key_encode(x)
-    id <- id[as.character(i)]
-    id[is.na(id)] <- default
-    names(id) <- NULL
 
-    return(id)
+    id <- id[key_encode(i)]
+    id[is.na(id)] <- default
+
+    unname(id)
 }
