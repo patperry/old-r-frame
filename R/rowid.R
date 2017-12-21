@@ -12,6 +12,13 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+
+lookup <- function(keys, x, default = NA_integer_, ...)
+{
+    rowid(x, keys, default, ...)
+}
+
+
 rowid <- function(x, keys, default = NA_integer_, ...)
 {
     UseMethod("rowid")
@@ -77,9 +84,38 @@ rowid.keyset <- function(x, keys, default = NA_integer_, ...)
 }
 
 
-lookup <- function(keys, x, default = NA_integer_, ...)
+# this is just a temporary implementation. it works for integer, string,
+# and logical, but not for double or complex. it's also slow.
+key_index <- function(x, i, default = NA_integer_)
 {
-    rowid(x, keys, default, ...)
+    id <- seq_len(nrow(x))
+    names(id) <- key_encode(x)
+
+    id <- id[key_encode(i)]
+    id[is.na(id)] <- default
+
+    unname(id)
+}
+
+
+key_encode <- function(x)
+{
+    nk <- length(x)
+    if (nk == 0) {
+        NULL
+    } else if (nk == 1) {
+        as_utf8(as.character(x[[1]]))
+    } else {
+        do.call(paste, c(unname(lapply(x, key_escape)), sep = ","))
+    }
+}
+
+
+key_escape <- function(x)
+{
+    x <- as_utf8(as.character(x))
+    # replace '\' with '\\', ',' with '\,'
+    gsub("(\\\\|,)", "\\\\\\1", x)
 }
 
 

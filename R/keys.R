@@ -75,38 +75,14 @@ keylevels.default <- function(x)
 
 keylevels.keyset <- function(x)
 {
-    lapply(x, unique)
-}
+    levels <- vector("list", length(x))
+    names(levels) <- names(x)
 
-
-key_escape <- function(x)
-{
-    x <- as_utf8(as.character(x))
-    # replace '\' with '\\', ',' with '\,'
-    gsub("(\\\\|,)", "\\\\\\1", x)
-}
-
-
-key_encode <- function(x)
-{
-    nk <- length(x)
-    if (nk == 0) {
-        NULL
-    } else if (nk == 1) {
-        as_utf8(as.character(x[[1]]))
-    } else {
-        do.call(paste, c(unname(lapply(x, key_escape)), sep = ","))
+    for (i in seq_along(x)) {
+        lv <- unique(x[[i]])
+        o <- order(lv, method = "radix")
+        levels[[i]] <- lv[o]
     }
-}
 
-
-key_index <- function(x, i, default = NA_integer_)
-{
-    id <- seq_len(nrow(x))
-    names(id) <- key_encode(x)
-
-    id <- id[key_encode(i)]
-    id[is.na(id)] <- default
-
-    unname(id)
+    levels
 }
