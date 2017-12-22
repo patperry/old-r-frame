@@ -78,8 +78,13 @@ Printing and formatting data sets.
 \code{\link{print.data.frame}}
 }
 \examples{
-# truncates at 20 rows
+# truncates at 20 rows by default
 print(as_dataset(mtcars))
+
+# change the default to 5:
+rows <- options(frame.rows = 5)[[1]]
+print(as_dataset(mtcars))
+options(frame.rows = rows) # restore old value
 
 # print all rows:
 print(as_dataset(mtcars), -1)
