@@ -185,7 +185,6 @@ elt_subset <- function(x, i)
     x <- args$x
     i <- args$i
     j <- args$j
-
     x <- as_dataset(x)
 
     if (is.null(i)) {
@@ -219,6 +218,8 @@ replace_cols <- function(x, i, value, call = sys.call(-1L))
         class(x) <- cl
 
         x
+    } else if (is.character(i)) {
+        replace <- arg_replace(nrow(x), length(i), value)
     } else {
         replace_cells(x, NULL, i, value, call)
     }
@@ -240,35 +241,13 @@ replace_cells <- function(x, i, j, value, call = sys.call(-1L))
 
     ni <- length(i)
     nj <- length(j)
+
+    replace <- arg_replace(ni, nj, value, call)
+    value <- replace$value
+    recycle <- replace$recycle
+
     dv <- dim(value)
     rv <- length(dv)
-
-    if ((asis <- class(value)[[1L]] == "AsIs")) {
-        class(value) <- class(value)[-1L]
-    }
-
-    if (rv < 2L) {
-        nv <- if (asis) 1L else length(value)
-        if (nv == ni * nj) {
-            recycle <- FALSE
-        } else if (nv == ni || nv == 1L) {
-            recycle <- TRUE
-        } else {
-            stop(simpleError(sprintf(
-                "replacement has %.0f items, need %.0f",
-                nv, ni * nj), call))
-        }
-    } else if (rv == 2L) {
-        if (!(dv[[1L]] == ni && dv[[2L]] == nj)) {
-            stop(simpleError(sprintf(
-                "replacement has dimensions %.0fx%.0f, need %.0fx%.0f",
-                dv[[1L]], dv[[2L]], ni, nj), call))
-        }
-    } else {
-        stop(simpleError(sprintf(
-                "replacement cannot be a rank-%.0f array",
-                length(dv)), call))
-    }
 
     if (ni == 0 || nj == 0) {
         return(x)
@@ -310,6 +289,44 @@ replace_cells <- function(x, i, j, value, call = sys.call(-1L))
 
     x
 }
+
+
+arg_replace <- function(ni, nj, value, call = sys.call(-1L))
+{
+    dv <- dim(value)
+    rv <- length(dv)
+
+    if ((asis <- class(value)[[1L]] == "AsIs")) {
+        class(value) <- class(value)[-1L]
+    }
+
+    if (rv < 2L) {
+        nv <- if (asis) 1L else length(value)
+        if (nv == ni * nj) {
+            recycle <- FALSE
+        } else if (nv == ni || nv == 1L) {
+            recycle <- TRUE
+        } else {
+            stop(simpleError(sprintf(
+                "replacement has %.0f items, need %.0f",
+                nv, ni * nj), call))
+        }
+    } else if (rv == 2L) {
+        recycle <- NA
+        if (!(dv[[1L]] == ni && dv[[2L]] == nj)) {
+            stop(simpleError(sprintf(
+                "replacement has dimensions %.0fx%.0f, need %.0fx%.0f",
+                dv[[1L]], dv[[2L]], ni, nj), call))
+        }
+    } else {
+        stop(simpleError(sprintf(
+                "replacement cannot be a rank-%.0f array",
+                length(dv)), call))
+    }
+
+    list(value = value, recycle = recycle)
+}
+
 
 
 # arg_index(x, ..1, "drop") or arg_index(x, ..1, "value")
