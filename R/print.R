@@ -381,6 +381,9 @@ format.dataset <- function(x, rows = NULL, wrap = NULL, ..., chars = NULL,
         attr(y, "caption") <- sprintf("(%.0f columns total)", nc)
     }
 
+    attr(y, "trunc_rows") <- rtrunc
+    attr(y, "trunc_cols") <- ctrunc
+
     y
 }
 
@@ -622,12 +625,14 @@ print.dataset <- function(x, rows = 20L, wrap = 0L, ..., number = NULL,
     if (nrow(x) == 0) {
         cat("(0 rows)\n")
     } else if (!is.null(caption)) {
+        rtrunc <- attr(fmt, "trunc_rows")
+        vellipsis <- if (rtrunc) control$vellipsis else ""
         foot <- utf8_format(paste0(" ", caption),
                             width = max(0,
                                         foot_width
-                                        - utf8_width(control$vellipsis)),
+                                        - utf8_width(vellipsis)),
                             justify = "right")
-        cat(style$faint(control$vellipsis), foot, "\n", sep="")
+        cat(style$faint(vellipsis), foot, "\n", sep="")
     }
 
     invisible(x)
