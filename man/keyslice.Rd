@@ -1,13 +1,13 @@
-\name{slice}
-\alias{slice}
-\alias{slice.default}
-\alias{slice.keyset}
+\name{keyslice}
+\alias{keyslice}
+\alias{keyslice.default}
+\alias{keyslice.keyset}
 \title{Data Key Slicing}
 \description{
 Find sets of rows with specified key components.
 }
 \usage{
-slice(x, ...)
+keyslice(x, ...)
 }
 \arguments{
 \item{x}{an object with a key for each row.}

@@ -429,7 +429,7 @@ arg_row_index <- function(x, i, call = sys.call(-1L))
         if (is.null(keys)) {
             stop(simpleError("cannot index rows with list when 'keys' is NULL", call))
         }
-        rows <- slice(keys, i)
+        rows <- keyslice(keys, i)
     } else {
         r <- length(dim(i))
         if (r <= 1) {

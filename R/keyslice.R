@@ -12,20 +12,20 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-slice <- function(x, ...)
+keyslice <- function(x, ...)
 {
-    UseMethod("slice")
+    UseMethod("keyslice")
 }
 
 
-slice.default <- function(x, ...)
+keyslice.default <- function(x, ...)
 {
     x <- keys(x)
-    slice(as_keyset(x), ...)
+    keyslice(as_keyset(x), ...)
 }
 
 
-slice.keyset <- function(x, ...)
+keyslice.keyset <- function(x, ...)
 {
     i <- arg_slice(x, list(...))
 
