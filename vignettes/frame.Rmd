@@ -1,0 +1,438 @@
+---
+title: "Introduction to frame"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Design Motivation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+There are an increasing number of data frame packages in R, including
+[data.table][data-table] and [dplyr][dplyr]. All provide similar functionality,
+but they do so with different user interfaces. To illustrate some of the
+differences, this vignette translates the [dplyr introduction][dplyr-intro] to
+*frame*. 
+
+
+
+## Data: nycflights13
+
+The [nycflight13][nyclights13] package collects flight information from 2013 for trips
+originating or ending in New York City. The package provides the data in the
+form of `tibble` objects, but we can easily convert them to datasets using
+`as_data`.
+
+
+```r
+library(nycflights13)
+flights <- as_dataset(flights)
+print(flights)
+```
+
+```
+##    year month day dep_time sched_dep_time dep_delay arr_time …
+## 1  2013     1   1      517            515         2      830 …
+## 2  2013     1   1      533            529         4      850 …
+## 3  2013     1   1      542            540         2      923 …
+## 4  2013     1   1      544            545        -1     1004 …
+## 5  2013     1   1      554            600        -6      812 …
+## 6  2013     1   1      554            558        -4      740 …
+## 7  2013     1   1      555            600        -5      913 …
+## 8  2013     1   1      557            600        -3      709 …
+## 9  2013     1   1      557            600        -3      838 …
+## 10 2013     1   1      558            600        -2      753 …
+## 11 2013     1   1      558            600        -2      849 …
+## 12 2013     1   1      558            600        -2      853 …
+## 13 2013     1   1      558            600        -2      924 …
+## 14 2013     1   1      558            600        -2      923 …
+## 15 2013     1   1      559            600        -1      941 …
+## 16 2013     1   1      559            559         0      702 …
+## 17 2013     1   1      559            600        -1      854 …
+## 18 2013     1   1      600            600         0      851 …
+## 19 2013     1   1      600            600         0      837 …
+## 20 2013     1   1      601            600         1      844 …
+## ⋮                              (336776 rows, 19 columns total)
+```
+
+There are more rows and columns in this dataset than will fit on the screen.
+By default, then `print` function will only display 20 rows.  Change the default to
+another value using the following command:
+
+
+```r
+options(frame.rows = 5L) # truncate output after 5 rows
+```
+
+*frame* uses the default value of 20 to display as much data as possible
+without overflowing the space on a standard console. For the rest of this
+vignette, however, we will be demonstrating programming, not data analysis, so
+we will truncate the output to 5 rows.
+
+
+
+```r
+print(flights)
+```
+
+```
+##   year month day dep_time sched_dep_time dep_delay arr_time …
+## 1 2013     1   1      517            515         2      830 …
+## 2 2013     1   1      533            529         4      850 …
+## 3 2013     1   1      542            540         2      923 …
+## 4 2013     1   1      544            545        -1     1004 …
+## 5 2013     1   1      554            600        -6      812 …
+## ⋮                             (336776 rows, 19 columns total)
+```
+
+You can get information about the column types using the `schema` function,
+which itself returns a `dataset`:
+
+
+```r
+schema(flights)
+```
+
+```
+##   name           class  
+## 1 year           integer
+## 2 month          integer
+## 3 day            integer
+## 4 dep_time       integer
+## 5 sched_dep_time integer
+## ⋮        (19 rows total)
+```
+
+## Single table actions
+
+Dplyr provides a set of "verbs" for working with data sets. We do not provide
+analogues for most of them, but often it is possible to use functions built in
+to R to achieve their same results.
+
+### Filter rows with `subset()`
+
+Use the `subset` command (part of base R) to select certain rows:
+
+
+```r
+subset(flights, month == 1 & day == 1)
+```
+
+```
+##   year month day dep_time sched_dep_time dep_delay arr_time …
+## 1 2013     1   1      517            515         2      830 …
+## 2 2013     1   1      533            529         4      850 …
+## 3 2013     1   1      542            540         2      923 …
+## 4 2013     1   1      544            545        -1     1004 …
+## 5 2013     1   1      554            600        -6      812 …
+## ⋮                                (842 rows, 19 columns total)
+```
+
+### Arrange rows with `order_by()`
+
+Use `order_by()` to arrange rows, using the first argument and then breaking
+ties according to subsequent arguments.
+
+
+
+```r
+order_by(flights, year, month, day)
+```
+
+```
+##   year month day dep_time sched_dep_time dep_delay arr_time …
+## 1 2013     1   1      517            515         2      830 …
+## 2 2013     1   1      533            529         4      850 …
+## 3 2013     1   1      542            540         2      923 …
+## 4 2013     1   1      544            545        -1     1004 …
+## 5 2013     1   1      554            600        -6      812 …
+## ⋮                             (336776 rows, 19 columns total)
+```
+
+Use a named argument (`"desc")` to order in descending order.
+
+
+```r
+order_by(flights, desc = arr_delay)
+```
+
+```
+##   year month day dep_time sched_dep_time dep_delay arr_time …
+## 1 2013     1   9      641            900      1301     1242 …
+## 2 2013     6  15     1432           1935      1137     1607 …
+## 3 2013     1  10     1121           1635      1126     1239 …
+## 4 2013     9  20     1139           1845      1014     1457 …
+## 5 2013     7  22      845           1600      1005     1044 …
+## ⋮                             (336776 rows, 19 columns total)
+```
+
+
+### Select columns with `[`
+
+Use the subscript operator `[` to select columns:
+
+
+```r
+flights[c("year", "month", "day")]
+```
+
+```
+##   year month day
+## 1 2013     1   1
+## 2 2013     1   1
+## 3 2013     1   1
+## 4 2013     1   1
+## 5 2013     1   1
+## ⋮ (336776 rows total)
+```
+
+You can also specify using the numerical index, or a set of indices:
+
+
+```r
+flights[1:3]
+```
+
+```
+##   year month day
+## 1 2013     1   1
+## 2 2013     1   1
+## 3 2013     1   1
+## 4 2013     1   1
+## 5 2013     1   1
+## ⋮ (336776 rows total)
+```
+
+Use negative indices to exclude columns.
+
+
+```r
+flights[-(1:3)]
+```
+
+```
+##   dep_time sched_dep_time dep_delay arr_time sched_arr_time arr_delay …
+## 1      517            515         2      830            819        11 …
+## 2      533            529         4      850            830        20 …
+## 3      542            540         2      923            850        33 …
+## 4      544            545        -1     1004           1022       -18 …
+## 5      554            600        -6      812            837       -25 …
+## ⋮                                       (336776 rows, 16 columns total)
+```
+
+If you don't know the index of a column, you can get it like with the base R
+`match` function:
+
+
+```r
+match("day", names(x))
+```
+
+```
+## Error in match("day", names(x)): object 'x' not found
+```
+
+
+### Add new columns with transform()
+
+Use the `transform` function from base R to add new columns:
+
+
+```r
+transform(flights,
+    gain = arr_delay - dep_delay,
+    speed = distance / air_time * 60
+)
+```
+
+```
+##   year month day dep_time sched_dep_time dep_delay arr_time …
+## 1 2013     1   1      517            515         2      830 …
+## 2 2013     1   1      533            529         4      850 …
+## 3 2013     1   1      542            540         2      923 …
+## 4 2013     1   1      544            545        -1     1004 …
+## 5 2013     1   1      554            600        -6      812 …
+## ⋮                             (336776 rows, 21 columns total)
+```
+
+This is similar to `dplyr::mutate`, but it does not evaluate columns
+sequentially. If you need sequential modifications, use `within()`:
+
+
+```r
+within(flights, {
+    gain <- arr_delay - dep_delay
+    gain_per_hour <- gain / (air_time / 60)
+})
+```
+
+```
+##   year month day dep_time sched_dep_time dep_delay arr_time …
+## 1 2013     1   1      517            515         2      830 …
+## 2 2013     1   1      533            529         4      850 …
+## 3 2013     1   1      542            540         2      923 …
+## 4 2013     1   1      544            545        -1     1004 …
+## 5 2013     1   1      554            600        -6      812 …
+## ⋮                             (336776 rows, 21 columns total)
+```
+
+If you only want to keep the new variables, use `with()` and return a
+dataset.
+
+
+```r
+with(flights, {
+    gain <- arr_delay - dep_delay
+    gain_per_hour <- gain / (air_time / 60)
+    dataset(gain, gain_per_hour)
+})
+```
+
+```
+##   gain gain_per_hour
+## 1    9      2.378855
+## 2   16      4.229075
+## 3   31     11.625000
+## 4  -17     -5.573770
+## 5  -19     -9.827586
+## ⋮ (336776 rows total)
+```
+
+### Summarize values with `with()`
+
+The `with()` command can also be used to summarize data:
+
+
+```r
+with(flights, {
+    list(delay = mean(dep_delay, na.rm = TRUE))
+})
+```
+
+```
+## $delay
+## [1] 12.63907
+```
+
+### Randomly sample rows with `sample()`
+
+To get a random sample of the rows, use the `sample()` function to choose a
+random set of row indices, and then select these with the subset operator:
+
+
+```r
+# sample 10 rows
+flights[sample(nrow(flights), 10), ]
+```
+
+```
+##   year month day dep_time sched_dep_time dep_delay arr_time …
+## 1 2013     8  24      547            545         2      816 …
+## 2 2013    12   7     1447           1445         2     1842 …
+## 3 2013     2  17      809            810        -1     1024 …
+## 4 2013     4  30     1354           1359        -5     1447 …
+## 5 2013     8  28      905            910        -5     1203 …
+## ⋮                                 (10 rows, 19 columns total)
+```
+
+Use `replace = TRUE` to sample with replacement, as for a bootstrap sample.
+
+
+### Grouped operations
+
+Use the `grouped()` command to perform an operation on a set of groups
+defined by the unique levels of one or more variables:
+
+
+```r
+delay <- grouped(flights, "tailnum", function(x) {
+    list(count = nrow(x),
+         dist = mean(x$distance, na.rm = TRUE),
+         delay = mean(x$arr_delay, na.rm = TRUE))
+})
+
+(delay <- subset(delay, count > 20 & dist < 2000))
+```
+
+```
+## tailnum │ count     dist     delay
+## N0EGMQ  │   371 676.1887  9.982955
+## N10156  │   153 757.9477 12.717241
+## N102UW  │    48 535.8750  2.937500
+## N103US  │    46 535.1957 -6.934783
+## N104UW  │    47 535.2553  1.804348
+## ⋮                (2962 rows total)
+```
+
+Here's how to find the number of planes and the number of flights that go to
+each possible destination:
+
+
+```r
+grouped(flights, "dest", function(x) {
+    list(planes = length(unique(x$tailnum)),
+         flights = nrow(x))
+})
+```
+
+```
+## dest │ planes flights
+## ABQ  │    108     254
+## ACK  │     58     265
+## ALB  │    172     439
+## ANC  │      6       8
+## ATL  │   1180   17215
+## ⋮    (105 rows total)
+```
+
+The grouping variables specified as names must be data variables, not keys. If
+you would like to group by a key, do something like the following instead:
+
+
+```r
+# helper functions
+count <- function(x) list(flights = nrow(x))
+total <- function(x) list(flights = sum(x$flights))
+
+# count daily flights
+(per_day <- grouped(flights, c("year", "month", "day"), count))
+```
+
+```
+## year month day │ flights
+## 2013 1     1   │     842
+## 2013 1     2   │     943
+## 2013 1     3   │     914
+## 2013 1     4   │     915
+## 2013 1     5   │     720
+## ⋮       (365 rows total)
+```
+
+```r
+# then aggregate by month, year
+(per_month <- grouped(per_day, keys(per_day)[c("year", "month")], total))
+```
+
+```
+## year month │ flights
+## 2013 1     │   27004
+## 2013 2     │   24951
+## 2013 3     │   28834
+## 2013 4     │   28330
+## 2013 5     │   28796
+## ⋮    (12 rows total)
+```
+
+```r
+(per_year <- grouped(per_month, keys(per_month)["year"], total))
+```
+
+```
+## year │ flights
+## 2013 │  336776
+```
+
+
+[dplyr]: http://dplyr.tidyverse.org/ "dplyr"
+[dplyr-intro]: https://CRAN.R-project.org/package=dplyr/vignettes/dplyr.html "An introduction to dplyr"
+[data-table]: http://r-datatable.com/ "data.table"
+[nycflights13]: https://cran.r-project.org/package=nycflights13 "nycflights13"

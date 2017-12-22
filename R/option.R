@@ -30,7 +30,7 @@ option_wrap <- function(wrap)
     if (is.null(wrap)) {
         wrap <- getOption("frame.wrap")
         if (is.null(wrap)) {
-            wrap <- 20L
+            wrap <- 0L
         }
     }
     wrap

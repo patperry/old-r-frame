@@ -32,8 +32,22 @@ print(flights)
 ```
 
 There are more rows and columns in this dataset than will fit on the screen.
-By default, then `print` function will only display 20 rows (as much data as will
-fit on a standard terminal) and truncates the columns.
+By default, then `print` function will only display 20 rows.  Change the default to
+another value using the following command:
+
+```{r}
+options(frame.rows = 5L) # truncate output after 5 rows
+```
+
+*frame* uses the default value of 20 to display as much data as possible
+without overflowing the space on a standard console. For the rest of this
+vignette, however, we will be demonstrating programming, not data analysis, so
+we will truncate the output to 5 rows.
+
+
+```{r}
+print(flights)
+```
 
 You can get information about the column types using the `schema` function,
 which itself returns a `dataset`:
@@ -168,7 +182,7 @@ delay <- grouped(flights, "tailnum", function(x) {
          delay = mean(x$arr_delay, na.rm = TRUE))
 })
 
-delay <- subset(delay, count > 20 & dist < 2000)
+(delay <- subset(delay, count > 20 & dist < 2000))
 ```
 
 Here's how to find the number of planes and the number of flights that go to
