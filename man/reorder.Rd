@@ -1,13 +1,13 @@
-\name{order_by}
-\alias{order_by}
-\alias{order_by.default}
-\alias{order_by.dataset}
-\title{Data Ordering}
+\name{reorder.dataset}
+\alias{reorder.data.frame}
+\alias{reorder.dataset}
+\title{Data Reordering}
 \description{
 Reorder the rows in a dataset.
 }
 \usage{
-order_by(x, ..., enclos = parent.frame())
+\S3method{reorder}{data.frame}(x, ..., enclos = parent.frame())
+\S3method{reorder}{dataset}(x, ..., enclos = parent.frame())
 }
 \arguments{
 \item{x}{a dataset object.}
@@ -20,7 +20,7 @@ order_by(x, ..., enclos = parent.frame())
     don't correspond to columns in \code{x}.}
 }
 \details{
-\code{order_by} reorders the rows of \code{x} according to the specified
+\code{reorder} reorders the rows of \code{x} according to the specified
 expressions. These expressions get evaluated in a context that looks in the
 columns of \code{x} first, then in the \code{encos} environment.
 After evaluating the arguments, we determine the order according to
@@ -40,14 +40,14 @@ A \code{dataset} with the rows of \code{x} put in the specified order.
 }
 \examples{
 # order by 'cyl'
-order_by(mtcars, cyl)
+reorder(mtcars, cyl)
 
 # break ties using 'gear'
-order_by(mtcars, cyl, gear)
+reorder(mtcars, cyl, gear)
 
 # order by 'cyl' descending, 'gear' ascending
-order_by(mtcars, desc = cyl, gear)
+reorder(mtcars, desc = cyl, gear)
 
 # order by 'cyl' descending, 'gear' descending
-order_by(mtcars, desc = cyl, desc = gear)
+reorder(mtcars, desc = cyl, desc = gear)
 }

@@ -12,20 +12,16 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-order_by <- function(x, ..., enclos = parent.frame())
-{
-    UseMethod("order_by")
-}
 
-
-order_by.default <- function(x, ..., enclos = parent.frame())
+# orphan instance...
+reorder.data.frame <- function(x, ..., enclos = parent.frame())
 {
     x <- as_dataset(x)
-    order_by(x, ..., enclos = enclos)
+    reorder(x, ..., enclos = enclos)
 }
 
 
-order_by.dataset <- function(x, ..., enclos = parent.frame())
+reorder.dataset <- function(x, ..., enclos = parent.frame())
 {
     exprs <- substitute(list(...))
 

@@ -153,15 +153,15 @@ subset(flights, month == 1 & day == 1)
 This is analogous to `dplyr::filter()`.
 
 
-### Arrange rows with `order_by()`
+### Arrange rows with `reorder()`
 
-Use `order_by()` to arrange rows, using the first argument and then breaking
+Use `reorder()` to arrange rows, using the first argument and then breaking
 ties according to subsequent arguments.
 
 
 
 ```r
-order_by(flights, year, month, day)
+reorder(flights, year, month, day)
 #>   year month day dep_time sched_dep_time dep_delay arr_time sched_arr_time …
 #> 1 2013     1   1      517            515         2      830            819 …
 #> 2 2013     1   1      533            529         4      850            830 …
@@ -177,7 +177,7 @@ Use a named argument (`"desc")` to order in descending order.
 
 
 ```r
-order_by(flights, desc = arr_delay)
+reorder(flights, desc = arr_delay)
 #>   year month day dep_time sched_dep_time dep_delay arr_time sched_arr_time …
 #> 1 2013     1   9      641            900      1301     1242           1530 …
 #> 2 2013     6  15     1432           1935      1137     1607           2120 …
@@ -192,10 +192,10 @@ You can specify multiple descending columns if you'd like:
 
 ```r
 # descending arr_delay, distance; ascending day
-order_by(flights,
-         desc = arr_delay,
-         desc = distance,
-         day)
+reorder(flights,
+        desc = arr_delay,
+        desc = distance,
+        day)
 #>   year month day dep_time sched_dep_time dep_delay arr_time sched_arr_time …
 #> 1 2013     1   9      641            900      1301     1242           1530 …
 #> 2 2013     6  15     1432           1935      1137     1607           2120 …

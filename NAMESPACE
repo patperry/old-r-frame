@@ -50,9 +50,8 @@ export(keyslice)
 export(keyslice.default)
 export(keyslice.keyset)
 export(lookup)
-export(order_by)
-export(order_by.dataset)
-export(order_by.default)
+export(reorder.data.frame)
+export(reorder.dataset)
 export(print.dataset)
 export(rowid)
 export(rowid.default)
@@ -88,8 +87,6 @@ S3method(framed, dataset)
 S3method(framed, default)
 S3method(grouped, dataset)
 S3method(grouped, default)
-S3method(order_by, dataset)
-S3method(order_by, default)
 S3method(rowid, default)
 S3method(rowid, keyset)
 S3method(rowid, NULL)
@@ -98,6 +95,9 @@ S3method(schema, default)
 
 
 ## Base S3 methods
+
+### data.frame
+S3method(reorder, data.frame)
 
 ### dataset
 S3method(`$`, dataset)
@@ -112,6 +112,7 @@ S3method(dimnames, dataset)
 S3method(`dimnames<-`, dataset)
 S3method(format, dataset)
 S3method(print, dataset)
+S3method(reorder, dataset)
 S3method(row.names, dataset)
 S3method(`row.names<-`, dataset)
 S3method(transform, dataset)
