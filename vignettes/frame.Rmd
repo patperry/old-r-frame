@@ -1,0 +1,169 @@
+---
+title: "Introduction to frame"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Design Motivation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+There are an increasing number of data frame packages in R, including
+[data.table][data-table] and [dplyr][dplyr]. All provide similar functionality,
+but they do so with different user interfaces. To illustrate some of the
+differences, this vignette translates the [dplyr introduction][dplyr-intro] to
+*frame*. 
+
+```{r, echo = FALSE}
+library(frame)
+set.seed(0)
+```
+
+## Data: nycflights13
+
+The [nycflight13][nyclights13] package collects flight information from 2013 for trips
+originating or ending in New York City. The package provides the data in the
+form of `tibble` objects, but we can easily convert them to datasets using
+`as_data`.
+
+```{r}
+library(nycflights13)
+flights <- as_dataset(flights)
+print(flights)
+```
+
+There are more rows and columns in this dataset than will fit on the screen.
+By default, then `print` function will only display 20 rows (as much data as will
+fit on a standard terminal) and truncates the columns.
+
+You can get information about the column types using the `schema` function,
+which itself returns a `dataset`:
+
+```{r}
+schema(flights)
+```
+
+## Single table actions
+
+Dplyr provides a set of "verbs" for working with data sets. We do not provide
+analogues for most of them, but often it is possible to use functions built in
+to R to achieve their same results.
+
+### Filter rows with `subset()`
+
+Use the `subset` command (part of base R) to select certain rows:
+
+```{r}
+subset(flights, month == 1 & day == 1)
+```
+
+### Arrange rows with `order_by()`
+
+Use `order_by()` to arrange rows, using the first argument and then breaking
+ties according to subsequent arguments.
+
+
+```{r}
+order_by(flights, year, month, day)
+```
+
+Use a named argument (`"desc")` to order in descending order.
+
+```{r}
+order_by(flights, desc = arr_delay)
+```
+
+
+### Select columns with `[`
+
+Use the subscript operator `[` to select columns:
+
+```{r}
+flights[c("year", "month", "day")]
+```
+
+You can also specify using the numerical index, or a set of indices:
+
+```{r}
+flights[1:3]
+```
+
+Use negative indices to exclude columns.
+
+```{r}
+flights[-(1:3)]
+```
+
+If you don't know the index of a column, you can get it like with the base R
+`match` function:
+
+```{r}
+match("day", names(x))
+```
+
+
+### Add new columns with transform()
+
+Use the `transform` function from base R to add new columns:
+
+```{r}
+transform(flights,
+    gain = arr_delay - dep_delay,
+    speed = distance / air_time * 60
+)
+```
+
+This is similar to `dplyr::mutate`, but it does not evaluate columns
+sequentially. If you need sequential modifications, use `within()`:
+
+```{r}
+within(flights, {
+    gain <- arr_delay - dep_delay
+    gain_per_hour <- gain / (air_time / 60)
+})
+```
+
+If you only want to keep the new variables, use `with()` and return a
+dataset.
+
+```{r}
+with(flights, {
+    gain <- arr_delay - dep_delay
+    gain_per_hour <- gain / (air_time / 60)
+    dataset(gain, gain_per_hour)
+})
+```
+
+### Summarize values with `with()`
+
+The `with()` command can also be used to summarize data:
+
+```{r}
+with(flights, {
+    list(delay = mean(dep_delay, na.rm = TRUE))
+})
+```
+
+### Randomly sample rows with `sample()`
+
+To get a random sample of the rows, use the `sample()` function to choose a
+random set of row indices, and then select these with the subset operator:
+
+```{r}
+# sample 10 rows
+flights[sample(nrow(flights), 10), ]
+```
+
+Use `replace = TRUE` to sample with replacement, as for a bootstrap sample.
+
+
+### Grouped operations
+
+Use the `grouped()` command to perform an operation on a set of groups
+defined by the unique levels of one or more variables:
+
+
+
+[dplyr]: http://dplyr.tidyverse.org/ "dplyr"
+[dplyr-intro]: https://CRAN.R-project.org/package=dplyr/vignettes/dplyr.html "An introduction to dplyr"
+[data-table]: http://r-datatable.com/ "data.table"
+[nycflights13]: https://cran.r-project.org/package=nycflights13 "nycflights13"

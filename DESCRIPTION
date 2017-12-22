@@ -10,6 +10,7 @@ Imports:
   utf8 (>= 1.1.2)
 Suggests:
   knitr,
+  nycflights13,
   testthat
 Description: Data frames supporting multi-attribute keys, nested data frames and other matrix-like columns.
 License: Apache License (== 2.0) | file LICENSE
