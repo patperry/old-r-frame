@@ -15,7 +15,10 @@
 
 `[[.dataset` <- function(x, i, exact = TRUE)
 {
-    # ignore the 'exact' argument
+    if (!identical(exact, TRUE)) {
+        warning("'exact' argument is ignored")
+    }
+
     # no fancy subscripting here; maybe add support for that later
     .subset2(x, i)
 }
