@@ -100,6 +100,13 @@ Use a named argument (`"desc")` to order in descending order.
 order_by(flights, desc = arr_delay)
 ```
 
+You can specify multiple descending columns if you'd like:
+
+```{r}
+# descending arr_delay, distance; ascending day
+order_by(flights, desc = arr_delay, desc = distance, day)
+```
+
 
 ### Select columns with `[`
 
@@ -167,7 +174,7 @@ The `with()` command can also be used to summarize data:
 
 ```{r}
 with(flights, {
-    list(delay = mean(dep_delay, na.rm = TRUE))
+    mean(dep_delay, na.rm = TRUE)
 })
 ```
 
@@ -217,11 +224,13 @@ you would like to group by a key, do something like the following instead:
 count <- function(x) list(flights = nrow(x))
 total <- function(x) list(flights = sum(x$flights))
 
-# count daily flights
+# count daily flights...
 (per_day <- grouped(flights, c("year", "month", "day"), count))
 
-# then aggregate by month, year
+# ...then aggregate by month
 (per_month <- grouped(per_day, keys(per_day)[c("year", "month")], total))
+
+# ...then aggregate by year
 (per_year <- grouped(per_month, keys(per_month)["year"], total))
 ```
 

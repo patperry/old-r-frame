@@ -182,6 +182,21 @@ order_by(flights, desc = arr_delay)
 #> ⋮                                            (336776 rows, 19 columns total)
 ```
 
+You can specify multiple descending columns if you'd like:
+
+
+```r
+# descending arr_delay, distance; ascending day
+order_by(flights, desc = arr_delay, desc = distance, day)
+#>   year month day dep_time sched_dep_time dep_delay arr_time sched_arr_time …
+#> 1 2013     1   9      641            900      1301     1242           1530 …
+#> 2 2013     6  15     1432           1935      1137     1607           2120 …
+#> 3 2013     1  10     1121           1635      1126     1239           1810 …
+#> 4 2013     9  20     1139           1845      1014     1457           2210 …
+#> 5 2013     7  22      845           1600      1005     1044           1815 …
+#> ⋮                                            (336776 rows, 19 columns total)
+```
+
 
 ### Select columns with `[`
 
@@ -300,9 +315,8 @@ The `with()` command can also be used to summarize data:
 
 ```r
 with(flights, {
-    list(delay = mean(dep_delay, na.rm = TRUE))
+    mean(dep_delay, na.rm = TRUE)
 })
-#> $delay
 #> [1] 12.63907
 ```
 
@@ -377,7 +391,7 @@ you would like to group by a key, do something like the following instead:
 count <- function(x) list(flights = nrow(x))
 total <- function(x) list(flights = sum(x$flights))
 
-# count daily flights
+# count daily flights...
 (per_day <- grouped(flights, c("year", "month", "day"), count))
 #> year month day │ flights
 #> 2013 1     1   │     842
@@ -387,7 +401,7 @@ total <- function(x) list(flights = sum(x$flights))
 #> 2013 1     5   │     720
 #> ⋮       (365 rows total)
 
-# then aggregate by month, year
+# ...then aggregate by month
 (per_month <- grouped(per_day, keys(per_day)[c("year", "month")], total))
 #> year month │ flights
 #> 2013 1     │   27004
@@ -396,6 +410,8 @@ total <- function(x) list(flights = sum(x$flights))
 #> 2013 4     │   28330
 #> 2013 5     │   28796
 #> ⋮    (12 rows total)
+
+# ...then aggregate by year
 (per_year <- grouped(per_month, keys(per_month)["year"], total))
 #> year │ flights
 #> 2013 │  336776
