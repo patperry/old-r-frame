@@ -161,6 +161,41 @@ Use `replace = TRUE` to sample with replacement, as for a bootstrap sample.
 Use the `grouped()` command to perform an operation on a set of groups
 defined by the unique levels of one or more variables:
 
+```{r}
+delay <- grouped(flights, "tailnum", function(x) {
+    list(count = nrow(x),
+         dist = mean(x$distance, na.rm = TRUE),
+         delay = mean(x$arr_delay, na.rm = TRUE))
+})
+
+delay <- subset(delay, count > 20 & dist < 2000)
+```
+
+Here's how to find the number of planes and the number of flights that go to
+each possible destination:
+
+```{r}
+grouped(flights, "dest", function(x) {
+    list(planes = length(unique(x$tailnum)),
+         flights = nrow(x))
+})
+```
+
+The grouping variables specified as names must be data variables, not keys. If
+you would like to group by a key, do something like the following instead:
+
+```{r}
+# helper functions
+count <- function(x) list(flights = nrow(x))
+total <- function(x) list(flights = sum(x$flights))
+
+# count daily flights
+(per_day <- grouped(flights, c("year", "month", "day"), count))
+
+# then aggregate by month, year
+(per_month <- grouped(per_day, keys(per_day)[c("year", "month")], total))
+(per_year <- grouped(per_month, keys(per_month)["year"], total))
+```
 
 
 [dplyr]: http://dplyr.tidyverse.org/ "dplyr"
