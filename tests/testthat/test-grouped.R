@@ -82,6 +82,6 @@ test_that("'grouped' works with NA", {
         arr_time = c(NA, 504L, 203L, 700L, 650L, 830L))
     y <- grouped(x, "tailnum", nrow)
 
-    keys <- distinct(x[,"tailnum"])
+    keys <- unique(x[,"tailnum"], sorted = TRUE)
     expect_equal(y, framed(rep(1, nrow(keys)), keys))
 })

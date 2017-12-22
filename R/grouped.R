@@ -80,7 +80,7 @@ grouped.dataset <- function(x, by = NULL, do = NULL, ...)
     if (is.null(by)) {
         y <- as_dataset(list(list(x)))
     } else {
-        keys <- distinct(by)
+        keys <- unique(by, sorted = TRUE)
         g <- lookup(by, keys)
         xg <- split(x, g)
 

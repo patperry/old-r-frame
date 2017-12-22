@@ -35,3 +35,46 @@ transform.dataset <- function(`_data`, ..., `_enclos` = parent.frame())
 
     x
 }
+
+
+unique.dataset <- function(x, incomparables = FALSE, ..., sorted = FALSE)
+{
+    if (!identical(incomparables, FALSE)) {
+        warning("'incomparables' argument is ignored")
+    }
+
+    x <- arg_atomset(x, "argument")
+
+    if (length(x) == 0) {
+        return(as_keyset(NULL))
+    }
+
+    keys <- x[!duplicated(x), ]
+    keys <- as_keyset(keys)
+
+    if (sorted) {
+        unique.keyset(keys, ..., sorted = TRUE)
+    } else {
+        keys
+    }
+}
+
+
+unique.keyset <- function(x, incomparables = FALSE, ..., sorted = FALSE)
+{
+    if (!identical(incomparables, FALSE)) {
+        warning("'incomparables' argument is ignored")
+    }
+
+    sorted <- arg_option(sorted)
+    
+    if (sorted) {
+        # use radix sort for consistent, fast sorting, regardless of locale;
+        # requires R >= 3.3
+        cols <- unname(as.list(x))
+        o <- do.call(order, c(cols, method = "radix"))
+        x <- x[o,]
+    }
+
+    as_keyset(x)
+}
