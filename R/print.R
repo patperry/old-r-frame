@@ -322,13 +322,21 @@ ncol_recursive <- function(x, offset = 0)
     }
 }
 
-format.dataset <- function(x, rows = NULL, wrap = NULL, ..., chars = NULL,
+format.dataset <- function(x, rows = -1L, wrap = -1L, ..., chars = NULL,
                            na.encode = TRUE, quote = FALSE, na.print = NULL,
                            print.gap = NULL, justify = "none", width = NULL,
                            indent = NULL, line = NULL)
 {
     if (is.null(x)) {
         return(invisible(NULL))
+    }
+
+    if (is.null(rows)) {
+        rows <- option_rows(rows)
+    }
+
+    if (is.null(wrap)) {
+        wrap <- option_wrap(wrap)
     }
    
     x <- arg_dataset(x)
@@ -353,10 +361,10 @@ format.dataset <- function(x, rows = NULL, wrap = NULL, ..., chars = NULL,
     if (is.null(indent)) {
         indent <- 0L
     }
-    if (is.null(rows) || rows < 0) {
+    if (rows < 0) {
         rows <- n
     }
-    if (is.null(wrap) || wrap < 0) {
+    if (wrap < 0) {
         wrap <- .Machine$integer.max
     }
 
@@ -388,7 +396,7 @@ format.dataset <- function(x, rows = NULL, wrap = NULL, ..., chars = NULL,
 }
 
 
-print.dataset <- function(x, rows = 20L, wrap = 0L, ..., number = NULL,
+print.dataset <- function(x, rows = NULL, wrap = NULL, ..., number = NULL,
                           chars = NULL, digits = NULL, quote = FALSE,
                           na.print = NULL, print.gap = NULL, display = TRUE)
 {
@@ -402,6 +410,9 @@ print.dataset <- function(x, rows = 20L, wrap = 0L, ..., number = NULL,
     } else {
         number <- arg_option(number)
     }
+
+    rows <- option_rows(rows)
+    wrap <- option_wrap(wrap)
 
     rows <- arg_rows(rows)
     wrap <- arg_integer_scalar(wrap)

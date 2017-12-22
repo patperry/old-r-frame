@@ -6,11 +6,11 @@
 Printing and formatting data sets.
 }
 \usage{
-\method{print}{dataset}(x, rows = 20L, wrap = 0L, ..., number = NULL,
+\method{print}{dataset}(x, rows = NULL, wrap = NULL, ..., number = NULL,
       chars = NULL, digits = NULL, quote = FALSE, na.print = NULL,
       print.gap = NULL, display = TRUE)
 
-\method{format}{dataset}(x, rows = NULL, wrap = NULL, ..., chars = NULL,
+\method{format}{dataset}(x, rows = -1L, wrap = -1L, ..., chars = NULL,
       na.encode = TRUE, quote = FALSE, na.print = NULL, print.gap = NULL,
       justify = "none", width = NULL, indent = NULL, line = NULL)
 }
@@ -19,11 +19,13 @@ Printing and formatting data sets.
 
     \item{rows}{integer scalar giving the maximum number of rows to print
         before truncating the output. A negative or missing value indicates
-        no upper limit.}
+        no upper limit. Use \code{NULL} to take the value from
+        \code{getOption("frame.rows")}.}
 
     \item{wrap}{integer scalar giving the maximum number of times to wrap
         columns to a new set of lines before truncating the output.
-        A negative or missing value indicates no upper limit.}
+        A negative or missing value indicates no upper limit. Use \code{NULL}
+    to take the value from \code{getOption("frame.wrap"}).}
 
     \item{number}{logical scalar indicating whether to print row numbers
         for the output, or \code{NULL} to number when \code{keys(x)} is
