@@ -14,11 +14,13 @@
 
 
 # orphan instance...
-reorder.data.frame <- function(x, ..., enclos = parent.frame())
-{
-    x <- as_dataset(x)
-    reorder(x, ..., enclos = enclos)
-}
+# we don't own the class, or the type, so we shouldn't export this
+#
+#reorder.data.frame <- function(x, ..., enclos = parent.frame())
+#{
+#    x <- as_dataset(x)
+#    reorder(x, ..., enclos = enclos)
+#}
 
 
 reorder.dataset <- function(x, ..., enclos = parent.frame())

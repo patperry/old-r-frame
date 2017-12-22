@@ -1,12 +1,10 @@
 \name{reorder.dataset}
-\alias{reorder.data.frame}
 \alias{reorder.dataset}
 \title{Data Reordering}
 \description{
 Reorder the rows in a dataset.
 }
 \usage{
-\S3method{reorder}{data.frame}(x, ..., enclos = parent.frame())
 \S3method{reorder}{dataset}(x, ..., enclos = parent.frame())
 }
 \arguments{
@@ -39,15 +37,17 @@ A \code{dataset} with the rows of \code{x} put in the specified order.
 \code{\link{order}}.
 }
 \examples{
+x <- as_dataset(mtcars)
+
 # order by 'cyl'
-reorder(mtcars, cyl)
+reorder(x, cyl)
 
 # break ties using 'gear'
-reorder(mtcars, cyl, gear)
+reorder(x, cyl, gear)
 
 # order by 'cyl' descending, 'gear' ascending
-reorder(mtcars, desc = cyl, gear)
+reorder(x, desc = cyl, gear)
 
 # order by 'cyl' descending, 'gear' descending
-reorder(mtcars, desc = cyl, desc = gear)
+reorder(x, desc = cyl, desc = gear)
 }

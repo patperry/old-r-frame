@@ -1,4 +1,5 @@
 ## Imports
+importFrom(stats, reorder)
 importFrom(utf8, as_utf8)
 importFrom(utf8, output_ansi)
 importFrom(utf8, output_utf8)
@@ -50,7 +51,6 @@ export(keyslice)
 export(keyslice.default)
 export(keyslice.keyset)
 export(lookup)
-export(reorder.data.frame)
 export(reorder.dataset)
 export(print.dataset)
 export(rowid)
@@ -95,9 +95,6 @@ S3method(schema, default)
 
 
 ## Base S3 methods
-
-### data.frame
-S3method(reorder, data.frame)
 
 ### dataset
 S3method(`$`, dataset)
