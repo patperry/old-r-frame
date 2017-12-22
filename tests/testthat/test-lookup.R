@@ -46,8 +46,22 @@ test_that("'lookup' errors for invalid key", {
 })
 
 
-test_that("'lookup' NA works", {
+test_that("'lookup' NA string works", {
     keys <- keyset(
         tailnum = c("N172US", "N329JB", "N618JB", "N763JB", "N78511", NA))
     expect_equal(lookup(NA, keys), nrow(keys))
+})
+
+
+test_that("'lookup' NA int works", {
+    keys <- keyset(
+        tailnum = as.integer(c(172, 329, 618, NA, 763, 78511)))
+    expect_equal(lookup(NA, keys), 4)
+})
+
+
+test_that("'lookup' NA double works", {
+    keys <- keyset(
+        tailnum = c(172, 329.1, 618, NA, 763, 78511))
+    expect_equal(lookup(NA, keys), 4)
 })

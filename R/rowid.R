@@ -115,13 +115,14 @@ key_escape <- function(x)
 {
     # encode as character
     if (is.double(x) || is.complex(x)) {
-        x <- format(x, digits = 22)
+        x <- format(x, digits = 22, trim = TRUE)
     } else if (is.character(x)) {
         # replace '\' with '\\', '"' with '\"',
         x[!is.na(x)] <- gsub("(\\\\|\")", "\\\\\\1", x[!is.na(x)])
         x <- ifelse(is.na(x), "NA", paste0('"', x, '"'))
     } else {
         x <- as.character(x)
+        x[is.na(x)] <- "NA"
     }
     x
 }
