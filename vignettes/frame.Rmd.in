@@ -56,6 +56,15 @@ which itself returns a `dataset`:
 schema(flights)
 ```
 
+This is one example where we would like to see more rows than displayed by our
+newly-specified default (5). Display all rows of the result by specifying a
+negative value for the truncation limit:
+
+```{r}
+print(schema(flights), -1)
+```
+
+
 ## Single table actions
 
 Dplyr provides a set of "verbs" for working with data sets. We do not provide

@@ -102,6 +102,39 @@ schema(flights)
 ## ⋮        (19 rows total)
 ```
 
+This is one example where we would like to see more rows than displayed by our
+newly-specified default (5). Display all rows of the result by specifying a
+negative value for the truncation limit:
+
+
+```r
+print(schema(flights), -1)
+```
+
+```
+##    name           class    
+## 1  year           integer  
+## 2  month          integer  
+## 3  day            integer  
+## 4  dep_time       integer  
+## 5  sched_dep_time integer  
+## 6  dep_delay      numeric  
+## 7  arr_time       integer  
+## 8  sched_arr_time integer  
+## 9  arr_delay      numeric  
+## 10 carrier        character
+## 11 flight         integer  
+## 12 tailnum        character
+## 13 origin         character
+## 14 dest           character
+## 15 air_time       numeric  
+## 16 distance       numeric  
+## 17 hour           numeric  
+## 18 minute         numeric  
+## 19 time_hour      POSIXct
+```
+
+
 ## Single table actions
 
 Dplyr provides a set of "verbs" for working with data sets. We do not provide
