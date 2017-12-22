@@ -38,10 +38,9 @@ multi-component keys.
 
 
 **Note:** *This package is currently experimental and its API is unstable. The
-implementation is incomplete and slow. If this doesn't scare you away and you
-use the package, please help to improve the package by reporting back if you
-find that certain operations do not behave as you expect or if you have
-other suggestions for improvement by [filing an issue][issues].*
+implementation is incomplete and slow. If this doesn't scare you and you use
+the package anyway, please help to improve it by reporting back if certain
+operations do not behave as you expect by [filing an issue][issues].*
 
 
 Installation
