@@ -187,6 +187,18 @@ elt_subset <- function(x, i)
     j <- args$j
     x <- as_dataset(x)
 
+    if (is.null(value)) {
+        # pass
+    } else {
+        cl <- class(value)
+        if (cl[[1L]] == "AsIs") {
+            class(value) <- cl[-1L]
+            value <- as_dataset(list(list(value)))
+        } else {
+            value <- as_dataset(value)
+        }
+    }
+
     if (is.null(i)) {
         replace_cols(x, j, value)
     } else {
@@ -216,11 +228,30 @@ replace_cols <- function(x, j, value, call = sys.call(-1L))
         attr(x, "row.names") <- rn
         attr(x, "keys") <- keys
         class(x) <- cl
+    } else if (is.character(j)) {
+        if (anyNA(j)) {
+            stop(simpleError("column index contains NA", call))
+        }
 
-        x
+        n <- nrow(x)
+        recycle <- arg_recycle(n, length(j), value, call)
+        rc <- recycle$cols
+        rr <- recycle$rows
+
+        for (k in seq_along(j)) {
+            jk <- j[[k]]
+            vk <- if (rc) value[[1L]] else value[[k]]
+            if (rr) {
+                # TODO: handle lists, S3 objects
+                vk <- rep(vk, n)
+            }
+            x[[jk]] <- vk
+        }
     } else {
-        replace_cells(x, NULL, j, value, call)
+        x <- replace_cells(x, NULL, j, value, call)
     }
+
+    x
 }
 
 
@@ -239,49 +270,20 @@ replace_cells <- function(x, i, j, value, call = sys.call(-1L))
 
     ni <- length(i)
     nj <- length(j)
-
-    replace <- arg_replace(ni, nj, value, call)
-    value <- replace$value
-    recycle <- replace$recycle
-
-    dv <- dim(value)
-    rv <- length(dv)
+    recycle <- arg_recycle(ni, nj, value, call)$cols
 
     if (ni == 0 || nj == 0) {
         return(x)
     }
 
-    if (rv < 2L) {
-        if (recycle) {
-            for (k in seq_along(j)) {
-                jk <- j[[k]]
-                if (length(dim(x[[jk]])) <= 1L) {
-                    x[[jk]][i] <- value
-                } else {
-                    x[[jk]][i,] <- value
-                }
-            }
+    for (k in seq_along(j)) {
+        jk <- j[[k]]
+        vk <- if (recycle) value[[1L]] else value[[k]]
+
+        if (length(dim(x[[jk]])) <= 1L) {
+            x[[jk]][i] <- vk
         } else {
-            off <- 0L
-            for (k in seq_along(j)) {
-                ix <- (off + 1L):(off + ni)
-                jk <- j[[k]]
-                if (length(dim(x[[jk]])) <= 1L) {
-                    x[[jk]][i] <- value[ix]
-                } else {
-                    x[[jk]][i,] <- value[ix]
-                }
-                off <- off + ni
-            }
-        }
-    } else {
-        for (k in seq_along(j)) {
-            jk <- j[[k]]
-            if (length(dim(x[[jk]])) <= 1L) {
-                x[[jk]][i] <- value[, k, drop = TRUE]
-            } else {
-                x[[jk]][i,] <- value[, k, drop = TRUE]
-            }
+            x[[jk]][i,] <- vk
         }
     }
 
@@ -289,42 +291,31 @@ replace_cells <- function(x, i, j, value, call = sys.call(-1L))
 }
 
 
-arg_replace <- function(ni, nj, value, call = sys.call(-1L))
+arg_recycle <- function(ni, nj, value, call = sys.call(-1L))
 {
-    dv <- dim(value)
-    rv <- length(dv)
+    rows <- nrow(value)
+    cols <- ncol(value)
 
-    if ((asis <- class(value)[[1L]] == "AsIs")) {
-        class(value) <- class(value)[-1L]
-    }
-
-    if (rv < 2L) {
-        nv <- if (asis) 1L else length(value)
-        if (nv == ni * nj) {
-            recycle <- FALSE
-        } else if (nv == ni || nv == 1L) {
-            recycle <- TRUE
-        } else {
-            stop(simpleError(sprintf(
-                "replacement has %.0f items, need %.0f",
-                nv, ni * nj), call))
-        }
-    } else if (rv == 2L) {
-        recycle <- NA
-        if (!(dv[[1L]] == ni && dv[[2L]] == nj)) {
-            stop(simpleError(sprintf(
-                "replacement has dimensions %.0fx%.0f, need %.0fx%.0f",
-                dv[[1L]], dv[[2L]], ni, nj), call))
-        }
+    if (rows == ni) {
+        recycle_rows <- FALSE
+    } else if (rows == 1L) {
+        recycle_rows <- TRUE
     } else {
         stop(simpleError(sprintf(
-                "replacement cannot be a rank-%.0f array",
-                length(dv)), call))
+             "replacement has %.0f rows, need %.0f", rows, ni), call))
     }
 
-    list(value = value, recycle = recycle)
-}
+    if (cols == nj) {
+        recycle_cols <- FALSE
+    } else if (cols == 1L) {
+        recycle_cols <- TRUE
+    } else {
+        stop(simpleError(sprintf(
+             "replacement has %.0f columns, need %.0f", cols, nj), call))
+    }
 
+    list(rows = recycle_rows, cols = recycle_cols)
+}
 
 
 # arg_index(x, ..1, "drop") or arg_index(x, ..1, "value")
