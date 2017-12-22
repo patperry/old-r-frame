@@ -356,6 +356,7 @@ arg_atomset <- function(value, name = argname(substitute(value)),
         if (is.logical(elt)) {
             elt <- as.logical(elt)
         } else if (is.numeric(elt)) {
+            # leaves integer as-is; converts others to double
             if (!is.null(oldClass(elt))) {
                 elt <- as.numeric(elt)
             }
