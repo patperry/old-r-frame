@@ -1,5 +1,5 @@
 ---
-title: "Introduction to frame"
+title: "Comparison with dplyr"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Design Motivation}
@@ -14,10 +14,10 @@ set.seed(0)
 ```
 
 There are an increasing number of data frame packages in R, including
-[data.table][data-table] and [dplyr][dplyr]. All provide similar functionality,
-but they do so with different user interfaces. To illustrate some of the
-differences, this vignette translates the [dplyr introduction][dplyr-intro] to
-*frame*. 
+[data.table][data-table] and [dplyr][dplyr]. All provide similar
+functionality, but they do so with different user interfaces. To illustrate
+some of the differences, this vignette translates the
+[dplyr introduction][dplyr-intro] to *frame*.  
 
 ```{r}
 library(frame)
@@ -25,7 +25,7 @@ library(frame)
 
 ## Data: nycflights13
 
-The [nycflight13][nyclights13] package collects flight information from 2013 for trips
+The [nycflights13][nycflights13] package collects flight information from 2013 for trips
 originating or ending in New York City. The package provides the data in the
 form of `tibble` objects, but we can easily convert them to datasets using
 `as_data`.
@@ -84,6 +84,9 @@ Use the `subset` command (part of base R) to select certain rows:
 subset(flights, month == 1 & day == 1)
 ```
 
+This is analogous to `dplyr::filter()`.
+
+
 ### Arrange rows with `order_by()`
 
 Use `order_by()` to arrange rows, using the first argument and then breaking
@@ -93,6 +96,8 @@ ties according to subsequent arguments.
 ```{r}
 order_by(flights, year, month, day)
 ```
+
+This is analogous to `dplyr::arrange()`.
 
 Use a named argument (`"desc")` to order in descending order.
 
@@ -104,7 +109,10 @@ You can specify multiple descending columns if you'd like:
 
 ```{r}
 # descending arr_delay, distance; ascending day
-order_by(flights, desc = arr_delay, desc = distance, day)
+order_by(flights,
+         desc = arr_delay,
+         desc = distance,
+         day)
 ```
 
 
@@ -116,13 +124,15 @@ Use the subscript operator `[` to select columns:
 flights[c("year", "month", "day")]
 ```
 
-You can also specify using the numerical index, or a set of indices:
+This is analogous to `dplyr::select()`.
+
+You can specify columns using a numerical index, or a set of indices:
 
 ```{r}
 flights[1:3]
 ```
 
-Use negative indices to exclude columns.
+Use negative indices to exclude columns:
 
 ```{r}
 flights[-(1:3)]
@@ -132,7 +142,7 @@ If you don't know the index of a column, you can get it like with the base R
 `match` function:
 
 ```{r}
-match("day", names(x))
+match("day", names(flights))
 ```
 
 
@@ -178,10 +188,15 @@ with(flights, {
 })
 ```
 
+This is analogous to `dplyr::summarise()`.
+
+
 ### Randomly sample rows with `sample()`
 
-To get a random sample of the rows, use the `sample()` function to choose a
-random set of row indices, and then select these with the subset operator:
+There are no direct analogues to *dplyr* `dplyr::sample_n()` and
+`dplyr::sample_frac()`, but you can get a random sample of the rows, use the
+`sample()` function. Use `sample()` to choose a random set of row indices, and
+then select these with the subset operator:
 
 ```{r}
 # sample 10 rows
@@ -189,6 +204,11 @@ flights[sample(nrow(flights), 10), ]
 ```
 
 Use `replace = TRUE` to sample with replacement, as for a bootstrap sample.
+
+```{r}
+# get a bootstrap sample
+flights[sample(nrow(flights), replace = TRUE), ]
+```
 
 
 ### Grouped operations
@@ -205,6 +225,17 @@ delay <- grouped(flights, "tailnum", function(x) {
 
 (delay <- subset(delay, count > 20 & dist < 2000))
 ```
+
+The `grouped()` command acts as a combination of `dplyr::group_by()` and
+`dplyr::summarise()`. To group the rows but not perform any computation,
+leave the operation specified:
+
+```{r}
+grouped(flights, "tailnum")
+```
+
+Here the result is a `dataset`  with keys taken from the `tailnum` variable.
+The dataset has a single column: a list of the groups.
 
 Here's how to find the number of planes and the number of flights that go to
 each possible destination:
@@ -235,7 +266,7 @@ total <- function(x) list(flights = sum(x$flights))
 ```
 
 
-[dplyr]: http://dplyr.tidyverse.org/ "dplyr"
-[dplyr-intro]: https://CRAN.R-project.org/package=dplyr/vignettes/dplyr.html "An introduction to dplyr"
 [data-table]: http://r-datatable.com/ "data.table"
+[dplyr]: http://dplyr.tidyverse.org/ "dplyr"
+[dplyr-intro]: https://cran.r-project.org/package=dplyr/vignettes/dplyr.html "An introduction to dplyr"
 [nycflights13]: https://cran.r-project.org/package=nycflights13 "nycflights13"
