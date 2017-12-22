@@ -7,15 +7,20 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+options(width = 80)
+set.seed(0)
+```
+
 There are an increasing number of data frame packages in R, including
 [data.table][data-table] and [dplyr][dplyr]. All provide similar functionality,
 but they do so with different user interfaces. To illustrate some of the
 differences, this vignette translates the [dplyr introduction][dplyr-intro] to
 *frame*. 
 
-```{r, echo = FALSE}
+```{r}
 library(frame)
-set.seed(0)
 ```
 
 ## Data: nycflights13

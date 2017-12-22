@@ -7,6 +7,8 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+
+
 There are an increasing number of data frame packages in R, including
 [data.table][data-table] and [dplyr][dplyr]. All provide similar functionality,
 but they do so with different user interfaces. To illustrate some of the
@@ -14,6 +16,9 @@ differences, this vignette translates the [dplyr introduction][dplyr-intro] to
 *frame*. 
 
 
+```r
+library(frame)
+```
 
 ## Data: nycflights13
 
@@ -27,31 +32,28 @@ form of `tibble` objects, but we can easily convert them to datasets using
 library(nycflights13)
 flights <- as_dataset(flights)
 print(flights)
-```
-
-```
-##    year month day dep_time sched_dep_time dep_delay arr_time …
-## 1  2013     1   1      517            515         2      830 …
-## 2  2013     1   1      533            529         4      850 …
-## 3  2013     1   1      542            540         2      923 …
-## 4  2013     1   1      544            545        -1     1004 …
-## 5  2013     1   1      554            600        -6      812 …
-## 6  2013     1   1      554            558        -4      740 …
-## 7  2013     1   1      555            600        -5      913 …
-## 8  2013     1   1      557            600        -3      709 …
-## 9  2013     1   1      557            600        -3      838 …
-## 10 2013     1   1      558            600        -2      753 …
-## 11 2013     1   1      558            600        -2      849 …
-## 12 2013     1   1      558            600        -2      853 …
-## 13 2013     1   1      558            600        -2      924 …
-## 14 2013     1   1      558            600        -2      923 …
-## 15 2013     1   1      559            600        -1      941 …
-## 16 2013     1   1      559            559         0      702 …
-## 17 2013     1   1      559            600        -1      854 …
-## 18 2013     1   1      600            600         0      851 …
-## 19 2013     1   1      600            600         0      837 …
-## 20 2013     1   1      601            600         1      844 …
-## ⋮                              (336776 rows, 19 columns total)
+#>    year month day dep_time sched_dep_time dep_delay arr_time sched_arr_time …
+#> 1  2013     1   1      517            515         2      830            819 …
+#> 2  2013     1   1      533            529         4      850            830 …
+#> 3  2013     1   1      542            540         2      923            850 …
+#> 4  2013     1   1      544            545        -1     1004           1022 …
+#> 5  2013     1   1      554            600        -6      812            837 …
+#> 6  2013     1   1      554            558        -4      740            728 …
+#> 7  2013     1   1      555            600        -5      913            854 …
+#> 8  2013     1   1      557            600        -3      709            723 …
+#> 9  2013     1   1      557            600        -3      838            846 …
+#> 10 2013     1   1      558            600        -2      753            745 …
+#> 11 2013     1   1      558            600        -2      849            851 …
+#> 12 2013     1   1      558            600        -2      853            856 …
+#> 13 2013     1   1      558            600        -2      924            917 …
+#> 14 2013     1   1      558            600        -2      923            937 …
+#> 15 2013     1   1      559            600        -1      941            910 …
+#> 16 2013     1   1      559            559         0      702            706 …
+#> 17 2013     1   1      559            600        -1      854            902 …
+#> 18 2013     1   1      600            600         0      851            858 …
+#> 19 2013     1   1      600            600         0      837            825 …
+#> 20 2013     1   1      601            600         1      844            850 …
+#> ⋮                                             (336776 rows, 19 columns total)
 ```
 
 There are more rows and columns in this dataset than will fit on the screen.
@@ -72,16 +74,13 @@ we will truncate the output to 5 rows.
 
 ```r
 print(flights)
-```
-
-```
-##   year month day dep_time sched_dep_time dep_delay arr_time …
-## 1 2013     1   1      517            515         2      830 …
-## 2 2013     1   1      533            529         4      850 …
-## 3 2013     1   1      542            540         2      923 …
-## 4 2013     1   1      544            545        -1     1004 …
-## 5 2013     1   1      554            600        -6      812 …
-## ⋮                             (336776 rows, 19 columns total)
+#>   year month day dep_time sched_dep_time dep_delay arr_time sched_arr_time …
+#> 1 2013     1   1      517            515         2      830            819 …
+#> 2 2013     1   1      533            529         4      850            830 …
+#> 3 2013     1   1      542            540         2      923            850 …
+#> 4 2013     1   1      544            545        -1     1004           1022 …
+#> 5 2013     1   1      554            600        -6      812            837 …
+#> ⋮                                            (336776 rows, 19 columns total)
 ```
 
 You can get information about the column types using the `schema` function,
@@ -90,16 +89,13 @@ which itself returns a `dataset`:
 
 ```r
 schema(flights)
-```
-
-```
-##   name           class  
-## 1 year           integer
-## 2 month          integer
-## 3 day            integer
-## 4 dep_time       integer
-## 5 sched_dep_time integer
-## ⋮        (19 rows total)
+#>   name           class  
+#> 1 year           integer
+#> 2 month          integer
+#> 3 day            integer
+#> 4 dep_time       integer
+#> 5 sched_dep_time integer
+#> ⋮        (19 rows total)
 ```
 
 This is one example where we would like to see more rows than displayed by our
@@ -109,29 +105,26 @@ negative value for the truncation limit:
 
 ```r
 print(schema(flights), -1)
-```
-
-```
-##    name           class    
-## 1  year           integer  
-## 2  month          integer  
-## 3  day            integer  
-## 4  dep_time       integer  
-## 5  sched_dep_time integer  
-## 6  dep_delay      numeric  
-## 7  arr_time       integer  
-## 8  sched_arr_time integer  
-## 9  arr_delay      numeric  
-## 10 carrier        character
-## 11 flight         integer  
-## 12 tailnum        character
-## 13 origin         character
-## 14 dest           character
-## 15 air_time       numeric  
-## 16 distance       numeric  
-## 17 hour           numeric  
-## 18 minute         numeric  
-## 19 time_hour      POSIXct
+#>    name           class    
+#> 1  year           integer  
+#> 2  month          integer  
+#> 3  day            integer  
+#> 4  dep_time       integer  
+#> 5  sched_dep_time integer  
+#> 6  dep_delay      numeric  
+#> 7  arr_time       integer  
+#> 8  sched_arr_time integer  
+#> 9  arr_delay      numeric  
+#> 10 carrier        character
+#> 11 flight         integer  
+#> 12 tailnum        character
+#> 13 origin         character
+#> 14 dest           character
+#> 15 air_time       numeric  
+#> 16 distance       numeric  
+#> 17 hour           numeric  
+#> 18 minute         numeric  
+#> 19 time_hour      POSIXct
 ```
 
 
@@ -148,16 +141,13 @@ Use the `subset` command (part of base R) to select certain rows:
 
 ```r
 subset(flights, month == 1 & day == 1)
-```
-
-```
-##   year month day dep_time sched_dep_time dep_delay arr_time …
-## 1 2013     1   1      517            515         2      830 …
-## 2 2013     1   1      533            529         4      850 …
-## 3 2013     1   1      542            540         2      923 …
-## 4 2013     1   1      544            545        -1     1004 …
-## 5 2013     1   1      554            600        -6      812 …
-## ⋮                                (842 rows, 19 columns total)
+#>   year month day dep_time sched_dep_time dep_delay arr_time sched_arr_time …
+#> 1 2013     1   1      517            515         2      830            819 …
+#> 2 2013     1   1      533            529         4      850            830 …
+#> 3 2013     1   1      542            540         2      923            850 …
+#> 4 2013     1   1      544            545        -1     1004           1022 …
+#> 5 2013     1   1      554            600        -6      812            837 …
+#> ⋮                                               (842 rows, 19 columns total)
 ```
 
 ### Arrange rows with `order_by()`
@@ -169,16 +159,13 @@ ties according to subsequent arguments.
 
 ```r
 order_by(flights, year, month, day)
-```
-
-```
-##   year month day dep_time sched_dep_time dep_delay arr_time …
-## 1 2013     1   1      517            515         2      830 …
-## 2 2013     1   1      533            529         4      850 …
-## 3 2013     1   1      542            540         2      923 …
-## 4 2013     1   1      544            545        -1     1004 …
-## 5 2013     1   1      554            600        -6      812 …
-## ⋮                             (336776 rows, 19 columns total)
+#>   year month day dep_time sched_dep_time dep_delay arr_time sched_arr_time …
+#> 1 2013     1   1      517            515         2      830            819 …
+#> 2 2013     1   1      533            529         4      850            830 …
+#> 3 2013     1   1      542            540         2      923            850 …
+#> 4 2013     1   1      544            545        -1     1004           1022 …
+#> 5 2013     1   1      554            600        -6      812            837 …
+#> ⋮                                            (336776 rows, 19 columns total)
 ```
 
 Use a named argument (`"desc")` to order in descending order.
@@ -186,16 +173,13 @@ Use a named argument (`"desc")` to order in descending order.
 
 ```r
 order_by(flights, desc = arr_delay)
-```
-
-```
-##   year month day dep_time sched_dep_time dep_delay arr_time …
-## 1 2013     1   9      641            900      1301     1242 …
-## 2 2013     6  15     1432           1935      1137     1607 …
-## 3 2013     1  10     1121           1635      1126     1239 …
-## 4 2013     9  20     1139           1845      1014     1457 …
-## 5 2013     7  22      845           1600      1005     1044 …
-## ⋮                             (336776 rows, 19 columns total)
+#>   year month day dep_time sched_dep_time dep_delay arr_time sched_arr_time …
+#> 1 2013     1   9      641            900      1301     1242           1530 …
+#> 2 2013     6  15     1432           1935      1137     1607           2120 …
+#> 3 2013     1  10     1121           1635      1126     1239           1810 …
+#> 4 2013     9  20     1139           1845      1014     1457           2210 …
+#> 5 2013     7  22      845           1600      1005     1044           1815 …
+#> ⋮                                            (336776 rows, 19 columns total)
 ```
 
 
@@ -206,16 +190,13 @@ Use the subscript operator `[` to select columns:
 
 ```r
 flights[c("year", "month", "day")]
-```
-
-```
-##   year month day
-## 1 2013     1   1
-## 2 2013     1   1
-## 3 2013     1   1
-## 4 2013     1   1
-## 5 2013     1   1
-## ⋮ (336776 rows total)
+#>   year month day
+#> 1 2013     1   1
+#> 2 2013     1   1
+#> 3 2013     1   1
+#> 4 2013     1   1
+#> 5 2013     1   1
+#> ⋮ (336776 rows total)
 ```
 
 You can also specify using the numerical index, or a set of indices:
@@ -223,16 +204,13 @@ You can also specify using the numerical index, or a set of indices:
 
 ```r
 flights[1:3]
-```
-
-```
-##   year month day
-## 1 2013     1   1
-## 2 2013     1   1
-## 3 2013     1   1
-## 4 2013     1   1
-## 5 2013     1   1
-## ⋮ (336776 rows total)
+#>   year month day
+#> 1 2013     1   1
+#> 2 2013     1   1
+#> 3 2013     1   1
+#> 4 2013     1   1
+#> 5 2013     1   1
+#> ⋮ (336776 rows total)
 ```
 
 Use negative indices to exclude columns.
@@ -240,16 +218,13 @@ Use negative indices to exclude columns.
 
 ```r
 flights[-(1:3)]
-```
-
-```
-##   dep_time sched_dep_time dep_delay arr_time sched_arr_time arr_delay …
-## 1      517            515         2      830            819        11 …
-## 2      533            529         4      850            830        20 …
-## 3      542            540         2      923            850        33 …
-## 4      544            545        -1     1004           1022       -18 …
-## 5      554            600        -6      812            837       -25 …
-## ⋮                                       (336776 rows, 16 columns total)
+#>   dep_time sched_dep_time dep_delay arr_time sched_arr_time arr_delay carrier …
+#> 1      517            515         2      830            819        11 UA      …
+#> 2      533            529         4      850            830        20 UA      …
+#> 3      542            540         2      923            850        33 AA      …
+#> 4      544            545        -1     1004           1022       -18 B6      …
+#> 5      554            600        -6      812            837       -25 DL      …
+#> ⋮                                               (336776 rows, 16 columns total)
 ```
 
 If you don't know the index of a column, you can get it like with the base R
@@ -258,10 +233,7 @@ If you don't know the index of a column, you can get it like with the base R
 
 ```r
 match("day", names(x))
-```
-
-```
-## Error in match("day", names(x)): object 'x' not found
+#> Error in match("day", names(x)): object 'x' not found
 ```
 
 
@@ -275,16 +247,13 @@ transform(flights,
     gain = arr_delay - dep_delay,
     speed = distance / air_time * 60
 )
-```
-
-```
-##   year month day dep_time sched_dep_time dep_delay arr_time …
-## 1 2013     1   1      517            515         2      830 …
-## 2 2013     1   1      533            529         4      850 …
-## 3 2013     1   1      542            540         2      923 …
-## 4 2013     1   1      544            545        -1     1004 …
-## 5 2013     1   1      554            600        -6      812 …
-## ⋮                             (336776 rows, 21 columns total)
+#>   year month day dep_time sched_dep_time dep_delay arr_time sched_arr_time …
+#> 1 2013     1   1      517            515         2      830            819 …
+#> 2 2013     1   1      533            529         4      850            830 …
+#> 3 2013     1   1      542            540         2      923            850 …
+#> 4 2013     1   1      544            545        -1     1004           1022 …
+#> 5 2013     1   1      554            600        -6      812            837 …
+#> ⋮                                            (336776 rows, 21 columns total)
 ```
 
 This is similar to `dplyr::mutate`, but it does not evaluate columns
@@ -296,16 +265,13 @@ within(flights, {
     gain <- arr_delay - dep_delay
     gain_per_hour <- gain / (air_time / 60)
 })
-```
-
-```
-##   year month day dep_time sched_dep_time dep_delay arr_time …
-## 1 2013     1   1      517            515         2      830 …
-## 2 2013     1   1      533            529         4      850 …
-## 3 2013     1   1      542            540         2      923 …
-## 4 2013     1   1      544            545        -1     1004 …
-## 5 2013     1   1      554            600        -6      812 …
-## ⋮                             (336776 rows, 21 columns total)
+#>   year month day dep_time sched_dep_time dep_delay arr_time sched_arr_time …
+#> 1 2013     1   1      517            515         2      830            819 …
+#> 2 2013     1   1      533            529         4      850            830 …
+#> 3 2013     1   1      542            540         2      923            850 …
+#> 4 2013     1   1      544            545        -1     1004           1022 …
+#> 5 2013     1   1      554            600        -6      812            837 …
+#> ⋮                                            (336776 rows, 21 columns total)
 ```
 
 If you only want to keep the new variables, use `with()` and return a
@@ -318,16 +284,13 @@ with(flights, {
     gain_per_hour <- gain / (air_time / 60)
     dataset(gain, gain_per_hour)
 })
-```
-
-```
-##   gain gain_per_hour
-## 1    9      2.378855
-## 2   16      4.229075
-## 3   31     11.625000
-## 4  -17     -5.573770
-## 5  -19     -9.827586
-## ⋮ (336776 rows total)
+#>   gain gain_per_hour
+#> 1    9      2.378855
+#> 2   16      4.229075
+#> 3   31     11.625000
+#> 4  -17     -5.573770
+#> 5  -19     -9.827586
+#> ⋮ (336776 rows total)
 ```
 
 ### Summarize values with `with()`
@@ -339,11 +302,8 @@ The `with()` command can also be used to summarize data:
 with(flights, {
     list(delay = mean(dep_delay, na.rm = TRUE))
 })
-```
-
-```
-## $delay
-## [1] 12.63907
+#> $delay
+#> [1] 12.63907
 ```
 
 ### Randomly sample rows with `sample()`
@@ -355,16 +315,13 @@ random set of row indices, and then select these with the subset operator:
 ```r
 # sample 10 rows
 flights[sample(nrow(flights), 10), ]
-```
-
-```
-##   year month day dep_time sched_dep_time dep_delay arr_time …
-## 1 2013     8  24      547            545         2      816 …
-## 2 2013    12   7     1447           1445         2     1842 …
-## 3 2013     2  17      809            810        -1     1024 …
-## 4 2013     4  30     1354           1359        -5     1447 …
-## 5 2013     8  28      905            910        -5     1203 …
-## ⋮                                 (10 rows, 19 columns total)
+#>   year month day dep_time sched_dep_time dep_delay arr_time sched_arr_time …
+#> 1 2013     8  24      547            545         2      816            815 …
+#> 2 2013    12   7     1447           1445         2     1842           1812 …
+#> 3 2013     2  17      809            810        -1     1024           1042 …
+#> 4 2013     4  30     1354           1359        -5     1447           1519 …
+#> 5 2013     8  28      905            910        -5     1203           1215 …
+#> ⋮                                                (10 rows, 19 columns total)
 ```
 
 Use `replace = TRUE` to sample with replacement, as for a bootstrap sample.
@@ -384,16 +341,13 @@ delay <- grouped(flights, "tailnum", function(x) {
 })
 
 (delay <- subset(delay, count > 20 & dist < 2000))
-```
-
-```
-## tailnum │ count     dist     delay
-## N0EGMQ  │   371 676.1887  9.982955
-## N10156  │   153 757.9477 12.717241
-## N102UW  │    48 535.8750  2.937500
-## N103US  │    46 535.1957 -6.934783
-## N104UW  │    47 535.2553  1.804348
-## ⋮                (2962 rows total)
+#> tailnum │ count     dist     delay
+#> N0EGMQ  │   371 676.1887  9.982955
+#> N10156  │   153 757.9477 12.717241
+#> N102UW  │    48 535.8750  2.937500
+#> N103US  │    46 535.1957 -6.934783
+#> N104UW  │    47 535.2553  1.804348
+#> ⋮                (2962 rows total)
 ```
 
 Here's how to find the number of planes and the number of flights that go to
@@ -405,16 +359,13 @@ grouped(flights, "dest", function(x) {
     list(planes = length(unique(x$tailnum)),
          flights = nrow(x))
 })
-```
-
-```
-## dest │ planes flights
-## ABQ  │    108     254
-## ACK  │     58     265
-## ALB  │    172     439
-## ANC  │      6       8
-## ATL  │   1180   17215
-## ⋮    (105 rows total)
+#> dest │ planes flights
+#> ABQ  │    108     254
+#> ACK  │     58     265
+#> ALB  │    172     439
+#> ANC  │      6       8
+#> ATL  │   1180   17215
+#> ⋮    (105 rows total)
 ```
 
 The grouping variables specified as names must be data variables, not keys. If
@@ -428,40 +379,26 @@ total <- function(x) list(flights = sum(x$flights))
 
 # count daily flights
 (per_day <- grouped(flights, c("year", "month", "day"), count))
-```
+#> year month day │ flights
+#> 2013 1     1   │     842
+#> 2013 1     2   │     943
+#> 2013 1     3   │     914
+#> 2013 1     4   │     915
+#> 2013 1     5   │     720
+#> ⋮       (365 rows total)
 
-```
-## year month day │ flights
-## 2013 1     1   │     842
-## 2013 1     2   │     943
-## 2013 1     3   │     914
-## 2013 1     4   │     915
-## 2013 1     5   │     720
-## ⋮       (365 rows total)
-```
-
-```r
 # then aggregate by month, year
 (per_month <- grouped(per_day, keys(per_day)[c("year", "month")], total))
-```
-
-```
-## year month │ flights
-## 2013 1     │   27004
-## 2013 2     │   24951
-## 2013 3     │   28834
-## 2013 4     │   28330
-## 2013 5     │   28796
-## ⋮    (12 rows total)
-```
-
-```r
+#> year month │ flights
+#> 2013 1     │   27004
+#> 2013 2     │   24951
+#> 2013 3     │   28834
+#> 2013 4     │   28330
+#> 2013 5     │   28796
+#> ⋮    (12 rows total)
 (per_year <- grouped(per_month, keys(per_month)["year"], total))
-```
-
-```
-## year │ flights
-## 2013 │  336776
+#> year │ flights
+#> 2013 │  336776
 ```
 
 
