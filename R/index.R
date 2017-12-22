@@ -195,13 +195,13 @@ elt_subset <- function(x, i)
 }
 
 
-replace_cols <- function(x, i, value, call = sys.call(-1L))
+replace_cols <- function(x, j, value, call = sys.call(-1L))
 {
     if (is.null(value)) {
-        if (is.null(i)) {
-            i <- seq_along(x)
+        if (is.null(j)) {
+            j <- seq_along(x)
         } else {
-            i <- arg_col_index(x, i, call)
+            j <- arg_col_index(x, j, call)
         }
 
         # downcast to list
@@ -210,7 +210,7 @@ replace_cols <- function(x, i, value, call = sys.call(-1L))
         rn <- attr(x, "row.names")
         class(x) <- NULL
 
-        x[i] <- NULL
+        x[j] <- NULL
         
         # restore
         attr(x, "row.names") <- rn
@@ -218,10 +218,8 @@ replace_cols <- function(x, i, value, call = sys.call(-1L))
         class(x) <- cl
 
         x
-    } else if (is.character(i)) {
-        replace <- arg_replace(nrow(x), length(i), value)
     } else {
-        replace_cells(x, NULL, i, value, call)
+        replace_cells(x, NULL, j, value, call)
     }
 }
 
