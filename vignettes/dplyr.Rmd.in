@@ -41,7 +41,7 @@ By default, then `print` function will only display 20 rows.  Change the default
 another value using the following command:
 
 ```{r}
-options(frame.rows = 5L) # truncate output after 5 rows
+options(frame.rows = 5) # truncate output after 5 rows
 ```
 
 *frame* uses the default value of 20 to display as much data as possible
@@ -116,26 +116,21 @@ reorder(flights,
 ```
 
 
-### Select columns with `[`
+### Select columns with `[` or `subset()`
 
-Use the subscript operator `[` to select columns:
+Use the subscript operator `[` or the `subset()` function to select columns:
 
 ```{r}
 flights[c("year", "month", "day")]
+subset(flights, select = c(year, month, day))
 ```
 
-This is analogous to `dplyr::select()`.
-
-You can specify columns using a numerical index, or a set of indices:
+You can specify columns using a numerical index, or a set of indices; use
+negative indices to exclude columns.
 
 ```{r}
 flights[1:3]
-```
-
-Use negative indices to exclude columns:
-
-```{r}
-flights[-(1:3)]
+flights[-(1:3)] # exclude 1:3
 ```
 
 If you don't know the index of a column, you can get it like with the base R
@@ -144,6 +139,15 @@ If you don't know the index of a column, you can get it like with the base R
 ```{r}
 match("day", names(flights))
 ```
+
+With `subset()`, you can specify ranges in terms of the names themselves, 
+
+```{r}
+subset(fligths, select = year:day)
+subset(flights, select = -(year:day)) # exclude year:day
+```
+
+These functions are analogous to `dplyr::select()`.
 
 
 ### Add new columns with transform()
@@ -177,6 +181,30 @@ with(flights, {
     dataset(gain, gain_per_hour)
 })
 ```
+
+You can also use or `transform()` `within()` to rename a column:
+
+```{r}
+transform(flights,
+    tail_num = tailnum,
+    tailnum = NULL
+)
+
+within(flights, {
+    tail_num <- tailnum
+    tailnum <- NULL
+})
+```
+
+Note that the new column will appear at the end of the dataset. To rename the
+column in-place do the following instead:
+
+```{r}
+## Not run: names(flights)[match("tailnum", names(flights))] <- "tail_num"
+```
+
+(Admittedly, none of these approaches are as convenient as `dplyr::rename()`.)
+
 
 ### Summarize values with `with()`
 
@@ -248,7 +276,7 @@ grouped(flights, "dest", function(x) {
 ```
 
 The grouping variables specified as names must be data variables, not keys. If
-you would like to group by a key, do something like the following instead:
+you would like to group by a key, do the following instead:
 
 ```{r}
 # helper functions
