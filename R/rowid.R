@@ -71,11 +71,11 @@ rowid.keyset <- function(x, keys, default = NA_integer_, ...)
 
         xk <- x[[i]]
 
-        ki <- if (is.integer(xk)) { as.integer(ki) }
-        else if  (is.logical(xk)) { as.logical(ki) }
-        else if  (is.complex(xk)) { as.complex(ki) }
-        else if  (is.double(xk))  { as.double(ki) }
-        else { as_utf8(as.character(ki)) }
+        ki <- if (is.integer(xk)) { as.integer(ki)
+        } else if  (is.logical(xk)) { as.logical(ki)
+        } else if  (is.complex(xk)) { as.complex(ki)
+        } else if  (is.double(xk))  { as.double(ki)
+        } else { as_utf8(as.character(ki)) }
 
         keys[[i]] <- ki
     }
@@ -116,12 +116,14 @@ key_escape <- function(x)
     # encode as character
     if (is.double(x) || is.complex(x)) {
         x <- format(x, digits = 22)
+    } else if (is.character(x)) {
+        # replace '\' with '\\', '"' with '\"',
+        x[!is.na(x)] <- gsub("(\\\\|\")", "\\\\\\1", x[!is.na(x)])
+        x <- ifelse(is.na(x), "NA", paste0('"', x, '"'))
     } else {
         x <- as.character(x)
     }
-
-    # replace '\' with '\\', ',' with '\,'
-    gsub("(\\\\|,)", "\\\\\\1", x)
+    x
 }
 
 

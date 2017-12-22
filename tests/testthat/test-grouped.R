@@ -74,3 +74,14 @@ test_that("'grouped' works with scalar function on parts", {
     y <- grouped(mtcars, dataset(group = group), nrow)
     expect_equal(x, y)
 })
+
+
+test_that("'grouped' works with NA", {
+    x <- dataset(
+        tailnum = c(NA, "N763JB", "N329JB", "N618JB", "N172US", "N78511"),
+        arr_time = c(NA, 504L, 203L, 700L, 650L, 830L))
+    y <- grouped(x, "tailnum", nrow)
+
+    keys <- distinct(x[,"tailnum"])
+    expect_equal(y, framed(rep(1, nrow(keys)), keys))
+})

@@ -44,3 +44,10 @@ test_that("'lookup' errors for invalid key", {
     expect_error(lookup(NULL, keys, c(-1, 0)), "'default' must have length 1")
     expect_error(lookup(NULL, keys, NaN), "'default' cannot be NaN or Inf")
 })
+
+
+test_that("'lookup' NA works", {
+    keys <- keyset(
+        tailnum = c("N172US", "N329JB", "N618JB", "N763JB", "N78511", NA))
+    expect_equal(lookup(NA, keys), nrow(keys))
+})
