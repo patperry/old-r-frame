@@ -12,6 +12,47 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+anyDuplicated.dataset <- function(x, incomparables = FALSE, fromLast = FALSE,
+                                  ...)
+{
+    dup <- duplicated(x, incomparables = incomparables,
+                      fromLast = fromLast, ...)
+    j <- which(dup)
+    if (length(j) > 0L) j[[1L]] else 0L
+}
+
+
+anyDuplicated.keyset <- function(x, incomparables = FALSE, fromLast = FALSE,
+                                 ...)
+{
+    if (!identical(incomparables, FALSE)) {
+        warning("'incomparables' argument is ignored")
+    }
+
+    FALSE
+}
+
+
+duplicated.dataset <- function(x, incomparables = FALSE, fromLast = FALSE, ...)
+{
+    if (!identical(incomparables, FALSE)) {
+        warning("'incomparables' argument is ignored")
+    }
+
+    duplicated(key_encode(x), fromLast = fromLast)
+}
+
+
+duplicated.keyset <- function(x, incomparables = FALSE, fromLast = FALSE, ...)
+{
+    if (!identical(incomparables, FALSE)) {
+        warning("'incomparables' argument is ignored")
+    }
+
+    logical(nrow(x))
+}
+
+
 transform.dataset <- function(`_data`, ..., `_enclos` = parent.frame())
 {
     x <- `_data`
@@ -41,10 +82,6 @@ unique.dataset <- function(x, incomparables = FALSE, ..., sorted = FALSE)
 {
     if (!identical(incomparables, FALSE)) {
         warning("'incomparables' argument is ignored")
-    }
-
-    if (!is_simple_dataset(x)) {
-        stop("'x' is not a simple dataset")
     }
 
     if (length(x) == 0) {
