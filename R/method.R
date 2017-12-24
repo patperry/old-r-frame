@@ -39,6 +39,20 @@ duplicated.dataset <- function(x, incomparables = FALSE, fromLast = FALSE, ...)
         warning("'incomparables' argument is ignored")
     }
 
+    fromLast <- arg_option(fromLast)
+
+    if (length(x) == 0) {
+        n <- nrow(x)
+        if (n == 0) {
+            return(logical())
+        } else if (fromLast) {
+            return(c(rep(TRUE, n - 1L), FALSE))
+        } else {
+            return(c(FALSE, c(rep(TRUE, n - 1L))))
+        }
+    }
+
+    x <- as_dataset(x, simple = TRUE)
     duplicated(key_encode(x), fromLast = fromLast)
 }
 
@@ -88,11 +102,12 @@ unique.dataset <- function(x, incomparables = FALSE, ..., sorted = FALSE)
         return(as_keyset(NULL))
     }
 
-    keys <- x[!duplicated(x), ]
+    dup <- duplicated(x)
+    keys <- x[!dup, ]
     keys <- as_keyset(keys)
 
     if (sorted) {
-        unique.keyset(keys, ..., sorted = TRUE)
+        unique.keyset(keys, sorted = TRUE)
     } else {
         keys
     }
