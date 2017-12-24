@@ -67,7 +67,7 @@ grouped.dataset <- function(x, by = NULL, do = NULL, ...)
             by <- NULL
         }
     } else {
-        by <- arg_atomset(by)
+        by <- as_dataset(by, simple = TRUE)
         if (nrow(by) != nrow(x)) {
             stop(sprintf("'by' rows (%.0f) must match data rows (%.0f)",
                          nrow(by), nrow(x)))

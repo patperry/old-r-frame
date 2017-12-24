@@ -42,7 +42,8 @@ as_keyset.default <- function(x, ...)
 
 as_keyset.dataset <- function(x, ...)
 {
-    x <- arg_atomset(x, "argument")
+    x <- as_dataset(x, simple = TRUE)
+    keys(x) <- NULL
 
     if ((j <- anyDuplicated(x))) {
         stop(sprintf("argument has a duplicate row (%.0f)", j))

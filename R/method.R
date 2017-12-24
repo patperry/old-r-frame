@@ -43,7 +43,9 @@ unique.dataset <- function(x, incomparables = FALSE, ..., sorted = FALSE)
         warning("'incomparables' argument is ignored")
     }
 
-    x <- arg_atomset(x, "argument")
+    if (!is_simple_dataset(x)) {
+        stop("'x' is not a simple dataset")
+    }
 
     if (length(x) == 0) {
         return(as_keyset(NULL))

@@ -20,17 +20,19 @@ Extract the set of distinct rows in a dataset.
     ordered sequentially by column in descending order.}
 }
 \details{
-Given a dataset x with vector columns, convert each column to an atomic
-type and then extract the set of unique rows, as a \code{keyset} object.
-If \code{sorted = TRUE}, then order the rows in descending order sequentially
-according to column.
+Given a simple dataset \code{x} extract the set of unique rows, as a
+\code{keyset} object.  If \code{sorted = TRUE}, then order the rows in
+descending order sequentially according to column.
+
+Note that these functions only work on simple datasets.
 }
 \value{
 A \code{keyset} with rows corresponding to the unique rows in \code{x},
 in sorted order.
 }
 \seealso{
-\code{\link{keyset}}, \code{\link{duplicated}}, \code{\link{unique}}.
+\code{\link{is_simple_dataset}}, \code{\link{keyset}},
+\code{\link{duplicated}}, \code{\link{unique}}.
 }
 \examples{
 # fill in

@@ -33,27 +33,91 @@ dataset <- function(...)
 }
 
 
-as_dataset <- function(x, ...)
+as_dataset <- function(x, ..., simple = FALSE)
 {
     UseMethod("as_dataset")
 }
 
 
-as_dataset.dataset <- function(x, ...)
+col_name_paren <- function(x, i)
 {
-    downcast(x, "dataset")
+    names <- names(x)
+    if (is.null(names)) {
+        ""
+    } else if (is.na(names[[i]])) {
+        " (<NA>)"
+    } else {
+        paste0(" (\"", names[[i]], "\")")
+    }
 }
 
 
-as_dataset.default <- function(x, ...)
+as_dataset.dataset <- function(x, ..., simple = FALSE)
+{
+    x <- arg_dataset(x)
+    simple <- arg_option(simple)
+
+    x <- downcast(x, "dataset")
+    if (!simple) {
+        return(x)
+    }
+
+    if (length(x) > .Machine$integer.max) {
+        stop(simpleError(
+            sprintf("number of columns exceeds maximum (%d)",
+                    .Machine$integer.max), call))
+    }
+
+    for (i in seq_along(x)) {
+        elt <- x[[i]]
+
+        d <- dim(elt)
+        if (length(d) > 1) {
+            name <- col_name_paren(x, i)
+            stop(simpleError(sprintf(
+"column %d%s is not a vector",
+                 i, name), call))
+        }
+
+        # convert types
+        if (is.logical(elt)) {
+            elt <- as.logical(elt)
+        } else if (is.numeric(elt)) {
+            # leaves integer as-is; converts others to double
+            if (!is.null(oldClass(elt))) {
+                elt <- as.numeric(elt)
+            }
+        } else if (is.complex(elt)) {
+            elt <- as.complex(elt)
+        } else {
+            elt <- as.character(elt)
+            inv <- which(!utf8_valid(elt))
+            if (length(inv) > 0) {
+                name <- col_name_paren(x, i)
+                stop(simpleError(sprintf(
+"column %d%s cannot be encoded in valid UTF-8 (entry %.0f is invalid)",
+                     i, name, inv[[1L]]), call))
+            }
+            elt <- as_utf8(elt)
+        }
+        x[[i]] <- elt
+    }
+
+    x
+}
+
+
+as_dataset.default <- function(x, ..., simple = FALSE)
 {
     x <- as.data.frame(x, optional = TRUE, stringsAsFactors = FALSE)
-    as_dataset(x)
+    as_dataset(x, ..., simple = simple)
 }
 
 
-as_dataset.data.frame <- function(x, ...)
+as_dataset.data.frame <- function(x, ..., simple = FALSE)
 {
+    simple <- arg_option(simple)
+
     # convert row names to the first column
     keys <- if (.row_names_info(x) > 0)
         keyset(name = row.names(x))
@@ -67,12 +131,18 @@ as_dataset.data.frame <- function(x, ...)
                        row.names = .set_row_names(nrow(x)))
     }
     keys(x) <- keys
+
+    if (simple) {
+        x <- as_dataset(x, simple = TRUE)
+    }
+
     x
 }
 
 
-as_dataset.list <- function(x, ...)
+as_dataset.list <- function(x, ..., simple = FALSE)
 {
+    simple <- arg_option(simple)
     nc <- length(x)
     names <- names(x) <- arg_names(nc, "columns", names(x), na = "")
 
@@ -94,12 +164,49 @@ as_dataset.list <- function(x, ...)
     nr <- nrow_dataset(x)
     cols <- lapply(x, as_column, nr)
 
-    structure(cols, class = c("dataset", "data.frame"),
-              row.names = .set_row_names(nr))
+    x <- structure(cols, class = c("dataset", "data.frame"),
+                   row.names = .set_row_names(nr))
+    if (simple) {
+        x <- as_dataset(x, simple = TRUE)
+    }
+
+    x
 }
 
 
 is_dataset <- function(x)
 {
     is.data.frame(x) && inherits(x, "dataset")
+}
+
+
+is_simple_dataset <- function(x)
+{
+    if (!is_dataset(x)) {
+        return(FALSE)
+    }
+
+    if (length(x) > .Machine$integer.max) {
+        return(FALSE)
+    }
+
+    for (i in seq_along(x)) {
+        elt <- x[[i]]
+        d <- dim(elt)
+        if (length(d) > 1L) {
+            return(FALSE)
+        }
+
+        if (!is.atomic(elt) || !is.null(oldClass(elt)) || is.raw(elt)) {
+            return(FALSE)
+        }
+
+        if (is.character(elt)) {
+            if (!all(utf8_valid(elt) | is.na(elt))) {
+                return(FALSE)
+            }
+        }
+    }
+
+    TRUE
 }
