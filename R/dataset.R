@@ -41,14 +41,7 @@ as_dataset <- function(x, ...)
 
 as_dataset.dataset <- function(x, ...)
 {
-    cl <- class(x)
-    i <- match("dataset", cl)
-    if (i > 1L) {
-        cl <- cl[-seq_len(i - 1L)]
-        class(x) <- cl
-    }
-
-    x
+    downcast(x, "dataset")
 }
 
 

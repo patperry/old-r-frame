@@ -29,14 +29,7 @@ as_keyset <- function(x, ...)
 
 as_keyset.keyset <- function(x, ...)
 {
-    cl <- class(x)
-    i <- match("keyset", cl)
-    if (i > 1L) {
-        cl <- cl[-(1L:(i - 1L))]
-        class(x) <- cl
-    }
-
-    x
+    downcast(x, "keyset")
 }
 
 

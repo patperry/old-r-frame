@@ -71,3 +71,16 @@ nrow_column <- function(x)
         d[[1]]
     }
 }
+
+
+downcast <- function(x, class)
+{
+    cl <- class(x)
+    i <- match(class, cl)
+    if (i > 1L) {
+        cl <- cl[-seq_len(i - 1L)]
+        class(x) <- cl
+    }
+
+    x
+}
