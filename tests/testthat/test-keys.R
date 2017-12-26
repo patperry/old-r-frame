@@ -14,16 +14,15 @@ test_that("'as_dataset' on data.frame uses row names special column as key", {
 })
 
 
-test_that("'key' errors for vector columns", {
-    expect_error(framed(list(x = matrix(1:4, 4, 1)), keys = "x"),
-                 "column 1 \\(\"x\"\\) is not a vector")
+test_that("'key' does not error for vector columns", {
+    expect_equal(framed(list(x = matrix(1:4, 4, 1)), keys = "x"),
+                 framed(list(x.1 = 1:4), keys = "x.1"))
 })
 
 
 test_that("'key' errors for invalid UTF-8", {
     x <- "fa\xE7ile"; Encoding(x) <- "UTF-8"
-    expect_error(framed(list(x = x), keys = "x"),
-                 "column 1 \\(\"x\"\\) cannot be encoded in valid UTF-8 \\(entry 1 is invalid\\)")
+    expect_error(framed(list(x = x), keys = "x"))
 })
 
 

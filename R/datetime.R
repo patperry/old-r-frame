@@ -39,20 +39,20 @@ as_date <- function(x)
 }
 
 
-as_posixct <- function(x)
+as_posixct <- function(x, tz = NULL)
 {
-    tz <- get_tzone(x)
-    x <- as.POSIXct(x, tz, origin = "1970-01-01")
-    structure(as.numeric(x), class = c("POSIXct", "POSIXt"),
-              tzone = attr(x, "tzone"))
+    tz0 <- get_tzone(x, tz)
+    x <- as.POSIXct(x, tz0, origin = "1970-01-01")
+    tzone <- if (is.null(tz)) attr(x, "tzone") else tz
+    structure(as.numeric(x), class = c("POSIXct", "POSIXt"), tzone = tzone)
 }
 
 
-get_tzone <- function(x)
+get_tzone <- function(x, default = "UTC")
 {
     tz <- attr(x, "tzone")[[1L]]
     if (is.null(tz)) {
-        tz <- "UTC"
+        tz <- default[[1L]]
     }
     tz
 }

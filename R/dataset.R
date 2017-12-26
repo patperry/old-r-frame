@@ -62,45 +62,17 @@ as_dataset.dataset <- function(x, ..., simple = FALSE)
         return(x)
     }
 
+    l <- as.list(x, flat = TRUE)
+    x <- framed(l, keys(x))
+
     if (length(x) > .Machine$integer.max) {
         stop(simpleError(
-            sprintf("number of columns exceeds maximum (%d)",
-                    .Machine$integer.max), call))
+             sprintf("number of columns exceeds maximum (%d)",
+                     .Machine$integer.max), call))
     }
 
     for (i in seq_along(x)) {
-        elt <- x[[i]]
-
-        d <- dim(elt)
-        if (length(d) > 1) {
-            name <- col_name_paren(x, i)
-            stop(simpleError(sprintf(
-"column %d%s is not a vector",
-                 i, name), call))
-        }
-
-        # convert types
-        if (is.logical(elt)) {
-            elt <- as.logical(elt)
-        } else if (is.numeric(elt)) {
-            # leaves integer as-is; converts others to double
-            if (!is.null(oldClass(elt))) {
-                elt <- as.numeric(elt)
-            }
-        } else if (is.complex(elt)) {
-            elt <- as.complex(elt)
-        } else {
-            elt <- as.character(elt)
-            inv <- which(!utf8_valid(elt))
-            if (length(inv) > 0) {
-                name <- col_name_paren(x, i)
-                stop(simpleError(sprintf(
-"column %d%s cannot be encoded in valid UTF-8 (entry %.0f is invalid)",
-                     i, name, inv[[1L]]), call))
-            }
-            elt <- as_utf8(elt)
-        }
-        x[[i]] <- elt
+        x[[i]] <- as_simple_vector(x[[i]])
     }
 
     x
@@ -191,20 +163,8 @@ is_simple_dataset <- function(x)
     }
 
     for (i in seq_along(x)) {
-        elt <- x[[i]]
-        d <- dim(elt)
-        if (length(d) > 1L) {
+        if (!is_simple_vector(x[[i]])) {
             return(FALSE)
-        }
-
-        if (!is.atomic(elt) || !is.null(oldClass(elt)) || is.raw(elt)) {
-            return(FALSE)
-        }
-
-        if (is.character(elt)) {
-            if (!all(utf8_valid(elt) | is.na(elt))) {
-                return(FALSE)
-            }
         }
     }
 

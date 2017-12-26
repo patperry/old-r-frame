@@ -10,7 +10,7 @@ test_that("'as_date' ignores time zone for POSIXct", {
     z <- list(as.Date("2017-12-25"), as.Date("2017-12-25"),
               as.Date("2017-12-26"), as.Date("2017-12-26"))
     expect_equal(y, z)
-}
+})
 
 
 test_that("'as_date' ignores time zone for POSIXlt", {

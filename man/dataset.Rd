@@ -43,39 +43,14 @@ converted to factors.
 
 \code{as_dataset} converts \code{x} to a dataset object. This is a generic
 function with a default implementation that converts the result of
-\code{as.data.frame(x)} to a dataset. If \code{simple = TRUE}, then all
-vector columns get converted to simple types; see \sQuote{Simple Datasets}
-for details.
+\code{as.data.frame(x)} to a dataset. If \code{simple = TRUE}, then all matrix
+columns get split into vectors, then all columns get converted to simple
+types via \code{\link{as_simple_vector}}.
     
 \code{is_dataset} tests whether \code{x} is a valid dataset object.
 
 \code{is_simple_dataset} tests whether \code{x} is a valid simple dataset
 object.
-}
-\section{Simple Datasets}{
-A simple dataset is one with fewer than 2^31 columns, each of which is of
-a simple type.  The following types are considered \dQuote{simple}:
-\itemize{
-  \item \code{logical};
-  \item \code{integer};
-  \item \code{numeric} (\code{double});
-  \item \code{complex};
-  \item \code{character}, in any encoding, provided the values can be
-        converted to valid UTF-8 via \code{utf8::as_utf8()};
-}
-Note that \code{factor} types are not considered simple.
-
-Simple types are the only ones allowed for key sets, and the only types
-for which \code{unique()}, \code{duplicate()}, and \code{anyDuplicated()} are
-supported.
-
-You can coerce a dataset \code{x} to a simple dataset by calling 
-\code{as_dataset(x, simple = TRUE)}. This converts each column to a simple
-type by calling \code{as.logical()}, \code{as.numeric()}, \code{as.complex()},
-or \code{as.character()}. This converts factor columns to character.
-
-Currently, \code{Date} and \code{POSIXct} columns also get converted to
-character. At some point, these may get added as simple types.
 }
 \value{
 \code{dataset} and \code{as_dataset} return a dataset objects.
@@ -85,7 +60,8 @@ character. At some point, these may get added as simple types.
 or simple dataset objects, respectively.
 }
 \seealso{
-\code{\link{framed}}, \code{\link{keys}}, \code{\link{schema}}.
+\code{\link{framed}}, \code{\link{keys}}, \code{\link{schema}},
+\code{link{as_simple_vector}}.
 }
 \examples{
 # no need for stringsAsFactors = TRUE
