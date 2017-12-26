@@ -56,7 +56,7 @@ cbind.dataset <- function(..., check = TRUE, deparse.level = 1)
         nc <- ncol(xi)
 
         ix <- off + seq_len(nc)
-        y[ix] <- x
+        y[ix] <- xi
 
         ni <- names(xi)
         if (!is.null(ni)) {
