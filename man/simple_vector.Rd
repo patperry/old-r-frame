@@ -87,7 +87,7 @@ x <- c(1, 1.3, .Machine$integer.max + 1, 23, NaN, Inf)
 is_simple_vector(x)
 identical(x, as_simple_vector(x))
 
-as_simple_vector(x) # fails for entries 3 and 6; succeeds for rest
+as_simple_vector(x, integer()) # fails for entries 3 and 6; succeeds for rest
 
 ## Factors
 f <- factor(c("5", "4", "3", "2", "1"), c(1, 2, 5, 3, 4))
