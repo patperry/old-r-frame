@@ -39,6 +39,11 @@ keyslice.keyset <- function(x, ...)
             next
         }
         xk <- x[[k]]
+        ik <- as_simple_vector(ik, xk)
+        failed <- attr(ik, "failed")
+        if (!is.null(failed)) {
+            ik <- ik[!failed]
+        }
         mask <- mask & (xk %in% ik)
     }
 

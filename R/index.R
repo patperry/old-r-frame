@@ -514,25 +514,6 @@ arg_slice <- function(keys, args, call = sys.call(-1))
             stop(simpleError(sprintf("cannot slice with rank-%.0f array for key value",
                                      length(dim(ik))), call))
         }
-
-        asis <- class(ik)[[1L]] == "AsIs"
-        kk <- keys[[k]]
-
-        if (is.integer(kk)) {
-            ik <- as.integer(ik)
-        } else if (is.logical(kk)) {
-            ik <- as.logical(ik)
-        } else if (is.complex(kk)) {
-            ik <- as.complex(ik)
-        } else if (is.double(kk)) {
-            ik <- as.double(ik)
-        } else {
-            ik <- as_utf8(as.character(ik))
-        }
-        if (asis) {
-            ik <- I(ik)
-        }
-        i[[k]] <- ik
     }
 
     i

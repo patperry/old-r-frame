@@ -61,6 +61,8 @@ rowid.keyset <- function(x, keys, default = NA_integer_, ...)
              length(keys), n)
     }
 
+    failed <- NULL
+
     for (i in seq_len(n)) {
         ki <- keys[[i]]
 
@@ -69,18 +71,15 @@ rowid.keyset <- function(x, keys, default = NA_integer_, ...)
                  length(dim(ki)))
         }
 
-        xk <- x[[i]]
-
-        ki <- if (is.integer(xk)) { as.integer(ki)
-        } else if  (is.logical(xk)) { as.logical(ki)
-        } else if  (is.complex(xk)) { as.complex(ki)
-        } else if  (is.double(xk))  { as.double(ki)
-        } else { as_utf8(as.character(ki)) }
+        ki <- as_simple_vector(ki, x[[i]])
+        failed <- c(failed, attr(ki, "failed"))
 
         keys[[i]] <- ki
     }
 
-    key_index(x, keys, default)
+    row <- key_index(x, keys, default)
+    row[failed] <- NA_integer_
+    row
 }
 
 
