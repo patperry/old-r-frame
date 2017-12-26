@@ -1,6 +1,7 @@
 \name{dataset}
 \alias{dataset}
 \alias{as_dataset}
+\alias{as_dataset.AsIs}
 \alias{as_dataset.data.frame}
 \alias{as_dataset.dataset}
 \alias{as_dataset.default}

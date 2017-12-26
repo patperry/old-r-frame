@@ -12,32 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-unnest <- function(x)
-{
-    # TODO: better error checking
-
-    n <- length(x)
-    y <- x[[1L]]
-
-    if (is.list(y) && is.null(oldClass(y))) {
-        y <- as.list(y)
-        nc <- length(y)
-        for (j in seq_len(nc)) {
-            xj <- lapply(x, `[[`, j)
-            y[[j]] <- unnest(xj)
-        }
-    } else if (length(y) == 1L && (is.atomic(y) || is.list(y) || isS4(y))) {
-        length(y) <- n
-        for (i in seq.int(2L, length.out = n - 1L)) {
-            y[[i]] <- x[[i]]
-        }
-    } else {
-        y <- x
-    }
-
-    y
-}
-
 
 grouped <- function(x, by = NULL, do = NULL, ...)
 {
@@ -91,10 +65,32 @@ grouped.dataset <- function(x, by = NULL, do = NULL, ...)
         y <- framed(list(xg), keys)
     }
 
-    if (!is.null(do)) {
-        # TODO: don't use lapply in case ... has arg named X or FUN
-        val <- lapply(X = y[[1L]], FUN = do, ...)
-        y <- framed(unnest(val), keys(y))
+    if (!is.null(do) && nrow(y) > 0L) {
+        rows <- lapply(y[[1L]], function(g) {
+            row <- do(g, ...)
+            if (!is.null(row)) {
+                row <- as_dataset(row)
+            }
+            row
+        })
+        nr <- vapply(rows, NROW, 0)
+        if (!all(nr == nr[[1L]])) {
+            j <- which(nr != nr[[1L]])[[1L]]
+            stop(sprintf("'do' action returned differing number of rows (%.0f, %.0f) for groups %.0f, %.0f (%s, %s)",
+                             nrow(rows[[1]]), nrow(rows[[j]]),
+                             1, j,
+                             keys(y)[1,], keys(y)[j,]))
+        }
+        nr <- nr[[1L]]
+        if (nr == 0) {
+            y[] <- NULL
+        } else if (nr == 1L) {
+            cols <- do.call(rbind.dataset, rows)
+            keys(cols) <- keys(y)
+            y <- cols
+        } else {
+            stop(sprintf("'do' action returned multiple rows (%.0f)", nr))
+        }
     }
 
     y

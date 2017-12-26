@@ -52,6 +52,13 @@ col_name_paren <- function(x, i)
 }
 
 
+as_dataset.AsIs <- function(x, ..., simple = FALSE)
+{
+    class(x) <- class(x)[-1L]
+    as_dataset(list(x), simple = simple)
+}
+
+
 as_dataset.dataset <- function(x, ..., simple = FALSE)
 {
     x <- arg_dataset(x)
