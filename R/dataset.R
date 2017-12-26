@@ -63,7 +63,10 @@ as_dataset.dataset <- function(x, ..., simple = FALSE)
     }
 
     l <- as.list(x, flat = TRUE)
-    x <- framed(l, keys(x))
+    keys <- keys(x)
+    x <- structure(l, class = c("dataset", "data.frame"),
+                   row.names = .set_row_names(nrow(x)))
+    keys(x) <- keys
 
     if (length(x) > .Machine$integer.max) {
         stop(simpleError(
