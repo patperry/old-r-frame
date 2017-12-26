@@ -14,7 +14,66 @@
 
 cbind.dataset <- function(..., check = TRUE, deparse.level = 1)
 {
-    .NotYetImplemented()
+    # ignore 'deparse.level'
+    check <- arg_option(check)
+
+    x <- list(...)
+    null <- vapply(x, is.null, NA)
+    x <- lapply(x[!null], as_dataset)
+    n <- length(x)
+
+    if (n == 0L) {
+        return(dataset())
+    }
+
+    x1 <- x[[1L]]
+    keys <- keys(x1)
+    nr <- nrow(x1)
+
+    if (check) {
+        diff <- vapply(x, function(xi) {
+            k <- keys(xi)
+            (nrow(xi) != nr || (!is.null(k) && !identical(k, keys)))
+        }, NA)
+        j <- which(diff)
+
+        if (length(j) > 0L) {
+            stop(sprintf("arguments 1 and %.0f have different rows", j[[1L]]))
+        }
+    }
+
+    nctot <- sum(vapply(x, ncol, 0))
+    if (nctot == 0) {
+        return(x1)
+    }
+
+    y <- vector("list", nctot)
+    names <- NULL
+
+    off <- 0L
+    for (i in seq_along(x)) {
+        xi <- x[[i]]
+        nc <- ncol(xi)
+
+        ix <- off + seq_len(nc)
+        y[ix] <- x
+
+        ni <- names(xi)
+        if (!is.null(ni)) {
+            if (is.null(names)) {
+                names <- character(nctot)
+            }
+            names[ix] <- ni
+        }
+
+        off <- off + nc
+    }
+
+    names(y) <- names
+    y <- as_dataset(y)
+    keys(y) <- keys
+
+    y
 }
 
 
