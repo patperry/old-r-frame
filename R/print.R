@@ -12,6 +12,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+utf8_fallback <- function(x, default)
+{
+    if (is.na(iconv(x, "UTF-8", ""))) default else x
+}
+
 new_format_control <- function(chars = NULL, digits = NULL,
                                na.encode = TRUE, quote = FALSE,
                                na.print = NULL, print.gap = NULL,
@@ -45,11 +50,11 @@ new_format_control <- function(chars = NULL, digits = NULL,
         control$line <- getOption("width")
     }
 
-    control$banner    <- if (control$utf8) "\u2550" else "="
-    control$ellipsis  <- if (control$utf8) "\u2026" else "..."
-    control$times     <- if (control$utf8) "\u00d7" else "x"
-    control$vellipsis <- if (control$utf8) "\u22ee" else "."
-    control$vline     <- if (control$utf8) "\u2502" else "|"
+    control$banner    <- utf8_fallback("\u2550", "=")
+    control$ellipsis  <- utf8_fallback("\u2026", "...")
+    control$times     <- utf8_fallback("\u00d7", "x")
+    control$vellipsis <- utf8_fallback("\u22ee", ".")
+    control$vline     <- utf8_fallback("\u2502", "|")
 
     control
 }
