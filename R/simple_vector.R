@@ -65,51 +65,23 @@ as_simple_vector.default <- function(x, like = NULL, ...)
 
 cast_as <- function(like, x)
 {
-    UseMethod("cast_as")
-}
-
-
-cast_as.logical <- function(like, x)
-{
-    as.logical(x)
-}
-
-
-cast_as.integer <- function(like, x)
-{
-    as.integer(x)
-}
-
-
-cast_as.numeric <- function(like, x)
-{
-    as.double(x)
-}
-
-
-cast_as.complex <- function(like, x)
-{
-    as.complex(x)
-}
-
-
-cast_as.character <- function(like, x)
-{
-    x <- as.character(x)
-    x[!utf8_valid(x)] <- NA_character_
-    as_utf8(x)
-}
-
-
-cast_as.Date <- function(like, x)
-{
-    as_date(x)
-}
-
-
-cast_as.POSIXct <- function(like, x)
-{
-    as_posixct(x, attr(like, "tzone"))
+    if (is.integer(like)) {
+        as.integer(x)
+    } else if (is.character(like)) {
+        x <- as.character(x)
+        x[!utf8_valid(x)] <- NA_character_
+        as_utf8(x)
+    } else if (inherits(like, "Date")) {
+        as_date(x)
+    } else if (inherits(like, "POSIXct")) {
+        as_posixct(x, attr(like, "tzone"))
+    } else if (is.logical(like)) {
+        as.logical(x)
+    } else if (is.complex(like)) {
+        as.complex(x)
+    } else {
+        as.double(x)
+    }
 }
 
 
