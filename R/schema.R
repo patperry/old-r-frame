@@ -25,12 +25,13 @@ schema.default <- function(x, ...)
 
 schema.dataset <- function(x, ...)
 {
+    id <- seq_along(x)
     name <- names(x)
     class <- vapply(x, function(elt) class(elt)[[1L]], "")
 
     if (is.null(name)) {
-        dataset(class)
+        dataset(id, class)
     } else {
-        dataset(name, class)
+        dataset(id, name, class)
     }
 }

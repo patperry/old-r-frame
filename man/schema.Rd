@@ -21,9 +21,10 @@ schema(x, ...)
 }
 \value{
 A dataset with rows corresponding to the columns in \code{x}. The result has a
-column named \code{"class"} giving the first component of the class of each
-column of \code{x}. When \code{names(x)} is non-\code{NULL}, the result will
-also have a column called \code{"name"} and give the column names.
+column named \code{"id"} giving the index of each column and \code{"class"}
+giving the first component of the class of each column of \code{x}. When
+\code{names(x)} is non-\code{NULL}, the result will also have a column called
+\code{"name"} and give the column names.
 }
 \seealso{
 \code{\link{print.dataset}}.
