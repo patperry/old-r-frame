@@ -22,21 +22,16 @@ cbind.dataset <- function(..., check = TRUE, deparse.level = 1)
     x <- lapply(x[!null], as_dataset)
     n <- length(x)
 
-    if (n == 0L) {
-        return(dataset())
-    }
-
     x1 <- x[[1L]]
-    keys <- keys(x1)
     nr <- nrow(x1)
 
-    if (check) {
-        diff <- vapply(x, function(xi) {
-            k <- keys(xi)
-            (nrow(xi) != nr || (!is.null(k) && !identical(k, keys)))
-        }, NA)
-        j <- which(diff)
+    if (n == 0L) {
+        return(x1)
+    }
 
+    if (check) {
+        diff <- vapply(x, function(xi) (nrow(xi) != nr), NA)
+        j <- which(diff)
         if (length(j) > 0L) {
             stop(sprintf("arguments 1 and %.0f have different rows", j[[1L]]))
         }
@@ -71,7 +66,7 @@ cbind.dataset <- function(..., check = TRUE, deparse.level = 1)
 
     names(y) <- names
     y <- as_dataset(y)
-    keys(y) <- keys
+    keys(y) <- keys(x1)
 
     y
 }
