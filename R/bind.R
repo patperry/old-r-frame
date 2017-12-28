@@ -83,7 +83,7 @@ rbind.dataset <- function(..., check = TRUE, deparse.level = 1)
     n <- length(x)
 
     if (n == 0L) {
-        return(dataset())
+        return(NULL)
     }
 
     x1 <- x[[1L]]
