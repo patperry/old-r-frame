@@ -30,8 +30,12 @@ schema.dataset <- function(x, ...)
     class <- vapply(x, function(elt) class(elt)[[1L]], "")
 
     if (is.null(name)) {
-        dataset(id, class)
+        s <- dataset(class)
     } else {
-        dataset(id, name, class)
+        s <- dataset(name, class)
     }
+
+    keys(s) <- keyset(id)
+
+    s
 }

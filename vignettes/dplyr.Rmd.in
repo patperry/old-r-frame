@@ -182,30 +182,6 @@ with(flights, {
 })
 ```
 
-You can also use or `transform()` `within()` to rename a column:
-
-```{r}
-transform(flights,
-    tail_num = tailnum,
-    tailnum = NULL
-)
-
-within(flights, {
-    tail_num <- tailnum
-    tailnum <- NULL
-})
-```
-
-Note that the new column will appear at the end of the dataset. To rename the
-column in-place do the following instead:
-
-```{r}
-## Not run: names(flights)[match("tailnum", names(flights))] <- "tail_num"
-```
-
-(Admittedly, none of these approaches are as convenient as `dplyr::rename()`.)
-
-
 ### Summarize values with `with()`
 
 The `with()` command can also be used to summarize data:

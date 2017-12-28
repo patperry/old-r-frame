@@ -20,11 +20,13 @@ schema(x, ...)
 \code{as_dataset} on its argument and reports the schema of the result.
 }
 \value{
-A dataset with rows corresponding to the columns in \code{x}. The result has a
-column named \code{"id"} giving the index of each column and \code{"class"}
+A dataset with rows corresponding to the columns in \code{x}. The result has
+column named \code{"class"}
 giving the first component of the class of each column of \code{x}. When
 \code{names(x)} is non-\code{NULL}, the result will also have a column called
-\code{"name"} and give the column names.
+\code{"name"} and give the column names. The keys for the result will be a
+keyset with a single column, \code{"id"} giving the index of each column in
+\code{x}.
 }
 \seealso{
 \code{\link{print.dataset}}.
