@@ -79,7 +79,7 @@ new_format_style <- function(control)
     }
 
     normal <- function(x, width) {
-        x <- utf8_encode(x, quote = control$quote, escapes = control$escapes,
+        x <- utf8_encode(x, quote = control$quote, escapes = escapes,
                          display = control$display, utf8 = control$utf8)
         x[is.na(x)] <- utf8_encode(control$na.print, width = width,
                                    display = control$display,
