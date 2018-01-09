@@ -204,3 +204,19 @@ test_that("'print' can handle matrix with one column", {
 
     expect_equal(strsplit(capture_output(print(x)), "\n")[[1]], lines)
 })
+
+
+test_that("'print' handles single matrix with many columns", {
+    ctype <- switch_ctype("C")
+    on.exit(Sys.setlocale("LC_CTYPE", ctype), add = TRUE)
+              
+    x <- dataset(mtcars[1,])
+    lines <- c(
+#00000000011111111112222222222333333333344444444445555555555666666666677777777778
+#12345678901234567890123456789012345678901234567890123456789012345678901234567890
+'  ==============================mtcars[1, ]==============================',
+'          mpg         cyl        disp          hp        drat         ...',
+'1          21           6         160         110         3.9         ...',
+'                                                       (11 columns total)')
+    expect_equal(strsplit(capture_output(print(x)), "\n")[[1]], lines)
+})
