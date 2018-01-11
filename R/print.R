@@ -242,27 +242,8 @@ format_matrix <- function(name, x, ..., control, indent, wrap)
     gap <- control$print.gap
     ellipsis <- utf8_width(control$ellipsis)
     line <- control$line
-
-    # Determine the minimum element width.
-    #
-    # NOTE: This is a conservative approach that enforces no matter how the
-    # columns get wrapped, the matrix name will be wider than the column
-    # names. It would be nice to do something less conservative so that,
-    # e.g., instead of the following:
-    #
-    #   =======group1=======
-    #     drat     wt   qsec
-    # 1    3.9  2.620  16.46
-    # 2    3.9  2.875  17.02
-    #
-    # we would get
-    #
-    #   =====group1=====
-    #   drat    wt  qsec
-    # 1  3.9 2.620 16.46
-    # 2  3.9 2.875 17.02
-    #
-    control$width <- max(control$width, utf8_width(name))
+    indent_start <- indent
+    wrap_start <- wrap
 
     for (j in seq_len(nc)) {
         if (wrap == 0 && j < nc) {
@@ -280,6 +261,14 @@ format_matrix <- function(name, x, ..., control, indent, wrap)
         y[[j]] <- fmt$value
         indent <- fmt$indent
         wrap <- fmt$wrap
+
+        # if at end add extra indent to fit name
+        if (j == nc) {
+            if (wrap != wrap_start) {
+                indent_start <- 0L
+            }
+            indent <- max(indent, indent_start + utf8_width(name) + gap)
+        }
 
         if (fmt$trunc) {
             if (j < nc && length(dim(xj)) > 1) {
@@ -513,15 +502,14 @@ print.dataset <- function(x, rows = NULL, wrap = NULL, ..., number = NULL,
     index <- attr(cols, "index")
     names <- vapply(path, tail, "", n = 1)
 
-    # format columns, using max path width as minimum
-    width <- vapply(path, function(p) max(0, utf8_width(p)), 0)
+    # format columns, using name width as minimum
+    width <- vapply(names, function(n) max(0L, utf8_width(n)), 0)
     cols <- mapply(function(col, w)
                        utf8_format(as.character(col), width = w,
                                    chars = .Machine$integer.max,
                                    na.encode = FALSE, na.print = na.print,
                                    quote = quote, justify = "left"),
                    cols, width, SIMPLIFY = FALSE, USE.NAMES = FALSE)
-
     width <- pmax(width,
                   mapply(function(name, col)
                              col_width(name, col, control),

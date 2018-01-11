@@ -179,10 +179,10 @@ test_that("'print' can handle narrow grouped columns", {
     x <- dataset(group1)
 
     lines <- c(
-'  =======group1=======',
-'    drat     wt   qsec',
-'1    3.9  2.620  16.46',
-'2    3.9  2.875  17.02')
+'  =====group1=====',
+'  drat    wt  qsec',
+'1  3.9 2.620 16.46',
+'2  3.9 2.875 17.02')
 
     expect_equal(strsplit(capture_output(print(x)), "\n")[[1]], lines)
 })
@@ -214,9 +214,61 @@ test_that("'print' handles single matrix with many columns", {
     lines <- c(
 #  00000000011111111112222222222333333333344444444445555555555666666666677777777778
 #  12345678901234567890123456789012345678901234567890123456789012345678901234567890
-'  ==============================mtcars[1, ]==============================',
-'          mpg         cyl        disp          hp        drat         ...',
-'1          21           6         160         110         3.9         ...',
-'                                                       (11 columns total)')
-    expect_equal(strsplit(capture_output(print(x)), "\n")[[1]], lines)
+'  =======mtcars[1, ]=======',
+'  mpg cyl disp  hp drat ...',
+'1  21   6  160 110  3.9 ...',
+'         (11 columns total)')
+    expect_equal(strsplit(capture_output(print(x), width = 27), "\n")[[1]],
+                 lines)
+})
+
+
+test_that("short nested works with right-align single", {
+    ctype <- switch_ctype("C")
+    on.exit(Sys.setlocale("LC_CTYPE", ctype), add = TRUE)
+
+    x <- dataset(x = c(19, 5))
+    y <- dataset(long = x, short = c("z", "GG"))
+    lines <- c(
+'  long      ',
+'   x   short',
+'1 19       z',
+'2  5      GG')
+
+    expect_equal(strsplit(capture_output(print(y)), "\n")[[1]], lines)
+})
+
+
+test_that("short nested works with left-align single", {
+    ctype <- switch_ctype("C")
+    on.exit(Sys.setlocale("LC_CTYPE", ctype), add = TRUE)
+
+    x <- dataset(x = c("aa", "b"))
+    y <- dataset(long = x, short = c("z", "GG"))
+    lines <- c(
+'  long      ',
+'  x    short',
+'1 aa      z',
+'2 b       GG')
+
+    expect_equal(strsplit(capture_output(print(y)), "\n")[[1]], lines)
+})
+
+
+test_that("short nested works with right-align double", {
+    ctype <- switch_ctype("C")
+    on.exit(Sys.setlocale("LC_CTYPE", ctype), add = TRUE)
+
+    x <- dataset(x = c(19, 5), y = c(7, 13))
+    y <- dataset(really_long = x, short = c("z", "GG"))
+
+    lines <- c(
+#  12345654321
+#  12345678901
+'  really_long      ',
+'   x  y       short',
+'1 19  7       z',
+'2  5 13       GG')
+
+    expect_equal(strsplit(capture_output(print(y)), "\n")[[1]], lines)
 })
