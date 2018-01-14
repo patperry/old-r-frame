@@ -162,8 +162,8 @@ format_vector <- function(name, x, ..., control, section, indent)
         chars <- max(24, control$line - indent - ellipsis - quotes)
     }
 
-    # determine whether to right-align name
-    right <- (is.numeric(x) || is.complex(x))
+    # determine column justification
+    justify <- if (is.numeric(x) || is.complex(x)) "right" else "left"
 
     # determine the minimum element width
     min_width <- max(control$width, utf8_width(name))
@@ -209,12 +209,6 @@ format_vector <- function(name, x, ..., control, section, indent)
         right <- FALSE
     }
 
-    # right align the name if necessary
-    if (right) {
-        name <- utf8_format(name, chars = .Machine$integer.max,
-                            justify = "right", width = width)
-    }
-
     # compute new indent
     start <- (indent == 0L)
     next_indent <- indent + width + gap
@@ -226,7 +220,8 @@ format_vector <- function(name, x, ..., control, section, indent)
     } else {
         list(name = name, value = y, trunc = trunc,
              section = section, indent = indent, width = width,
-             next_section = section, next_indent = next_indent)
+             justify = justify, next_section = section,
+             next_indent = next_indent)
     }
 }
 
@@ -253,6 +248,7 @@ format_matrix <- function(name, x, ..., control, section, indent)
     section <- vector("list", nc)
     indent <- vector("list", nc)
     width <- vector("list", nc)
+    justify <- vector("list", nc)
 
     for (j in seq_len(nc)) {
         if (next_section - 1L == wrap && j < nc) {
@@ -271,6 +267,7 @@ format_matrix <- function(name, x, ..., control, section, indent)
         section[[j]] <- fmt$section
         indent[[j]] <- fmt$indent
         width[[j]] <- fmt$width
+        justify[[j]] <- fmt$justify
         next_section <- fmt$next_section
         next_indent <- fmt$next_indent
 
@@ -291,6 +288,7 @@ format_matrix <- function(name, x, ..., control, section, indent)
                 section[[j]] <- next_section
                 indent[[j]] <- next_indent
                 width[[j]] <- ellipsis
+                justify[[j]] <- "left"
                 next_indent <- next_indent + ellipsis + gap
             }
             y <- y[1:j]
@@ -298,6 +296,7 @@ format_matrix <- function(name, x, ..., control, section, indent)
             section <- section[1:j]
             indent <- indent[1:j]
             width <- width[1:j]
+            justify <- justify[1:j]
             trunc <- TRUE
             break
         }
@@ -306,8 +305,8 @@ format_matrix <- function(name, x, ..., control, section, indent)
     names(y) <- names
     y <- as_dataset(y)
     list(name = name, value = y, trunc = trunc, section = section,
-         indent = indent, width = width, next_section = next_section,
-         next_indent = next_indent)
+         indent = indent, width = width, justify = justify,
+         next_section = next_section, next_indent = next_indent)
 }
 
 
@@ -411,6 +410,7 @@ format.dataset <- function(x, rows = -1L, wrap = -1L, ..., chars = NULL,
     attr(y, "section") <- fmt$section
     attr(y, "indent") <- fmt$indent
     attr(y, "width") <- fmt$width
+    attr(y, "justify") <- fmt$justify
 
     y
 }
@@ -534,6 +534,7 @@ print.dataset <- function(x, rows = NULL, wrap = NULL, ..., number = NULL,
     section <- unlist(attr(fmt, "section"))
     indent <- unlist(attr(fmt, "indent"))
     width <- unlist(attr(fmt, "width"))
+    justify <- unlist(attr(fmt, "justify"))
 
     cols <- as.list.dataset(fmt, flat = TRUE, path = TRUE)
     path <- attr(cols, "path")
@@ -549,11 +550,11 @@ print.dataset <- function(x, rows = NULL, wrap = NULL, ..., number = NULL,
                    cols, width, SIMPLIFY = FALSE, USE.NAMES = FALSE)
 
     # format names, using column width as minimum
-    names <- mapply(function(name, w)
+    names <- mapply(function(name, w, j)
                         utf8_format(name, width = w,
-                                    chars = .Machine$integer.max,
-                                    justify = "left"),
-                    names, width, SIMPLIFY = TRUE, USE.NAMES = FALSE)
+                                    chars = .Machine$integer.max, justify = j),
+                    names, width, justify,
+                    SIMPLIFY = TRUE, USE.NAMES = FALSE)
 
     # apply formatting
     names <- style$bold(names)
