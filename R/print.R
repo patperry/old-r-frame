@@ -520,6 +520,78 @@ print_body <- function(control, cols, indent, width, row_body)
 }
 
 
+format_rows <- function(control, style, nrow, number, keys)
+{
+    gap <- utf8_format("", width = control$print.gap)
+
+    if (number) {
+        row_body <- utf8_format(as.character(seq_len(nrow)),
+                                chars = .Machine$integer.max,
+                                justify = "left")
+        num_width <- max(0, utf8_width(row_body))
+        row_head <- utf8_format("", width = num_width)
+    } else {
+        row_body <- rep("", nrow)
+        num_width <- 0
+        row_head <- ""
+    }
+
+    if (!is.null(keys)) {
+        names <- names(keys)
+        if (is.null(names)) {
+            names(keys) <- paste0("[,", as.character(seq_along(keys)), "]")
+        }
+        cols <- format.dataset(keys, chars = .Machine$integer.max,
+                               na.encode = FALSE, na.print = control$na.print,
+                               quote = control$quote,
+                               print.gap = control$print.gap,
+                               digits = control$digits,
+                               line = .Machine$integer.max - control$print.gap,
+                               meta = TRUE)
+        width <- unlist(attr(cols, "width"))
+        justify <- unlist(attr(cols, "justify"))
+
+        kb <- mapply(function(k, w, j)
+                         utf8_format(k, chars = .Machine$integer.max,
+                                     justify = j, width = w,
+                                     na.print = control$na.print),
+                     cols, width, justify,
+                     SIMPLIFY = FALSE, USE.NAMES = FALSE)
+        kh <- mapply(function(n, w, j)
+                        utf8_format(n, chars = .Machine$integer.max,
+                                    justify = j, width = w,
+                                    na.print = control$na.print),
+                     names(cols), width, justify, USE.NAMES = FALSE)
+
+        kb <- do.call(paste, c(kb, sep = gap))
+        kh <- paste(kh, collapse = gap)
+        if (nzchar(row_head)) {
+            row_head <- paste(row_head, kh, sep = gap)
+            row_body <- paste(row_body, kb, sep = gap)
+        } else {
+            row_head <- kh
+            row_body <- kb
+        }
+    }
+
+    row_width <- utf8_width(row_head)
+    row_head <- style$faint(row_head)
+    row_body <- style$faint(row_body)
+
+    if (!is.null(keys)) {
+        row_head <- paste0(row_head, gap, style$faint(control$vline), gap)
+        row_width <- row_width + 1 + 2 * utf8_width(gap)
+        row_body <- paste0(row_body, gap, style$faint(control$vline), gap)
+    } else if (row_width > 0) {
+        row_head <- paste0(row_head, gap)
+        row_body <- paste0(row_body, gap)
+        row_width <- row_width + utf8_width(gap)
+    }
+
+    list(width = row_width, head = row_head, body = row_body)
+}
+
+
 print.dataset <- function(x, rows = NULL, wrap = NULL, ..., number = NULL,
                           chars = NULL, digits = NULL, quote = FALSE,
                           na.print = NULL, print.gap = NULL, display = TRUE)
@@ -575,60 +647,12 @@ print.dataset <- function(x, rows = NULL, wrap = NULL, ..., number = NULL,
         n <- min(n, rows)
     }
 
-    if (number) {
-        row_body <- utf8_format(as.character(seq_len(n)),
-                                chars = .Machine$integer.max,
-                                justify = "left")
-        num_width <- max(0, utf8_width(row_body))
-        row_head <- utf8_format("", width = num_width)
-    } else {
-        row_body <- rep("", n)
-        num_width <- 0
-        row_head <- ""
-    }
-
     keys <- keys(x)[seq_len(n), , drop = FALSE]
-    if (!is.null(keys)) {
-        knames <- names(keys)
-        if (is.null(knames)) {
-            knames <- paste0("[,", as.character(seq_along(keys)), "]")
-        }
-        kb <- mapply(function(k, w)
-                         utf8_format(as.character(k), width = w,
-                                     chars = .Machine$integer.max,
-                                     justify = "left"),
-                     keys, vapply(knames, utf8_width, 0),
-                     SIMPLIFY = FALSE, USE.NAMES = FALSE)
-        kh <- mapply(function(n, col)
-                        utf8_format(n, width = max(0, utf8_width(col)),
-                                    chars = .Machine$integer.max,
-                                    justify = "left"),
-                     knames, kb, USE.NAMES = FALSE)
-
-        kb <- do.call(paste, c(kb, sep = gap))
-        kh <- paste(kh, collapse = gap)
-        if (nchar(row_head) > 0) {
-            row_head <- paste(row_head, kh, sep = gap)
-            row_body <- paste(row_body, kb, sep = gap)
-        } else {
-            row_head <- kh
-            row_body <- kb
-        }
-    }
-
-    row_width <- utf8_width(row_head)
-    row_head <- style$faint(row_head)
-    row_body <- style$faint(row_body)
-
-    if (!is.null(keys)) {
-        row_head <- paste0(row_head, gap, style$faint(control$vline), gap)
-        row_width <- row_width + 1 + 2 * utf8_width(gap)
-        row_body <- paste0(row_body, gap, style$faint(control$vline), gap)
-    } else if (row_width > 0) {
-        row_head <- paste0(row_head, gap)
-        row_body <- paste0(row_body, gap)
-        row_width <- row_width + utf8_width(gap)
-    }
+    rfmt <- format_rows(control = control, style = style, nrow = n,
+                       number = number, keys = keys)
+    row_width <- rfmt$width
+    row_head <- rfmt$head
+    row_body <- rfmt$body
 
     line <- max(1L, control$line - row_width)
     fmt <- format.dataset(x, rows = rows, wrap = wrap, chars = control$chars,
