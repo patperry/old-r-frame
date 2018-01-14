@@ -13,26 +13,34 @@
 #  limitations under the License.
 
 
-as.data.frame.dataset <- function(x, row.names = NULL, ...,
+as.data.frame.dataset <- function(x, row.names = NULL, optional = FALSE, ...,
                                   stringsAsFactors = FALSE)
 {
-    x <- arg_dataset(x)
+    x <- as_dataset(x)
     if (missing(row.names)) {
         row.names <- row.names(x)
     } else if (!is.null(row.names)) {
         row.names <- arg_names(nrow(x), "rows", row.names,
                                allow_na = FALSE, unique = TRUE)
     }
+    optional <- arg_option(optional)
     stringsAsFactors <- arg_option(stringsAsFactors)
 
-    as.data.frame(as.list(x, flat = TRUE), row.names = row.names, ...,
-                  stringsAsFactors = stringsAsFactors)
+    if (length(x) == 0) {
+        n <- dim(x)[[1]]
+        df <- structure(list(), row.names = .set_row_names(n),
+                        class = "data.frame")
+        row.names(df) <- row.names(x)
+        return(as.data.frame(df, row.names = row.names))
+    }
+    as.data.frame(as.list(x, flat = TRUE), row.names = row.names,
+                  optional = optional, ..., stringsAsFactors = stringsAsFactors)
 }
 
 
 as.list.dataset <- function(x, ..., flat = FALSE, path = FALSE)
 {
-    x <- arg_dataset(x)
+    x <- as_dataset(x)
     flat <- arg_option(flat)
     path <- arg_option(path)
 
@@ -101,4 +109,12 @@ as.list.dataset <- function(x, ..., flat = FALSE, path = FALSE)
         attr(x, "path") <- as.list(names(x))
     }
     x
+}
+
+
+as.matrix.dataset <- function(x, rownames.force = NA, ...)
+{
+    x <- as_dataset(x)
+    df <- as.data.frame(x, optional = TRUE)
+    as.matrix(df, rownames.force, ...)
 }
