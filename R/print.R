@@ -228,6 +228,8 @@ format_matrix <- function(name, x, ..., control, section, indent)
     names <- colnames(x)
     if (is.null(names)) {
         names <- paste0("[,", as.character(seq_len(nc)), "]")
+    } else {
+        names[is.na(names)] <- ""
     }
     y <- vector("list", nc)
     trunc <- FALSE
