@@ -107,7 +107,7 @@ twice.  Change the default to another value using the following command:
 
 ```r
 options(frame.rows = 5) # truncate output after 5 rows
-options(frame.wrap = 0) # truncate output after wrapping columns once
+options(frame.wrap = 0) # truncate output without wrapping columns
 ```
 
 *frame* uses the default value of 20 to display as much data as possible
