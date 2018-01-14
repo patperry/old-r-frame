@@ -416,10 +416,9 @@ format.dataset <- function(x, rows = -1L, wrap = -1L, ..., chars = NULL,
 }
 
 
-print_header <- function(control, style, index, path, names, width,
+print_header <- function(control, style, index, path, names, indent, width,
                          row_head, row_width)
 {
-    gap <- utf8_format("", width = control$print.gap)
     n <- length(index)
 
     # determine header for nested groups
@@ -456,22 +455,26 @@ print_header <- function(control, style, index, path, names, width,
         grp <- group[d, ]
         gnm <- gname[d, ]
         head <- format("", width = row_width)
+        pos <- 0
         i <- 1
         while (i <= n) {
-            if (i > 1) {
-                head <- paste0(head, gap)
-             }
-             w <- width[[i]]
-             if (is.na(grp[[i]])) {
+            head <- paste0(head, format("", width = indent[[i]] - pos))
+            pos <- indent[[i]]
+
+            if (is.na(grp[[i]])) {
+                w <- width[[i]]
                 head <- paste0(head, format("", width = w))
-             } else {
+                pos <- pos + w
+            } else {
+                # advance to the end of the group
                 g <- grp[[i]]
-                nm <- gnm[[i]]
-                # %in% so that this succeeds if NA
-                while (i < n && grp[[i + 1]] %in% g) {
+                while (i < n && grp[[i + 1]] %in% g) { # use %in% to handle NA
                     i <- i + 1
-                    w <- w + control$print.gap + width[[i]]
                 }
+                w <- (indent[[i]] - pos) + width[[i]]
+
+                # center justify group name, using banner instead of spaces
+                nm <- gnm[[i]]
                 wnm <- utf8_width(nm)
                 pad <- max(0, w - wnm)
                 lpad <- floor(pad / 2)
@@ -482,14 +485,21 @@ print_header <- function(control, style, index, path, names, width,
                                  paste0(rep(control$banner, rpad),
                                         collapse = ""))
                 head <- paste0(head, style$bold(banner))
+                pos <- pos + w
             }
             i <- i + 1
         }
-        cat(head, "\n", sep="")
+        cat(head, "\n", sep = "")
     }
 
-    head <- paste0(names, collapse = gap)
-    cat(row_head, head, "\n", sep = "")
+    head <- row_head
+    pos <- 0
+    for (i in seq_len(n)) {
+        head <- paste0(head, format("", width = indent[[i]] - pos), names[[i]])
+        pos <- indent[[i]] + width[[i]]
+    }
+
+    cat(head, "\n", sep = "")
 }
 
 
@@ -650,8 +660,9 @@ print.dataset <- function(x, rows = NULL, wrap = NULL, ..., number = NULL,
 
         print_header(control = control, style = style,
                      index = index[start:i], path = path[start:i],
-                     names = names[start:i], width = width[start:i],
-                     row_head = row_head, row_width = row_width)
+                     names = names[start:i], indent = indent[start:i],
+                     width = width[start:i], row_head = row_head,
+                     row_width = row_width)
 
         if (n > 0) {
             body <- do.call(paste, c(cols[start:i], sep = gap))
