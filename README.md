@@ -117,10 +117,10 @@ keys(x) <- list(major = c("x", "x", "y", "y"),
 print(x)
 #>                         ════set═════
 #> major minor │ age color   a    b   c
-#> x     1     │  35 red   0.0 -1.3 2.8
-#> x     2     │  70 blue  7.1  0.0 0.0
-#> y     1     │  12 black 0.0 -5.1 0.1
-#> y     3     │  42 green 3.8  0.0 0.0
+#> x         1 │  35 red   0.0 -1.3 2.8
+#> x         2 │  70 blue  7.1  0.0 0.0
+#> y         1 │  12 black 0.0 -5.1 0.1
+#> y         3 │  42 green 3.8  0.0 0.0
 ```
 
 ### Indexing and slicing
@@ -133,29 +133,29 @@ Index a dataset just like a `data.frame`, or use key values to index or slice.
 x[dataset(c("y", "x"), c(3, 1)),]
 #>                         ════set═════
 #> major minor │ age color   a    b   c
-#> y     3     │  42 green 3.8  0.0 0.0
-#> x     1     │  35 red   0.0 -1.3 2.8
+#> y         3 │  42 green 3.8  0.0 0.0
+#> x         1 │  35 red   0.0 -1.3 2.8
 
 # slice by key value
 x[major = "y",]
 #>                   ════set═════
 #> minor │ age color   a    b   c
-#> 1     │  12 black 0.0 -5.1 0.1
-#> 3     │  42 green 3.8  0.0 0.0
+#>     1 │  12 black 0.0 -5.1 0.1
+#>     3 │  42 green 3.8  0.0 0.0
 
 # slice by key set
 x[minor = c(1, 2),]
 #>                         ════set═════
 #> major minor │ age color   a    b   c
-#> x     1     │  35 red   0.0 -1.3 2.8
-#> x     2     │  70 blue  7.1  0.0 0.0
-#> y     1     │  12 black 0.0 -5.1 0.1
+#> x         1 │  35 red   0.0 -1.3 2.8
+#> x         2 │  70 blue  7.1  0.0 0.0
+#> y         1 │  12 black 0.0 -5.1 0.1
 
 # suppress dimension dropping with I()
 x[major = I("y"), minor = c(1, 2),]
 #>                         ═══set════
 #> major minor │ age color a    b   c
-#> y     1     │  12 black 0 -5.1 0.1
+#> y         1 │  12 black 0 -5.1 0.1
 ```
 
 ### Grouping
@@ -168,15 +168,15 @@ performing a computation on each group.
 # split the rows into groups defined by unique ('cyl', 'gear') combinations;
 # the grouping factors are the keys for the result
 grouped(mtcars, c("cyl", "gear"))
-#> cyl gear │ [,1]           
-#> 4   3    │ [dataset;  1×9]
-#> 4   4    │ [dataset;  8×9]
-#> 4   5    │ [dataset;  2×9]
-#> 6   3    │ [dataset;  2×9]
-#> 6   4    │ [dataset;  4×9]
-#> 6   5    │ [dataset;  1×9]
-#> 8   3    │ [dataset; 12×9]
-#> 8   5    │ [dataset;  2×9]
+#> cyl gear │ [,1]         
+#>   4    3 │ dataset[1×9] 
+#>   4    4 │ dataset[8×9] 
+#>   4    5 │ dataset[2×9] 
+#>   6    3 │ dataset[2×9] 
+#>   6    4 │ dataset[4×9] 
+#>   6    5 │ dataset[1×9] 
+#>   8    3 │ dataset[12×9]
+#>   8    5 │ dataset[2×9]
 
 # perform a computation on all groups
 grouped(mtcars, c("cyl", "gear"), function(x)
@@ -184,14 +184,14 @@ grouped(mtcars, c("cyl", "gear"), function(x)
              mpg = mean(x$mpg),
              hp  = mean(x$hp)))
 #> cyl gear │  n    mpg       hp
-#> 4   3    │  1 21.500  97.0000
-#> 4   4    │  8 26.925  76.0000
-#> 4   5    │  2 28.200 102.0000
-#> 6   3    │  2 19.750 107.5000
-#> 6   4    │  4 19.750 116.5000
-#> 6   5    │  1 19.700 175.0000
-#> 8   3    │ 12 15.050 194.1667
-#> 8   5    │  2 15.400 299.5000
+#>   4    3 │  1 21.500  97.0000
+#>   4    4 │  8 26.925  76.0000
+#>   4    5 │  2 28.200 102.0000
+#>   6    3 │  2 19.750 107.5000
+#>   6    4 │  4 19.750 116.5000
+#>   6    5 │  1 19.700 175.0000
+#>   8    3 │ 12 15.050 194.1667
+#>   8    5 │  2 15.400 299.5000
 ```
 
 
