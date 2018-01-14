@@ -324,3 +324,42 @@ test_that("printing with list", {
 
     expect_equal(strsplit(capture_output(print(x)), "\n")[[1]], lines)
 })
+
+
+test_that("printing with key works", {
+    ctype <- switch_ctype("C")
+    on.exit(Sys.setlocale("LC_CTYPE", ctype), add = TRUE)
+
+    x <- dataset(value = 1:5)
+    keys(x) <- dataset(key = letters[c(5,6,1,3,12)])
+
+    lines <- c(
+'key | value',
+'e   |     1',
+'f   |     2',
+'a   |     3',
+'c   |     4',
+'l   |     5')
+
+    expect_equal(strsplit(capture_output(print(x)), "\n")[[1]], lines)
+})
+
+
+test_that("printing with two keys works", {
+    ctype <- switch_ctype("C")
+    on.exit(Sys.setlocale("LC_CTYPE", ctype), add = TRUE)
+
+    x <- dataset(value = 1:5)
+    keys(x) <- dataset(key1 = letters[c(5,6,1,3,12)],
+                       key2 = c(7, 8, 100, 10, -3))
+
+    lines <- c(
+'key1 key2 | value',
+'e       7 |     1',
+'f       8 |     2',
+'a     100 |     3',
+'c      10 |     4',
+'l      -3 |     5')
+
+    expect_equal(strsplit(capture_output(print(x)), "\n")[[1]], lines)
+})
