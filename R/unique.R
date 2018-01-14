@@ -67,27 +67,6 @@ duplicated.keyset <- function(x, incomparables = FALSE, fromLast = FALSE, ...)
 }
 
 
-transform.dataset <- function(`_data`, ...)
-{
-    x <- `_data`
-    exprs <- substitute(list(...))
-    enclos <- parent.frame()
-
-    y <- eval(exprs, x, enclos)
-    names <- names(y)
-    if (!is.null(names)) {
-        for (i in seq_along(y)) {
-            nm <- names[[i]]
-            if (nm != "") {
-                x[[nm]] <- y[[i]]
-            }
-        }
-    }
-
-    x
-}
-
-
 unique.dataset <- function(x, incomparables = FALSE, ..., sorted = FALSE)
 {
     if (!identical(incomparables, FALSE)) {
