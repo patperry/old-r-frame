@@ -218,7 +218,8 @@ test_that("'print' handles single matrix with many columns", {
 '  mpg cyl disp  hp drat ...',
 '1  21   6  160 110  3.9 ...',
 '         (11 columns total)')
-    expect_equal(strsplit(capture_output(print(x), width = 27), "\n")[[1]],
+    expect_equal(strsplit(capture_output(print(x, wrap = 0), width = 27),
+                          "\n")[[1]],
                  lines)
 })
 
