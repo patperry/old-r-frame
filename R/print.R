@@ -166,7 +166,7 @@ format_vector <- function(name, x, ..., control, section, indent)
     right <- (is.numeric(x) || is.complex(x))
 
     # determine the minimum element width
-    width <- max(control$width, utf8_width(name))
+    min_width <- max(control$width, utf8_width(name))
 
     # convert factor to character
     cl <- class(x)
@@ -180,31 +180,31 @@ format_vector <- function(name, x, ..., control, section, indent)
     if (is.character(x) && (identical(cl, "character")
                             || identical(cl, "AsIs"))) {
         y <- utf8_format(x, chars = chars, justify = control$justify,
-                         width = width, na.encode = control$na.encode,
+                         width = min_width, na.encode = control$na.encode,
                          quote = control$quote, na.print = control$na.print)
     } else if (is.list(x) && identical(cl, "list")) {
-        y <- format_list(x, width, control)
+        y <- format_list(x, min_width, control)
     } else {
         y <- format(x, ..., chars = chars, na.encode = control$na.encode,
                     quote = control$quote, na.print = control$na.print,
                     print.gap = control$print.gap, justify = control$justify,
-                    width = width)
+                    width = min_width)
     }
 
     # compute width, determine whether to truncate
     if (section - 1L == control$wrap) {
         limit <- control$line - indent
-        w <- col_width(name, y, control, limit + 1)
-        trunc <- (w > limit)
+        width <- col_width(name, y, control, limit + 1)
+        trunc <- (width > limit)
     } else {
-        w <- col_width(name, y, control)
+        width <- col_width(name, y, control)
         trunc <- FALSE
     }
 
     # truncate if necessary
     if (trunc) {
         y <- rep(control$ellipsis, length(y))
-        w <- utf8_width(control$ellipsis)
+        width <- utf8_width(control$ellipsis)
         name <- control$ellipsis
         right <- FALSE
     }
@@ -212,12 +212,12 @@ format_vector <- function(name, x, ..., control, section, indent)
     # right align the name if necessary
     if (right) {
         name <- utf8_format(name, chars = .Machine$integer.max,
-                            justify = "right", width = w)
+                            justify = "right", width = width)
     }
 
     # compute new indent
     start <- (indent == 0L)
-    next_indent <- indent + w + gap
+    next_indent <- indent + width + gap
     if (next_indent > control$line + gap && !start
             && section - 1L < control$wrap) {
         # wrap, re-format with new indent
@@ -225,7 +225,7 @@ format_vector <- function(name, x, ..., control, section, indent)
                       section = section + 1L, indent = 0L)
     } else {
         list(name = name, value = y, trunc = trunc,
-             section = section, indent = indent,
+             section = section, indent = indent, width = width,
              next_section = section, next_indent = next_indent)
     }
 }
@@ -252,6 +252,7 @@ format_matrix <- function(name, x, ..., control, section, indent)
     next_indent <- indent
     section <- vector("list", nc)
     indent <- vector("list", nc)
+    width <- vector("list", nc)
 
     for (j in seq_len(nc)) {
         if (next_section - 1L == wrap && j < nc) {
@@ -269,6 +270,7 @@ format_matrix <- function(name, x, ..., control, section, indent)
         y[[j]] <- fmt$value
         section[[j]] <- fmt$section
         indent[[j]] <- fmt$indent
+        width[[j]] <- fmt$width
         next_section <- fmt$next_section
         next_indent <- fmt$next_indent
 
@@ -288,12 +290,14 @@ format_matrix <- function(name, x, ..., control, section, indent)
                 y[[j]] <- rep(control$ellipsis, nrow(x))
                 section[[j]] <- next_section
                 indent[[j]] <- next_indent
+                width[[j]] <- ellipsis
                 next_indent <- next_indent + ellipsis + gap
             }
             y <- y[1:j]
             names <- names[1:j]
             section <- section[1:j]
             indent <- indent[1:j]
+            width <- width[1:j]
             trunc <- TRUE
             break
         }
@@ -302,7 +306,7 @@ format_matrix <- function(name, x, ..., control, section, indent)
     names(y) <- names
     y <- as_dataset(y)
     list(name = name, value = y, trunc = trunc, section = section,
-         indent = indent, next_section = next_section,
+         indent = indent, width = width, next_section = next_section,
          next_indent = next_indent)
 }
 
@@ -404,6 +408,7 @@ format.dataset <- function(x, rows = -1L, wrap = -1L, ..., chars = NULL,
     attr(y, "trunc_cols") <- ctrunc
     attr(y, "section") <- fmt$section
     attr(y, "indent") <- fmt$indent
+    attr(y, "width") <- fmt$width
 
     y
 }
@@ -526,6 +531,7 @@ print.dataset <- function(x, rows = NULL, wrap = NULL, ..., number = NULL,
                           digits = control$digits, line = line)
     section <- unlist(attr(fmt, "section"))
     indent <- unlist(attr(fmt, "indent"))
+    width <- unlist(attr(fmt, "width"))
 
     cols <- as.list.dataset(fmt, flat = TRUE, path = TRUE)
     path <- attr(cols, "path")
@@ -533,17 +539,12 @@ print.dataset <- function(x, rows = NULL, wrap = NULL, ..., number = NULL,
     names <- vapply(path, tail, "", n = 1)
 
     # format columns, using name width as minimum
-    width <- vapply(names, function(n) max(0L, utf8_width(n)), 0)
     cols <- mapply(function(col, w)
                        utf8_format(as.character(col), width = w,
                                    chars = .Machine$integer.max,
                                    na.encode = FALSE, na.print = na.print,
                                    quote = quote, justify = "left"),
                    cols, width, SIMPLIFY = FALSE, USE.NAMES = FALSE)
-    width <- pmax(width,
-                  mapply(function(name, col)
-                             col_width(name, col, control),
-                         names, cols, SIMPLIFY = TRUE, USE.NAMES = FALSE))
 
     # format names, using column width as minimum
     names <- mapply(function(name, w)
