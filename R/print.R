@@ -524,6 +524,7 @@ print.dataset <- function(x, rows = NULL, wrap = NULL, ..., number = NULL,
                           na.encode = FALSE, na.print = control$na.print,
                           quote = control$quote, print.gap = control$print.gap,
                           digits = control$digits, line = line)
+    section <- unlist(attr(fmt, "section"))
     indent <- unlist(attr(fmt, "indent"))
 
     cols <- as.list.dataset(fmt, flat = TRUE, path = TRUE)
@@ -556,102 +557,99 @@ print.dataset <- function(x, rows = NULL, wrap = NULL, ..., number = NULL,
     cols <- mapply(style$normal, cols, width,
                    SIMPLIFY = FALSE, USE.NAMES = FALSE)
 
-    # wrap columns
-    indent <- 0L
     foot_width <- row_width
     start <- 1L
+    sec <- 1L
     for (i in seq_along(cols)) {
-        indent <- indent + width[[i]] + control$print.gap
-
-        if (i == length(cols) || indent + width[[i + 1L]] > line) {
-            foot_width <- max(foot_width,
-                              row_width + indent - control$print.gap)
-            # add padding between previous set of rows
-            if (start > 1) {
-                cat(style$faint(control$vellipsis), "\n", sep="")
-            }
-
-            # determine header for nested groups
-            depth <- max(1, vapply(index[start:i], length, 0))
-            group <- matrix(unlist(lapply(index[start:i], `length<-`, depth)),
-                            nrow = depth)
-            gname <- matrix(unlist(lapply(path[start:i], `length<-`, depth)),
-                            nrow = depth)
-            gwidth <- width[start:i]
-            m <- i - start + 1
-
-            for (d in seq(from = depth - 1, by = -1, length.out = depth - 1)) {
-                j <- 1
-                while (j <= m) {
-                    g <- group[d, j]
-                    if (!is.na(g)) {
-                        s <- j
-                        while (j < m && group[d,j + 1] %in% g) {
-                            j <- j + 1
-                        }
-                        if (all(is.na(group[d + 1, s:j]))) {
-                            k <- d + 1
-                            while (k < depth
-                                       && all(is.na(group[k+1,s:j]))) {
-                                k <- k + 1
-                            }
-                            group[k,s:j] <- group[d,s:j]
-                            group[d,s:j] <- NA
-                            gname[k,s:j] <- gname[d,s:j]
-                            gname[d,s:j] <- NA
-                        }
-                    }
-                    j <- j + 1
-                }
-            }
-
-            # print header
-            for (d in seq_len(depth - 1)) {
-                grp <- group[d,]
-                gnm <- gname[d,]
-                head <- format("", width = row_width)
-                j <- 1
-                while (j <= m) {
-                    if (j > 1) {
-                        head <- paste0(head, gap)
-                    }
-                    w <- gwidth[[j]]
-                    if (is.na(grp[[j]])) {
-                        head <- paste0(head, format("", width = w))
-                    } else {
-                        g <- grp[[j]]
-                        nm <- gnm[[j]]
-                        # %in% so that this succeeds if NA
-                        while (j < m && grp[[j + 1]] %in% g) {
-                            j <- j + 1
-                            w <- w + control$print.gap + gwidth[[j]]
-                        }
-                        wnm <- utf8_width(nm)
-                        pad <- max(0, w - wnm)
-                        lpad <- floor(pad / 2)
-                        rpad <- ceiling(pad / 2)
-                        banner <- paste0(paste0(rep(control$banner, lpad),
-                                                collapse = ""),
-                                         nm,
-                                         paste0(rep(control$banner, rpad),
-                                                collapse = ""))
-                        head <- paste0(head, style$bold(banner))
-                    }
-                    j <- j + 1
-                }
-                cat(head, "\n", sep="")
-            }
-
-            head <- paste0(names[start:i], collapse = gap)
-            cat(row_head, head, "\n", sep = "")
-            if (n > 0) {
-                body <- do.call(paste, c(cols[start:i], sep = gap))
-                cat(paste0(row_body, body, collapse = "\n"), "\n", sep = "")
-            }
-
-            indent <- 0L
-            start <- i + 1L
+        if (i < length(cols) && section[[i + 1L]] == sec) {
+            next
         }
+
+        # add padding between previous set of rows
+        if (start > 1L) {
+            cat(style$faint(control$vellipsis), "\n", sep="")
+        }
+
+        # determine header for nested groups
+        depth <- max(1, vapply(index[start:i], length, 0))
+        group <- matrix(unlist(lapply(index[start:i], `length<-`, depth)),
+                        nrow = depth)
+        gname <- matrix(unlist(lapply(path[start:i], `length<-`, depth)),
+                        nrow = depth)
+        gwidth <- width[start:i]
+        m <- i - start + 1
+
+        for (d in seq(from = depth - 1, by = -1, length.out = depth - 1)) {
+            j <- 1
+            while (j <= m) {
+                g <- group[d, j]
+                if (!is.na(g)) {
+                    s <- j
+                    while (j < m && group[d,j + 1] %in% g) {
+                        j <- j + 1
+                    }
+                    if (all(is.na(group[d + 1, s:j]))) {
+                        k <- d + 1
+                        while (k < depth && all(is.na(group[k+1,s:j]))) {
+                            k <- k + 1
+                        }
+                        group[k,s:j] <- group[d,s:j]
+                        group[d,s:j] <- NA
+                        gname[k,s:j] <- gname[d,s:j]
+                        gname[d,s:j] <- NA
+                    }
+                }
+                j <- j + 1
+            }
+        }
+
+        # print header
+        for (d in seq_len(depth - 1)) {
+            grp <- group[d,]
+            gnm <- gname[d,]
+            head <- format("", width = row_width)
+            j <- 1
+            while (j <= m) {
+                if (j > 1) {
+                    head <- paste0(head, gap)
+                }
+                w <- gwidth[[j]]
+                if (is.na(grp[[j]])) {
+                    head <- paste0(head, format("", width = w))
+                } else {
+                    g <- grp[[j]]
+                    nm <- gnm[[j]]
+                    # %in% so that this succeeds if NA
+                    while (j < m && grp[[j + 1]] %in% g) {
+                        j <- j + 1
+                        w <- w + control$print.gap + gwidth[[j]]
+                    }
+                    wnm <- utf8_width(nm)
+                    pad <- max(0, w - wnm)
+                    lpad <- floor(pad / 2)
+                    rpad <- ceiling(pad / 2)
+                    banner <- paste0(paste0(rep(control$banner, lpad),
+                                            collapse = ""),
+                                     nm,
+                                     paste0(rep(control$banner, rpad),
+                                            collapse = ""))
+                        head <- paste0(head, style$bold(banner))
+                }
+                j <- j + 1
+            }
+            cat(head, "\n", sep="")
+        }
+
+        head <- paste0(names[start:i], collapse = gap)
+        cat(row_head, head, "\n", sep = "")
+        if (n > 0) {
+            body <- do.call(paste, c(cols[start:i], sep = gap))
+            cat(paste0(row_body, body, collapse = "\n"), "\n", sep = "")
+        }
+
+        foot_width <- max(foot_width, row_width + indent[[i]] + width[[i]])
+        start <- i + 1L
+        sec <- sec + 1L
     }
 
     caption <- attr(fmt, "caption")
