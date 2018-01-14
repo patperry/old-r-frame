@@ -21,7 +21,7 @@ new_format_control <- function(chars = NULL, digits = NULL,
                                na.encode = TRUE, quote = FALSE,
                                na.print = NULL, print.gap = NULL,
                                justify = "none", width = NULL,
-                               display = TRUE, line = NULL)
+                               display = TRUE, line = NULL, wrap = NULL)
 {
     control <- list()
     control$chars <- chars
@@ -34,6 +34,7 @@ new_format_control <- function(chars = NULL, digits = NULL,
     control$width <- width
     control$display <- display
     control$line <- line
+    control$wrap <- wrap
     control$ansi <- output_ansi()
     control$utf8 <- output_utf8()
 
@@ -151,7 +152,7 @@ format_list <- function(x, width, control)
                 quote = control$quote)
 }
 
-format_vector <- function(name, x, ..., control, indent, wrap)
+format_vector <- function(name, x, ..., control, section, indent)
 {
     chars <- control$chars
     gap <- control$print.gap
@@ -187,12 +188,11 @@ format_vector <- function(name, x, ..., control, indent, wrap)
         y <- format(x, ..., chars = chars, na.encode = control$na.encode,
                     quote = control$quote, na.print = control$na.print,
                     print.gap = control$print.gap, justify = control$justify,
-                    width = width, indent = indent, line = control$line,
-                    wrap = wrap)
+                    width = width)
     }
 
     # compute width, determine whether to truncate
-    if (wrap == 0) {
+    if (section - 1L == control$wrap) {
         limit <- control$line - indent
         w <- col_width(name, y, control, limit + 1)
         trunc <- (w > limit)
@@ -217,19 +217,21 @@ format_vector <- function(name, x, ..., control, indent, wrap)
 
     # compute new indent
     start <- (indent == 0L)
-    indent <- indent + w + gap
-    if (indent > control$line + gap && !start && wrap > 0) {
+    next_indent <- indent + w + gap
+    if (next_indent > control$line + gap && !start
+            && section - 1L < control$wrap) {
         # wrap, re-format with new indent
-        format_vector(name, x, ..., control = control, indent = 0,
-                      wrap = wrap - 1)
+        format_vector(name, x, ..., control = control,
+                      section = section + 1L, indent = 0L)
     } else {
         list(name = name, value = y, trunc = trunc,
-             indent = indent, wrap = wrap)
+             section = section, indent = indent,
+             next_section = section, next_indent = next_indent)
     }
 }
 
 
-format_matrix <- function(name, x, ..., control, indent, wrap)
+format_matrix <- function(name, x, ..., control, section, indent)
 {
     nc <- ncol(x)
     names <- colnames(x)
@@ -242,11 +244,17 @@ format_matrix <- function(name, x, ..., control, indent, wrap)
     gap <- control$print.gap
     ellipsis <- utf8_width(control$ellipsis)
     line <- control$line
+    wrap <- control$wrap
+
+    section_start <- section
     indent_start <- indent
-    wrap_start <- wrap
+    next_section <- section
+    next_indent <- indent
+    section <- vector("list", nc)
+    indent <- vector("list", nc)
 
     for (j in seq_len(nc)) {
-        if (wrap == 0 && j < nc) {
+        if (next_section - 1L == wrap && j < nc) {
             control$line <- line - gap - ellipsis
         } else {
             control$line <- line
@@ -255,19 +263,22 @@ format_matrix <- function(name, x, ..., control, indent, wrap)
         xj <- if (is.data.frame(x)) x[[j]] else x[, j, drop = TRUE]
 
         fmt <- format_column(names[[j]], xj, ..., control = control,
-                             indent = indent, wrap = wrap)
+                             section = next_section, indent = next_indent)
 
         names[[j]] <- fmt$name
         y[[j]] <- fmt$value
-        indent <- fmt$indent
-        wrap <- fmt$wrap
+        section[[j]] <- fmt$section
+        indent[[j]] <- fmt$indent
+        next_section <- fmt$next_section
+        next_indent <- fmt$next_indent
 
         # if at end add extra indent to fit name
         if (j == nc) {
-            if (wrap != wrap_start) {
+            if (next_section != section_start) {
                 indent_start <- 0L
             }
-            indent <- max(indent, indent_start + utf8_width(name) + gap)
+            next_indent <- max(next_indent,
+                               indent_start + utf8_width(name) + gap)
         }
 
         if (fmt$trunc) {
@@ -275,10 +286,14 @@ format_matrix <- function(name, x, ..., control, indent, wrap)
                 j <- j + 1
                 names[[j]] <- control$ellipsis
                 y[[j]] <- rep(control$ellipsis, nrow(x))
-                indent <- indent + ellipsis + gap
+                section[[j]] <- next_section
+                indent[[j]] <- next_indent
+                next_indent <- next_indent + ellipsis + gap
             }
             y <- y[1:j]
             names <- names[1:j]
+            section <- section[1:j]
+            indent <- indent[1:j]
             trunc <- TRUE
             break
         }
@@ -286,19 +301,21 @@ format_matrix <- function(name, x, ..., control, indent, wrap)
 
     names(y) <- names
     y <- as_dataset(y)
-    list(name = name, value = y, trunc = trunc, indent = indent, wrap = wrap)
+    list(name = name, value = y, trunc = trunc, section = section,
+         indent = indent, next_section = next_section,
+         next_indent = next_indent)
 }
 
 
-format_column <- function(name, x, ..., control, indent, wrap)
+format_column <- function(name, x, ..., control, section, indent)
 {
     vec <- length(dim(x)) <= 1
     if (vec) {
         format_vector(name, x, ..., control = control,
-                      indent = indent, wrap = wrap)
+                      section = section, indent = indent)
     } else {
         format_matrix(name, x, ..., control = control,
-                      indent = indent, wrap = wrap)
+                      section = section, indent = indent)
     }
 }
 
@@ -332,6 +349,9 @@ format.dataset <- function(x, rows = -1L, wrap = -1L, ..., chars = NULL,
     if (is.null(wrap)) {
         wrap <- option_wrap(wrap)
     }
+    if (wrap < 0) {
+        wrap <- .Machine$integer.max
+    }
    
     x <- arg_dataset(x)
     rows <- arg_rows(rows)
@@ -349,7 +369,7 @@ format.dataset <- function(x, rows = -1L, wrap = -1L, ..., chars = NULL,
     control <- new_format_control(chars = chars, na.encode = na.encode,
                                   quote = quote, na.print = na.print,
                                   print.gap = print.gap, justify = justify,
-                                  width = width, line = line)
+                                  width = width, line = line, wrap = wrap)
     n <- nrow(x)
 
     if (is.null(indent)) {
@@ -358,16 +378,13 @@ format.dataset <- function(x, rows = -1L, wrap = -1L, ..., chars = NULL,
     if (rows < 0) {
         rows <- n
     }
-    if (wrap < 0) {
-        wrap <- .Machine$integer.max
-    }
 
     if ((rtrunc <- (n > rows))) {
         x <- x[seq_len(rows), , drop = FALSE]
     }
 
-    fmt <- format_column("", x, ..., control = control, indent = indent,
-                         wrap = wrap)
+    fmt <- format_column("", x, ..., control = control,
+                         section = 1L, indent = indent)
     y <- fmt$value
     keys(y) <- keys(x)
 
@@ -385,6 +402,8 @@ format.dataset <- function(x, rows = -1L, wrap = -1L, ..., chars = NULL,
 
     attr(y, "trunc_rows") <- rtrunc
     attr(y, "trunc_cols") <- ctrunc
+    attr(y, "section") <- fmt$section
+    attr(y, "indent") <- fmt$indent
 
     y
 }
@@ -405,8 +424,16 @@ print.dataset <- function(x, rows = NULL, wrap = NULL, ..., number = NULL,
         number <- arg_option(number)
     }
 
-    rows <- option_rows(rows)
-    wrap <- option_wrap(wrap)
+    if (is.null(rows)) {
+        rows <- option_rows(rows)
+    }
+
+    if (is.null(wrap)) {
+        wrap <- option_wrap(wrap)
+    }
+    if (wrap < 0) {
+        wrap <- .Machine$integer.max
+    }
 
     rows <- arg_rows(rows)
     wrap <- arg_integer_scalar(wrap)
@@ -420,7 +447,8 @@ print.dataset <- function(x, rows = NULL, wrap = NULL, ..., number = NULL,
     
     control <- new_format_control(chars = chars, digits = digits,
                                   quote = quote, na.print = na.print,
-                                  print.gap = print.gap, display = display)
+                                  print.gap = print.gap, display = display,
+                                  wrap = wrap)
 
     n <- nrow(x)
     style <- new_format_style(control)
@@ -496,6 +524,7 @@ print.dataset <- function(x, rows = NULL, wrap = NULL, ..., number = NULL,
                           na.encode = FALSE, na.print = control$na.print,
                           quote = control$quote, print.gap = control$print.gap,
                           digits = control$digits, line = line)
+    indent <- unlist(attr(fmt, "indent"))
 
     cols <- as.list.dataset(fmt, flat = TRUE, path = TRUE)
     path <- attr(cols, "path")
