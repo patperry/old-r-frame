@@ -82,13 +82,13 @@ including sparse matrices and nested datasets.
 
 # dataset with a dataset column
 (y <- dataset(value = rnorm(4), nested = x))
-#>              ══════════════nested══════════════
-#>                            ════════set═════════
-#>        value    age color       a      b      c
-#> 1  1.2629543     35 red       0.0   -1.3    2.8
-#> 2 -0.3262334     70 blue      7.1    0.0    0.0
-#> 3  1.3297993     12 black     0.0   -5.1    0.1
-#> 4  1.2724293     42 green     3.8    0.0    0.0
+#>              ════════nested════════
+#>                        ════set═════
+#>        value age color   a    b   c
+#> 1  1.2629543  35 red   0.0 -1.3 2.8
+#> 2 -0.3262334  70 blue  7.1  0.0 0.0
+#> 3  1.3297993  12 black 0.0 -5.1 0.1
+#> 4  1.2724293  42 green 3.8  0.0 0.0
 
 # convert a data.frame
 as_dataset(mtcars[1:5,])
@@ -153,9 +153,9 @@ x[minor = c(1, 2),]
 
 # suppress dimension dropping with I()
 x[major = I("y"), minor = c(1, 2),]
-#>                         ════set═════
-#> major minor │ age color   a    b   c
-#> y     1     │  12 black   0 -5.1 0.1
+#>                         ═══set════
+#> major minor │ age color a    b   c
+#> y     1     │  12 black 0 -5.1 0.1
 ```
 
 ### Grouping
