@@ -133,21 +133,17 @@ format_list <- function(x, width, control)
 {
     times <- control$times
     y <- vapply(x, FUN.VALUE = "", function(elt) class(elt)[[1L]])
-    d <- vapply(x, FUN.VALUE = "", function(elt) {
+    suffix <- vapply(x, FUN.VALUE = "", function(elt) {
         d <- dim(elt)
         if (!is.null(d)) {
-            paste(paste0(d, collapse = times))
+            paste0("[", paste0(d, collapse = times), "]")
         } else if (is.null(oldClass(elt))) {
-            as.character(length(elt))
+            paste0("[", length(elt), "]")
         } else {
             ""
         }
     })
-    if (any(nzchar(d))) {
-        d <- utf8_format(d, justify = "right")
-        y <- paste0(y, "; ", d)
-    }
-    y <- paste0("[", y, "]")
+    y <- paste0(y, suffix)
     utf8_format(y, justify = control$justify, width = width,
                 quote = control$quote)
 }

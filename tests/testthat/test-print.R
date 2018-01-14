@@ -302,3 +302,25 @@ lines <- c(
 
     expect_equal(strsplit(capture_output(print(y)), "\n")[[1]], lines)
 })
+
+
+test_that("printing with list", {
+    ctype <- switch_ctype("C")
+    on.exit(Sys.setlocale("LC_CTYPE", ctype), add = TRUE)
+
+    x <- dataset(col = list(structure(1:4, class = "foo"),
+                            structure(letters, class = "bar", dim = c(2, 13)),
+                            structure(1:24, dim = c(3, 2, 4)),
+                            letters,
+                            structure(LETTERS[1:4], dim = 4)))
+
+    lines <- c(
+'  col          ',
+'1 foo          ',
+'2 bar[2x13]    ',
+'3 array[3x2x4] ',
+'4 character[26]',
+'5 array[4]     ')
+
+    expect_equal(strsplit(capture_output(print(x)), "\n")[[1]], lines)
+})

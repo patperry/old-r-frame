@@ -418,13 +418,13 @@ leave the operation specified:
 
 ```r
 grouped(flights, "tailnum")
-#> tailnum │ [,1]             
-#> D942DN  │ [dataset;   4×18]
-#> N0EGMQ  │ [dataset; 371×18]
-#> N10156  │ [dataset; 153×18]
-#> N102UW  │ [dataset;  48×18]
-#> N103US  │ [dataset;  46×18]
-#> ⋮         (4044 rows total)
+#> tailnum │ [,1]           
+#> D942DN  │ dataset[4×18]  
+#> N0EGMQ  │ dataset[371×18]
+#> N10156  │ dataset[153×18]
+#> N102UW  │ dataset[48×18] 
+#> N103US  │ dataset[46×18] 
+#> ⋮       (4044 rows total)
 ```
 
 Here the result is a `dataset`  with keys taken from the `tailnum` variable.
