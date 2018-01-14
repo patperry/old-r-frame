@@ -453,24 +453,24 @@ print_header <- function(control, style, index, path, names, width,
 
     # print header
     for (d in seq_len(depth - 1)) {
-        grp <- group[d,]
-        gnm <- gname[d,]
+        grp <- group[d, ]
+        gnm <- gname[d, ]
         head <- format("", width = row_width)
-        j <- 1
-        while (j <= n) {
-            if (j > 1) {
+        i <- 1
+        while (i <= n) {
+            if (i > 1) {
                 head <- paste0(head, gap)
              }
-             w <- width[[j]]
-             if (is.na(grp[[j]])) {
+             w <- width[[i]]
+             if (is.na(grp[[i]])) {
                 head <- paste0(head, format("", width = w))
              } else {
-                g <- grp[[j]]
-                nm <- gnm[[j]]
+                g <- grp[[i]]
+                nm <- gnm[[i]]
                 # %in% so that this succeeds if NA
-                while (j < n && grp[[j + 1]] %in% g) {
-                    j <- j + 1
-                    w <- w + control$print.gap + width[[j]]
+                while (i < n && grp[[i + 1]] %in% g) {
+                    i <- i + 1
+                    w <- w + control$print.gap + width[[i]]
                 }
                 wnm <- utf8_width(nm)
                 pad <- max(0, w - wnm)
@@ -483,7 +483,7 @@ print_header <- function(control, style, index, path, names, width,
                                         collapse = ""))
                 head <- paste0(head, style$bold(banner))
             }
-            j <- j + 1
+            i <- i + 1
         }
         cat(head, "\n", sep="")
     }
