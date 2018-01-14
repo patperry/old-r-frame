@@ -420,34 +420,34 @@ print_header <- function(control, style, index, path, names, width,
                          row_head, row_width)
 {
     gap <- utf8_format("", width = control$print.gap)
+    n <- length(index)
 
     # determine header for nested groups
     depth <- max(1, vapply(index, length, 0))
     group <- matrix(unlist(lapply(index, `length<-`, depth)), nrow = depth)
     gname <- matrix(unlist(lapply(path, `length<-`, depth)), nrow = depth)
-    m <- length(index)
 
     for (d in seq(from = depth - 1, by = -1, length.out = depth - 1)) {
-        j <- 1
-        while (j <= m) {
-            g <- group[d, j]
+        i <- 1
+        while (i <= n) {
+            g <- group[d, i]
             if (!is.na(g)) {
-                s <- j
-                while (j < m && group[d, j + 1] %in% g) {
+                j <- i
+                while (j < n && group[d, j + 1] %in% g) {
                     j <- j + 1
                 }
-                if (all(is.na(group[d + 1, s:j]))) {
+                if (all(is.na(group[d + 1, i:j]))) {
                     k <- d + 1
-                    while (k < depth && all(is.na(group[k + 1, s:j]))) {
+                    while (k < depth && all(is.na(group[k + 1, i:j]))) {
                         k <- k + 1
                     }
-                    group[k, s:j] <- group[d, s:j]
-                    group[d, s:j] <- NA
-                    gname[k, s:j] <- gname[d, s:j]
-                    gname[d, s:j] <- NA
+                    group[k, i:j] <- group[d, i:j]
+                    group[d, i:j] <- NA
+                    gname[k, i:j] <- gname[d, i:j]
+                    gname[d, i:j] <- NA
                 }
             }
-            j <- j + 1
+            i <- j + 1
         }
     }
 
@@ -457,7 +457,7 @@ print_header <- function(control, style, index, path, names, width,
         gnm <- gname[d,]
         head <- format("", width = row_width)
         j <- 1
-        while (j <= m) {
+        while (j <= n) {
             if (j > 1) {
                 head <- paste0(head, gap)
              }
@@ -468,7 +468,7 @@ print_header <- function(control, style, index, path, names, width,
                 g <- grp[[j]]
                 nm <- gnm[[j]]
                 # %in% so that this succeeds if NA
-                while (j < m && grp[[j + 1]] %in% g) {
+                while (j < n && grp[[j + 1]] %in% g) {
                     j <- j + 1
                     w <- w + control$print.gap + width[[j]]
                 }
