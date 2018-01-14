@@ -323,6 +323,7 @@ format_column <- function(name, x, ..., control, section, indent)
     }
 }
 
+
 ncol_recursive <- function(x, offset = 0)
 {
     if (length(dim(x)) <= 1) {
@@ -336,6 +337,7 @@ ncol_recursive <- function(x, offset = 0)
         offset + ncol(x)
     }
 }
+
 
 format.dataset <- function(x, rows = -1L, wrap = -1L, ..., chars = NULL,
                            na.encode = TRUE, quote = FALSE, na.print = NULL,
@@ -634,7 +636,7 @@ print.dataset <- function(x, rows = NULL, wrap = NULL, ..., number = NULL,
                                      nm,
                                      paste0(rep(control$banner, rpad),
                                             collapse = ""))
-                        head <- paste0(head, style$bold(banner))
+                    head <- paste0(head, style$bold(banner))
                 }
                 j <- j + 1
             }
