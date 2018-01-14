@@ -416,6 +416,83 @@ format.dataset <- function(x, rows = -1L, wrap = -1L, ..., chars = NULL,
 }
 
 
+print_header <- function(control, style, index, path, names, width,
+                         row_head, row_width)
+{
+    gap <- utf8_format("", width = control$print.gap)
+
+    # determine header for nested groups
+    depth <- max(1, vapply(index, length, 0))
+    group <- matrix(unlist(lapply(index, `length<-`, depth)), nrow = depth)
+    gname <- matrix(unlist(lapply(path, `length<-`, depth)), nrow = depth)
+    m <- length(index)
+
+    for (d in seq(from = depth - 1, by = -1, length.out = depth - 1)) {
+        j <- 1
+        while (j <= m) {
+            g <- group[d, j]
+            if (!is.na(g)) {
+                s <- j
+                while (j < m && group[d, j + 1] %in% g) {
+                    j <- j + 1
+                }
+                if (all(is.na(group[d + 1, s:j]))) {
+                    k <- d + 1
+                    while (k < depth && all(is.na(group[k + 1, s:j]))) {
+                        k <- k + 1
+                    }
+                    group[k, s:j] <- group[d, s:j]
+                    group[d, s:j] <- NA
+                    gname[k, s:j] <- gname[d, s:j]
+                    gname[d, s:j] <- NA
+                }
+            }
+            j <- j + 1
+        }
+    }
+
+    # print header
+    for (d in seq_len(depth - 1)) {
+        grp <- group[d,]
+        gnm <- gname[d,]
+        head <- format("", width = row_width)
+        j <- 1
+        while (j <= m) {
+            if (j > 1) {
+                head <- paste0(head, gap)
+             }
+             w <- width[[j]]
+             if (is.na(grp[[j]])) {
+                head <- paste0(head, format("", width = w))
+             } else {
+                g <- grp[[j]]
+                nm <- gnm[[j]]
+                # %in% so that this succeeds if NA
+                while (j < m && grp[[j + 1]] %in% g) {
+                    j <- j + 1
+                    w <- w + control$print.gap + width[[j]]
+                }
+                wnm <- utf8_width(nm)
+                pad <- max(0, w - wnm)
+                lpad <- floor(pad / 2)
+                rpad <- ceiling(pad / 2)
+                banner <- paste0(paste0(rep(control$banner, lpad),
+                                        collapse = ""),
+                                 nm,
+                                 paste0(rep(control$banner, rpad),
+                                        collapse = ""))
+                head <- paste0(head, style$bold(banner))
+            }
+            j <- j + 1
+        }
+        cat(head, "\n", sep="")
+    }
+
+    head <- paste0(names, collapse = gap)
+    cat(row_head, head, "\n", sep = "")
+}
+
+
 print.dataset <- function(x, rows = NULL, wrap = NULL, ..., number = NULL,
                           chars = NULL, digits = NULL, quote = FALSE,
                           na.print = NULL, print.gap = NULL, display = TRUE)
@@ -541,15 +618,13 @@ print.dataset <- function(x, rows = NULL, wrap = NULL, ..., number = NULL,
     index <- attr(cols, "index")
     names <- vapply(path, tail, "", n = 1)
 
-    # format columns, using name width as minimum
-    cols <- mapply(function(col, w)
+    # justify columns, names
+    cols <- mapply(function(col, w, j)
                        utf8_format(as.character(col), width = w,
                                    chars = .Machine$integer.max,
                                    na.encode = FALSE, na.print = na.print,
-                                   quote = quote, justify = "left"),
-                   cols, width, SIMPLIFY = FALSE, USE.NAMES = FALSE)
-
-    # format names, using column width as minimum
+                                   quote = quote, justify = j),
+                   cols, width, justify, SIMPLIFY = FALSE, USE.NAMES = FALSE)
     names <- mapply(function(name, w, j)
                         utf8_format(name, width = w,
                                     chars = .Machine$integer.max, justify = j),
@@ -557,9 +632,9 @@ print.dataset <- function(x, rows = NULL, wrap = NULL, ..., number = NULL,
                     SIMPLIFY = TRUE, USE.NAMES = FALSE)
 
     # apply formatting
-    names <- style$bold(names)
     cols <- mapply(style$normal, cols, width,
                    SIMPLIFY = FALSE, USE.NAMES = FALSE)
+    names <- style$bold(names)
 
     foot_width <- row_width
     start <- 1L
@@ -569,83 +644,15 @@ print.dataset <- function(x, rows = NULL, wrap = NULL, ..., number = NULL,
             next
         }
 
-        # add padding between previous set of rows
         if (start > 1L) {
             cat(style$faint(control$vellipsis), "\n", sep="")
         }
 
-        # determine header for nested groups
-        depth <- max(1, vapply(index[start:i], length, 0))
-        group <- matrix(unlist(lapply(index[start:i], `length<-`, depth)),
-                        nrow = depth)
-        gname <- matrix(unlist(lapply(path[start:i], `length<-`, depth)),
-                        nrow = depth)
-        gwidth <- width[start:i]
-        m <- i - start + 1
+        print_header(control = control, style = style,
+                     index = index[start:i], path = path[start:i],
+                     names = names[start:i], width = width[start:i],
+                     row_head = row_head, row_width = row_width)
 
-        for (d in seq(from = depth - 1, by = -1, length.out = depth - 1)) {
-            j <- 1
-            while (j <= m) {
-                g <- group[d, j]
-                if (!is.na(g)) {
-                    s <- j
-                    while (j < m && group[d,j + 1] %in% g) {
-                        j <- j + 1
-                    }
-                    if (all(is.na(group[d + 1, s:j]))) {
-                        k <- d + 1
-                        while (k < depth && all(is.na(group[k+1,s:j]))) {
-                            k <- k + 1
-                        }
-                        group[k,s:j] <- group[d,s:j]
-                        group[d,s:j] <- NA
-                        gname[k,s:j] <- gname[d,s:j]
-                        gname[d,s:j] <- NA
-                    }
-                }
-                j <- j + 1
-            }
-        }
-
-        # print header
-        for (d in seq_len(depth - 1)) {
-            grp <- group[d,]
-            gnm <- gname[d,]
-            head <- format("", width = row_width)
-            j <- 1
-            while (j <= m) {
-                if (j > 1) {
-                    head <- paste0(head, gap)
-                }
-                w <- gwidth[[j]]
-                if (is.na(grp[[j]])) {
-                    head <- paste0(head, format("", width = w))
-                } else {
-                    g <- grp[[j]]
-                    nm <- gnm[[j]]
-                    # %in% so that this succeeds if NA
-                    while (j < m && grp[[j + 1]] %in% g) {
-                        j <- j + 1
-                        w <- w + control$print.gap + gwidth[[j]]
-                    }
-                    wnm <- utf8_width(nm)
-                    pad <- max(0, w - wnm)
-                    lpad <- floor(pad / 2)
-                    rpad <- ceiling(pad / 2)
-                    banner <- paste0(paste0(rep(control$banner, lpad),
-                                            collapse = ""),
-                                     nm,
-                                     paste0(rep(control$banner, rpad),
-                                            collapse = ""))
-                    head <- paste0(head, style$bold(banner))
-                }
-                j <- j + 1
-            }
-            cat(head, "\n", sep="")
-        }
-
-        head <- paste0(names[start:i], collapse = gap)
-        cat(row_head, head, "\n", sep = "")
         if (n > 0) {
             body <- do.call(paste, c(cols[start:i], sep = gap))
             cat(paste0(row_body, body, collapse = "\n"), "\n", sep = "")
