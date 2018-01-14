@@ -232,8 +232,8 @@ test_that("short nested works with right-align single", {
     lines <- c(
 '  long      ',
 '   x   short',
-'1 19       z',
-'2  5      GG')
+'1 19   z    ',
+'2  5   GG   ')
 
     expect_equal(strsplit(capture_output(print(y)), "\n")[[1]], lines)
 })
@@ -248,8 +248,8 @@ test_that("short nested works with left-align single", {
     lines <- c(
 '  long      ',
 '  x    short',
-'1 aa      z',
-'2 b       GG')
+'1 aa   z    ',
+'2 b    GG   ')
 
     expect_equal(strsplit(capture_output(print(y)), "\n")[[1]], lines)
 })
@@ -267,8 +267,8 @@ test_that("short nested works with right-align double", {
 #  12345678901
 '  really_long      ',
 '   x  y       short',
-'1 19  7       z',
-'2  5 13       GG')
+'1 19  7       z    ',
+'2  5 13       GG   ')
 
     expect_equal(strsplit(capture_output(print(y)), "\n")[[1]], lines)
 })

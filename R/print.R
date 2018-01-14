@@ -485,7 +485,7 @@ print_header <- function(control, style, index, path, names, indent, width,
                                  paste0(rep(control$banner, rpad),
                                         collapse = ""))
                 head <- paste0(head, style$bold(banner))
-                pos <- pos + w
+                pos <- pos + max(w, wnm)
             }
             i <- i + 1
         }
@@ -500,6 +500,19 @@ print_header <- function(control, style, index, path, names, indent, width,
     }
 
     cat(head, "\n", sep = "")
+}
+
+
+print_body <- function(control, cols, indent, width, row_body)
+{
+    n <- length(cols)
+    body <- row_body
+    pos <- 0
+    for (i in seq_len(n)) {
+        body <- paste0(body, format("", width = indent[[i]] - pos), cols[[i]])
+        pos <- indent[[i]] + width[[i]]
+    }
+    cat(body, sep = "\n")
 }
 
 
@@ -665,8 +678,9 @@ print.dataset <- function(x, rows = NULL, wrap = NULL, ..., number = NULL,
                      row_width = row_width)
 
         if (n > 0) {
-            body <- do.call(paste, c(cols[start:i], sep = gap))
-            cat(paste0(row_body, body, collapse = "\n"), "\n", sep = "")
+            print_body(control = control, cols = cols[start:i],
+                       indent = indent[start:i], width = width[start:i],
+                       row_body = row_body)
         }
 
         foot_width <- max(foot_width, row_width + indent[[i]] + width[[i]])
