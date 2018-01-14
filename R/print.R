@@ -337,7 +337,7 @@ ncol_recursive <- function(x, offset = 0)
 format.dataset <- function(x, rows = -1L, wrap = -1L, ..., chars = NULL,
                            na.encode = TRUE, quote = FALSE, na.print = NULL,
                            print.gap = NULL, justify = "none", width = NULL,
-                           indent = NULL, line = NULL)
+                           indent = NULL, line = NULL, meta = FALSE)
 {
     if (is.null(x)) {
         return(invisible(NULL))
@@ -366,6 +366,7 @@ format.dataset <- function(x, rows = -1L, wrap = -1L, ..., chars = NULL,
     width <- arg_integer_scalar(width)
     indent <- arg_integer_scalar(indent, nonnegative = TRUE)
     line <- arg_integer_scalar(line, nonnegative = TRUE)
+    meta <- arg_option(meta)
 
     control <- new_format_control(chars = chars, na.encode = na.encode,
                                   quote = quote, na.print = na.print,
@@ -393,20 +394,25 @@ format.dataset <- function(x, rows = -1L, wrap = -1L, ..., chars = NULL,
         nc <- ncol_recursive(x)
     }
 
-    if (rtrunc && ctrunc) {
-        attr(y, "caption") <- sprintf("(%.0f rows, %.0f columns total)", n, nc)
-    } else if (rtrunc) {
-        attr(y, "caption") <- sprintf("(%.0f rows total)", n)
-    } else if (ctrunc) {
-        attr(y, "caption") <- sprintf("(%.0f columns total)", nc)
-    }
+    if (meta) {
+        if (rtrunc && ctrunc) {
+            caption <- sprintf("(%.0f rows, %.0f columns total)", n, nc)
+        } else if (rtrunc) {
+            caption <- sprintf("(%.0f rows total)", n)
+        } else if (ctrunc) {
+            caption <- sprintf("(%.0f columns total)", nc)
+        } else {
+            caption <- NULL
+        }
 
-    attr(y, "trunc_rows") <- rtrunc
-    attr(y, "trunc_cols") <- ctrunc
-    attr(y, "section") <- fmt$section
-    attr(y, "indent") <- fmt$indent
-    attr(y, "width") <- fmt$width
-    attr(y, "justify") <- fmt$justify
+        attr(y, "trunc_rows") <- rtrunc
+        attr(y, "trunc_cols") <- ctrunc
+        attr(y, "section") <- fmt$section
+        attr(y, "indent") <- fmt$indent
+        attr(y, "width") <- fmt$width
+        attr(y, "justify") <- fmt$justify
+        attr(y, "caption") <- caption
+    }
 
     y
 }
@@ -628,7 +634,7 @@ print.dataset <- function(x, rows = NULL, wrap = NULL, ..., number = NULL,
     fmt <- format.dataset(x, rows = rows, wrap = wrap, chars = control$chars,
                           na.encode = FALSE, na.print = control$na.print,
                           quote = control$quote, print.gap = control$print.gap,
-                          digits = control$digits, line = line)
+                          digits = control$digits, line = line, meta = TRUE)
     section <- unlist(attr(fmt, "section"))
     indent <- unlist(attr(fmt, "indent"))
     width <- unlist(attr(fmt, "width"))

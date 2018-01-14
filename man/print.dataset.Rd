@@ -12,7 +12,8 @@ Printing and formatting data sets.
 
 \method{format}{dataset}(x, rows = -1L, wrap = -1L, ..., chars = NULL,
       na.encode = TRUE, quote = FALSE, na.print = NULL, print.gap = NULL,
-      justify = "none", width = NULL, indent = NULL, line = NULL)
+      justify = "none", width = NULL, indent = NULL, line = NULL,
+      meta = FALSE)
 }
 \arguments{
     \item{x}{data frame object to print or format.}
@@ -67,6 +68,9 @@ Printing and formatting data sets.
 
     \item{line}{integer scalar specifying the line width in spaces, or
        \code{NULL} for \code{getOption("width")}.}
+
+    \item{meta}{logical scalar indicating whether or not to include
+        meta-formatting attributes in the result.}
 
     \item{...}{further arguments passed to or from other methods.}
 }
