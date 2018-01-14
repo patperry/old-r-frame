@@ -67,15 +67,11 @@ duplicated.keyset <- function(x, incomparables = FALSE, fromLast = FALSE, ...)
 }
 
 
-transform.dataset <- function(`_data`, ..., `_enclos` = parent.frame())
+transform.dataset <- function(`_data`, ...)
 {
     x <- `_data`
     exprs <- substitute(list(...))
-    enclos <- `_enclos`
-
-    if (!is.environment(enclos) && !is.null(enclos)) {
-        stop("'enclos' must be an environment or NULL")
-    }
+    enclos <- parent.frame()
 
     y <- eval(exprs, x, enclos)
     names <- names(y)
