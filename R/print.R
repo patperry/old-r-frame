@@ -541,7 +541,7 @@ format_rows <- function(control, style, nrow, number, keys)
     if (!is.null(keys)) {
         names <- names(keys)
         if (is.null(names)) {
-            names(keys) <- paste0("[,", as.character(seq_along(keys)), "]")
+            names(keys) <- character(length(keys))
         }
         cols <- format.dataset(keys, chars = .Machine$integer.max,
                                na.encode = FALSE, na.print = control$na.print,
