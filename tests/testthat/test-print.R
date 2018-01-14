@@ -272,3 +272,33 @@ test_that("short nested works with right-align double", {
 
     expect_equal(strsplit(capture_output(print(y)), "\n")[[1]], lines)
 })
+
+
+test_that("two levels of nesting works", {
+    ctype <- switch_ctype("C")
+    on.exit(Sys.setlocale("LC_CTYPE", ctype), add = TRUE)
+
+    set <- matrix(c(   0, -1.3, 2.8,
+                     7.1,    0,   0,
+                       0, -5.1, 0.1,
+                     3.8,    0,   0),
+                  4, 3,
+                  byrow = TRUE,
+                  dimnames = list(NULL, c("a", "b", "c")))
+    x <- dataset(age = c(35, 70, 12, 42),
+                 color = c("red", "blue", "black", "green"),
+                 set = set)
+    y <- dataset(value = c(1.2629543, -0.3262334, 1.3297993, 1.2724293),
+                 nested = x)
+
+lines <- c(
+'             ========nested========',
+'                       ====set=====',
+'       value age color   a    b   c',
+'1  1.2629543  35 red   0.0 -1.3 2.8',
+'2 -0.3262334  70 blue  7.1  0.0 0.0',
+'3  1.3297993  12 black 0.0 -5.1 0.1',
+'4  1.2724293  42 green 3.8  0.0 0.0')
+
+    expect_equal(strsplit(capture_output(print(y)), "\n")[[1]], lines)
+})

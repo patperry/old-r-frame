@@ -445,8 +445,10 @@ print_header <- function(control, style, index, path, names, indent, width,
                     gname[k, i:j] <- gname[d, i:j]
                     gname[d, i:j] <- NA
                 }
+                i <- j + 1
+            } else {
+                i <- i + 1
             }
-            i <- j + 1
         }
     }
 
