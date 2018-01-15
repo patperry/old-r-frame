@@ -1,0 +1,23 @@
+---
+title: "Indexing Operations"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Indexing Operations}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+The indexing and operations supported by *frame* `dataset` objects are similar
+to those supported by `data.frame` objects, but there are a few extensions and
+differences.
+
+We will illustrate the indexing operations with a sample dataset with two key
+columns:
+
+```{r}
+library(frame)
+x <- cbind.dataset(name = rownames(mtcars), mtcars)
+keys(x) <- dataset(k1 = rep(LETTERS[1:4], 8),
+                   k2 = rep(1:8, each = 4))
+print(x)
+```
