@@ -275,3 +275,10 @@ test_that("indexing with keys examples work", {
     expect_equal(x[list(c("b", "d"), "y"),], x[row = c("b", "d"), col = "y"])
     expect_equal(x[list(c("b", "d"), I("y")),], x[row = c("b", "d"), col = I("y")])
 })
+
+
+test_that("indexing with matrix works", {
+    x <- as_dataset(iris)
+    i <- c(47, 5, 132, 10, 142, 143, 123)
+    j <- c(1, 3, 3, 1, 2, 2, 3)
+})
