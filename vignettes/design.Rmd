@@ -7,6 +7,58 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+Terminology
+-----------
+
+### Variables
+
+A *variable* is a map between *keys* and *values*. The set of all possible
+keys is the *frame* of the variable; the set of all possible values is the
+*type*. A *data point* is a (variable, key, value) triple identifying (a) what
+is being measured; (b) the context of the measurement; and (c) the measurement
+itself. A *data set* is a collection of data points with common variable.
+
+
+### Types
+
+The type of a variable is either *scalar* or *composite*. Scalar types are the
+atomic types (character, integer, double, etc.) and the object types (factor,
+S3, S4, etc.). Composite types are tuples of scalar types, represented in R
+using a list or vector; the names of the tuple components can optionally be
+named. List composites can have heterogeneous components; vector composites
+must have all components of the same type. It is possible to have a composite
+type with one component.
+
+
+We refer to the following scalar types as *simple*:
+
+  + `logical`
+  + `integer`
+  + `double`
+  + `complex`
+  + `character` (with UTF-8 encoded values)
+  + `Date`
+  + `POSIXct`
+
+We call a composite type simple if its components are simple scalar types.
+Most scalar types can be represented as simple types.
+
+
+### Frames
+
+In principle, any type could be used as a frame, but for efficiency purposes,
+we only allow simple types as frames.
+
+
+#### Representation
+
+We represent an ordered collection of scalar values with a vector of the
+appropriate type.
+
+We represent a data set of `n` data points with two vectors of length `n`,
+storing the keys and values of the data points in corresponding entries.
+
+
 The motivating idea behind this package is that every data point has context,
 and an object storing data points should provide access to this context. The
 `data.frame` object enables this to some extent by allowing us to annotate
