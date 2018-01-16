@@ -83,7 +83,8 @@ test_that("indexing with duplicates should not error if key is set", {
     i <- c(13, 5, 20, 19, 5, 7)
     y <- x[i,]
     z <- framed(mtcars[i,],
-                as_keyset(list(name = rownames(mtcars)[i], c(1, 1, 1, 1, 2, 1))))
+                as_keyset(list(name = rownames(mtcars)[i],
+                               "#" = c(1, 1, 1, 1, 2, 1))))
     expect_equal(y, z)
 })
 

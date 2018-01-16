@@ -95,9 +95,15 @@ make_unique <- function(x)
     keys <- unique(x)
     id <- lookup(x, keys)
 
+    y <- append_copy_num(x, nrow(keys), id)
+    as_keyset(y)
+}
+
+
+append_copy_num <- function(x, nkey, id)
+{
     # TODO: implement in C?
-    n <- nrow(x)
-    copy <- integer(nrow(keys))
+    copy <- integer(nkey)
     newkey <- integer(length(id))
     for (i in seq_along(id)) {
         k <- id[[i]]
@@ -110,5 +116,5 @@ make_unique <- function(x)
     }
     x[[length(x) + 1L]] <- newkey
     names(x) <- c(names, "#")
-    as_keyset(x)
+    x
 }

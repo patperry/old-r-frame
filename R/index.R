@@ -148,16 +148,7 @@ row_subset <- function(x, i, call = sys.call(-1L))
         }
 
         if (anyDuplicated(rows)) {
-            # TODO: implement in C, or use `make_unique`?
-            n <- nrow(x)
-            copy <- integer(n)
-            newkey <- integer(length(rows))
-            for (j in seq_along(rows)) {
-                k <- rows[[j]]
-                copy[[k]] <- copy[[k]] + 1L
-                newkey[[j]] <- copy[[k]]
-            }
-            keys[[length(keys) + 1L]] <- newkey
+            keys <- append_copy_num(keys, nrow(x), rows)
         }
     }
 
