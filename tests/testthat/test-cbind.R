@@ -1,0 +1,99 @@
+context("cbind")
+
+test_that("'cbind' concatenates columns", {
+    x1 <- mtcars[, 1:3]
+    x2 <- mtcars[, 4, drop = FALSE]
+    x3 <- mtcars[, 5:8]
+    y <- cbind.dataset(x1, x2, x3)
+    expect_equal(y, as_dataset(mtcars[, 1:8]))
+})
+
+
+test_that("'cbind' NULL works", {
+    expect_equal(cbind.dataset(), NULL)
+    expect_equal(cbind.dataset(NULL), NULL)
+    expect_equal(cbind.dataset(NULL, NULL), NULL)
+})
+
+
+test_that("'cbind' ignores NULL", {
+    x1 <- mtcars[,1:3]
+    x2 <- mtcars[,4:8]
+    y <- cbind.dataset(x1, NULL, NULL, x2, NULL)
+    expect_equal(y, cbind.dataset(x1, x2))
+})
+
+
+test_that("'cbind' errors if rows do not match", {
+    x1 <- mtcars[,1:3]
+    x2 <- mtcars[1:4, 4:5]
+    expect_error(cbind.dataset(x1, x1, x2),
+                 "arguments 1 and 3 have different numbers of rows")
+})
+
+
+test_that("'cbind' errors if rows do not match, with NULL in between", {
+    x1 <- mtcars[,1:3]
+    x2 <- mtcars[1:4, 4:5]
+    expect_error(cbind.dataset(NULL, x1, x1, NULL, x2),
+                 "arguments 2 and 5 have different numbers of rows")
+})
+
+
+test_that("'cbind' errors if keys do not match", {
+    x1 <- mtcars[,1:3]
+    x2 <- mtcars[rev(seq_len(nrow(x1))),4:5]
+    expect_error(cbind.dataset(x1, x2),
+                 "arguments 1 and 2 have different keys")
+})
+
+
+test_that("'cbind' allows NULL keys on second", {
+    x1 <- mtcars[,1:3]
+    x2 <- mtcars[,4:5]
+    y <- cbind.dataset(x1, framed(x2, NULL))
+    expect_equal(y, cbind.dataset(x1, x2))
+})
+
+
+test_that("'cbind' allows NULL keys on first", {
+    x1 <- mtcars[,1:3]
+    x2 <- mtcars[,4:5]
+    y <- cbind.dataset(framed(x1, NULL), x2)
+    expect_equal(y, cbind.dataset(x1, x2))
+})
+
+
+test_that("'cbind' allows NULL keys on all", {
+    x1 <- mtcars[,1:3]
+    x2 <- mtcars[,4:5]
+    y <- cbind.dataset(framed(x1, NULL), framed(x2, NULL))
+    expect_equal(y, framed(cbind.dataset(x1, x2), NULL))
+})
+
+
+test_that("'cbind' can handle named vector arguments", {
+    x <- cbind.dataset(name = rownames(mtcars), mtcars)
+    y <- cbind.dataset(dataset(name = rownames(mtcars)), mtcars)
+    expect_equal(x, y)
+})
+
+
+test_that("'cbind' can handle unnamed vector arguments", {
+    x <- cbind.dataset(rownames(mtcars), mtcars)
+    y <- cbind.dataset(as_dataset(rownames(mtcars)), mtcars)
+    expect_equal(x, y)
+})
+
+
+test_that("'cbind' can handle named matrix arguments", {
+    x <- cbind.dataset(name = rownames(mtcars), nest = mtcars)
+    y <- cbind.dataset(dataset(name = rownames(mtcars)), mtcars)
+    expect_equal(x, y)
+})
+
+
+test_that("'cbind' with 0 columns works", {
+    x <- as_dataset(mtcars)[FALSE]
+    expect_equal(cbind.dataset(x, x, x), x)
+})

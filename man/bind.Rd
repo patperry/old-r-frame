@@ -7,7 +7,7 @@ Take a sequence of datasets and combine them into a single object
 by concatenating rows or columns.
 }
 \usage{
-\S3method{cbind}{dataset}(..., check = TRUE, deparse.level = 1)
+\S3method{cbind}{dataset}(..., deparse.level = 1)
 
 \S3method{rbind}{dataset}(..., check = TRUE, deparse.level = 1)
 }

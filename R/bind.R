@@ -12,33 +12,72 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-cbind.dataset <- function(..., check = TRUE, deparse.level = 1)
+cbind.dataset <- function(..., deparse.level = 1)
 {
-    # ignore 'deparse.level'
-    check <- arg_option(check)
+    # ignore 'deparse.level' argument
 
     x <- list(...)
     null <- vapply(x, is.null, NA)
     x <- lapply(x[!null], as_dataset)
     n <- length(x)
 
-    x1 <- x[[1L]]
-    nr <- nrow(x1)
-
-    if (n == 0L) {
-        return(x1)
+    if (n == 0) {
+        return(NULL)
     }
 
-    if (check) {
-        diff <- vapply(x, function(xi) (nrow(xi) != nr), NA)
-        j <- which(diff)
-        if (length(j) > 0L) {
-            stop(sprintf("arguments 1 and %.0f have different rows", j[[1L]]))
+    # fix names
+    argnames <- names(x)
+    if (!is.null(argnames)) {
+        for (i in seq_len(n)) {
+            nm <- argnames[[i]]
+            if (nzchar(nm)) {
+                xi <- x[[i]]
+                if (length(xi) == 1) {
+                    names(xi) <- nm
+                    x[[i]] <- xi
+                }
+            }
+        }
+    }
+
+    # get rows
+    nr <- dim(x[[1L]])[[1L]]
+
+    # validate rows
+    for (i in seq_len(n)) {
+        xi <- x[[i]]
+        if (dim(xi)[[1L]] != nr) {
+            index <- which(!null)
+            stop(sprintf("arguments %.0f and %.0f have different numbers of rows",
+                         index[[1]], index[[i]]))
+        }
+    }
+
+    # get keys
+    for (ikey in seq_len(n)) {
+        keys <- keys(x[[ikey]])
+        if (!is.null(keys)) {
+            break
+        }
+    }
+
+    # validate keys
+    if (ikey < n) {
+        for (i in (ikey + 1L):n) {
+            xi <- x[[i]]
+            ki <- keys(xi)
+            if (!is.null(ki) && !identical(ki, keys)) {
+                index <- which(!null)
+                stop(sprintf("arguments %.0f and %.0f have different keys",
+                             index[[ikey]], index[[i]]))
+            }
         }
     }
 
     nctot <- sum(vapply(x, ncol, 0))
     if (nctot == 0) {
+        x1 <- x[[1]]
+        keys(x1) <- keys
         return(x1)
     }
 
@@ -66,7 +105,7 @@ cbind.dataset <- function(..., check = TRUE, deparse.level = 1)
 
     names(y) <- names
     y <- as_dataset(y)
-    keys(y) <- keys(x1)
+    keys(y) <- keys
 
     y
 }
