@@ -157,3 +157,12 @@ test_that("'rbind' works with non-NULL, 0 keys", {
 
     expect_equal(x, y)
 })
+
+
+test_that("'rbind' works with matrix columns", {
+    a1 <- matrix(1:6, 2, 3)
+    a2 <- matrix(7:9, 1, 3)
+    x <- rbind(dataset(a = a1), dataset(a = a2))
+    y <- dataset(a = rbind(a1, a2))
+    expect_equal(x, y)
+})
