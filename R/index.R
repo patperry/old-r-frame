@@ -148,7 +148,7 @@ row_subset <- function(x, i, call = sys.call(-1L))
         }
 
         if (anyDuplicated(rows)) {
-            # TODO: implement in C?
+            # TODO: implement in C, or use `make_unique`?
             n <- nrow(x)
             copy <- integer(n)
             newkey <- integer(length(rows))

@@ -262,8 +262,7 @@ rbind.dataset <- function(..., deparse.level = 1)
             }
         }
 
-        # TODO: handle duplicates
-        keys(y) <- keys
+        keys(y) <- make_unique(keys)
     }
 
     y

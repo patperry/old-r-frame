@@ -84,3 +84,26 @@ downcast <- function(x, class)
 
     x
 }
+
+
+make_unique <- function(x)
+{
+    x <- as_dataset(x, simple = TRUE)
+    if (!anyDuplicated(x)) {
+        return(as_keyset(x))
+    }
+    keys <- unique(x)
+    id <- lookup(x, keys)
+
+    # TODO: implement in C?
+    n <- nrow(x)
+    copy <- integer(nrow(keys))
+    newkey <- integer(length(id))
+    for (i in seq_along(id)) {
+        k <- id[[i]]
+        copy[[k]] <- copy[[k]] + 1L
+        newkey[[i]] <- copy[[k]]
+    }
+    x[[length(x) + 1L]] <- newkey
+    as_keyset(x)
+}
