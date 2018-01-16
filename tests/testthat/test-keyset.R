@@ -80,3 +80,11 @@ test_that("setting an entry with [] downcasts", {
     ds[2,1] <- 7
     expect_equal(ks, ds)
 })
+
+
+test_that("as_keyset(list()) has 1 row", {
+    x <- as_keyset(list())
+    y <- as_keyset(structure(list(), row.names = .set_row_names(1),
+                             class = "data.frame"))
+    expect_equal(x, y)
+})

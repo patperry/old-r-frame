@@ -74,7 +74,12 @@ unique.dataset <- function(x, incomparables = FALSE, ..., sorted = FALSE)
     }
 
     if (length(x) == 0) {
-        return(as_keyset(NULL))
+        if (nrow(x) == 0) {
+            return(as_keyset(NULL))
+        } else {
+            return(as_keyset(structure(list(), row.names = .set_row_names(1),
+                                       class = "data.frame")))
+        }
     }
 
     dup <- duplicated(x)

@@ -143,7 +143,7 @@ as_dataset.list <- function(x, ..., simple = FALSE)
     }
 
     # validate column lengths
-    nr <- nrow_dataset(x)
+    nr <- if (nc == 0L) 1L else nrow_dataset(x)
     cols <- lapply(x, as_column, nr)
 
     x <- structure(cols, class = c("dataset", "data.frame"),

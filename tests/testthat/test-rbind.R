@@ -142,3 +142,18 @@ test_that("'rbind' can handle duplicate keys", {
 
     expect_equal(x, y)
 })
+
+
+test_that("'rbind' works with non-NULL, 0 keys", {
+    k <- as_keyset(structure(list(), row.names = .set_row_names(1),
+                             class = "data.frame"))
+    x1 <- framed(11, k)
+    x2 <- framed(22, k)
+    x <- rbind.dataset(x1, x2)
+
+    y1 <- framed(x1, keyset("#" = 1))
+    y2 <- framed(x2, keyset("#" = 2))
+    y <- rbind.dataset(y1, y2)
+
+    expect_equal(x, y)
+})

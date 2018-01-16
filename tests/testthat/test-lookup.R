@@ -65,3 +65,11 @@ test_that("'lookup' NA double works", {
         tailnum = c(172, 329.1, 618, NA, 763, 78511))
     expect_equal(lookup(NA, keys), 4)
 })
+
+
+test_that("'lookup' empty works", {
+    keys <- as_keyset(list())
+    x <- as_dataset(structure(list(), row.names = .set_row_names(5),
+                              class = "data.frame"))
+    expect_equal(lookup(x, keys), rep(1, nrow(x)))
+})

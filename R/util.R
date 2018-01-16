@@ -92,10 +92,12 @@ make_unique <- function(x)
     if (!anyDuplicated(x)) {
         return(as_keyset(x))
     }
+
     keys <- unique(x)
+    nkey <- nrow(keys)
     id <- lookup(x, keys)
 
-    y <- append_copy_num(x, nrow(keys), id)
+    y <- append_copy_num(x, nkey, id)
     as_keyset(y)
 }
 
@@ -114,7 +116,9 @@ append_copy_num <- function(x, nkey, id)
     if (is.null(names)) {
         names <- character(length(x))
     }
+
     x[[length(x) + 1L]] <- newkey
     names(x) <- c(names, "#")
+
     x
 }

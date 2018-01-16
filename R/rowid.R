@@ -87,6 +87,10 @@ rowid.keyset <- function(x, keys, default = NA_integer_, ...)
 # especially for double and complex
 key_index <- function(x, i, default = NA_integer_)
 {
+    if (length(x) == 0L) {
+        return(rep(1L, nrow(i)))
+    }
+
     id <- seq_len(nrow(x))
     names(id) <- key_encode(x)
 

@@ -150,3 +150,11 @@ test_that("'dataset' can be nested", {
     expect_equal(dim(z), c(5, 2))
     expect_equal(names(z), c("a", "b"))
 })
+
+
+test_that("as_dataset(list()) has 1 row", {
+    x <- as_dataset(list())
+    y <- as_dataset(structure(list(), row.names = .set_row_names(1),
+                              class = "data.frame"))
+    expect_equal(x, y)
+})
