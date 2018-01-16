@@ -29,4 +29,4 @@ matrix:
 
 after_success:
   - export LC_ALL="C"
-  - if [[ "${R_CODECOV}" ]]; then Rscript -e 'covr::codecov(line_exclusions = c("R/deprecated.R", list.files("src/utf8lite", recursive = TRUE, full.names = TRUE)))'; fi
+  - if [[ "${R_CODECOV}" ]]; then Rscript -e 'covr::codecov(line_exclusions = c("R/deprecated.R"))'; fi
