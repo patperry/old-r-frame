@@ -99,28 +99,33 @@ test_that("'rbind' can handle named vector arguments", {
 
 test_that("'rbind' can handle named vector arguments with unnamed matrix", {
     x <- rbind.dataset(first = mtcars[1, , drop = TRUE], unname(mtcars))
-    y <- as_dataset(rbind(first = mtcars[1, , drop = TRUE], unname(mtcars)))
+    y <- as_dataset(rbind(first = mtcars[1, , drop = TRUE], mtcars))
     expect_equal(x, y)
 })
 
 
 test_that("'rbind' can handle unnamed vector arguments", {
-    x <- rbind.dataset(mtcars[1, , drop = TRUE], mtcars)
-    y <- rbind.dataset(framed(mtcars[1, , drop = TRUE], as_keyset("")),
-                       mtcars)
+    z <- mtcars
+    rownames(z) <- NULL
+    x <- rbind.dataset(mtcars[1, , drop = TRUE], z)
+    y <- framed(rbind(mtcars[1, , drop = TRUE], z), NULL)
     expect_equal(x, y)
 })
 
 
 test_that("'rbind' can handle unnamed vector arguments with unnamed matrix", {
-    x <- rbind.dataset(mtcars[1, , drop = TRUE], unname(mtcars))
-    y <- as_dataset(unname(rbind(mtcars[1, , drop = TRUE], unname(mtcars))))
+    z <- mtcars
+    rownames(z) <- NULL
+    x <- rbind.dataset(mtcars[1, , drop = TRUE], unname(z))
+    y <- framed(rbind(mtcars[1, , drop = TRUE], z), NULL)
     expect_equal(x, y)
 })
 
 
 test_that("'rbind' can handle named matrix arguments", {
-    x <- rbind.dataset(mtcars[1, , drop = TRUE], nest = mtcars)
-    x <- as_dataset(rbind(mtcars[1, , drop = TRUE], nest = mtcars))
+    z <- mtcars
+    rownames(z) <- NULL
+    x <- rbind.dataset(mtcars[1, , drop = FALSE], nest = z)
+    y <- as_dataset(rbind(mtcars[1, , drop = FALSE], nest = z))
     expect_equal(x, y)
 })

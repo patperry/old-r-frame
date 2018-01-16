@@ -129,13 +129,39 @@ rbind.dataset <- function(..., deparse.level = 1)
 {
     # ignore 'deparse.level'
 
-    x <- list(...)
-    null <- vapply(x, is.null, NA)
-    x <- lapply(x[!null], as_dataset)
+    xorig <- list(...)
+    null <- vapply(xorig, is.null, NA)
+    xorig <- xorig[!null]
+    x <- lapply(xorig, as_dataset)
+    k <- lapply(x, keys)
     n <- length(x)
 
     if (n == 0L) {
         return(NULL)
+    }
+
+    # handle named arguments
+    argnames <- names(x)
+    if (!is.null(argnames)) {
+        for (i in seq_len(n)) {
+            nm <- argnames[[i]]
+            if (!nzchar(nm))
+                next
+
+            xi <- x[[i]]
+            ni <- dim(xi)[[1L]]
+            if (ni == 0L)
+                next
+
+            # prepend name as first column of keys
+            ki <- as.list(k[[i]])
+            if (length(ki) == 0L && ni > 1L) {
+                ki <- as_dataset(paste(nm, seq_len(ni), sep = "."))
+            } else {
+                ki <- as_dataset(c(list(rep(nm, ni)), ki))
+            }
+            k[[i]] <- ki
+        }
     }
 
     # get columns
@@ -173,12 +199,11 @@ rbind.dataset <- function(..., deparse.level = 1)
     }
 
     # get number of keys, key names
-    k <- lapply(x, keys)
     has_keys <- !all(vapply(k, is.null, NA))
     if (has_keys) {
+        nk <- length(k[[1]])
         for (ikname in seq_len(n)) {
             ki <- k[[ikname]]
-            nk <- length(ki)
             knames <- names(ki)
             if (!is.null(knames)) {
                 break
@@ -187,7 +212,7 @@ rbind.dataset <- function(..., deparse.level = 1)
 
         # validate keys
         for (i in seq_len(n)) {
-            ki <- keys(x[[i]])
+            ki <- k[[i]]
             if (length(ki) != nk) {
                 index <- which(!null)
                 stop(sprintf("arguments %.0f and %.0f have different numbers of keys",

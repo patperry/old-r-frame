@@ -49,7 +49,7 @@ as.list.dataset <- function(x, ..., flat = FALSE, path = FALSE)
     attr(x, "row.names") <- NULL
 
     if (flat) {
-        names <- names(x)
+        names <- onames <- names(x)
         if (is.null(names)) {
             names <- as.character(seq_along(x))
         }
@@ -102,7 +102,9 @@ as.list.dataset <- function(x, ..., flat = FALSE, path = FALSE)
         if (is.null(x)) {
             x <- list()
         }
-        names(x) <- as.character(do.call(c, names))
+        if (!is.null(onames)) {
+            names(x) <- as.character(do.call(c, names))
+        }
         if (path) {
             attr(x, "index") <- do.call(c, index)
             attr(x, "path") <- do.call(c, path_)

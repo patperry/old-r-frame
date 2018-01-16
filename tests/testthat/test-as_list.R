@@ -1,19 +1,5 @@
 
-context("nested")
-
-test_that("'dataset' can be nested", {
-    x <- dataset(a = letters[1:5], b = rnorm(5))
-    expect_equal(dim(x), c(5, 2))
-    expect_equal(names(x), c("a", "b"))
-
-    y <- dataset(a = c(3,2,7,8,-1), b = x, c = rnorm(5))
-    expect_equal(dim(y), c(5, 3))
-    expect_equal(names(y), c("a", "b", "c"))
-
-    z <- dataset(a = y, b = LETTERS[6:10])
-    expect_equal(dim(z), c(5, 2))
-    expect_equal(names(z), c("a", "b"))
-})
+context("as_list")
 
 
 test_that("'as.list.dataset' works", {
@@ -73,4 +59,12 @@ test_that("'as.list.dataset' path names works", {
     expect_equal(attr(as.list(z, flat = TRUE, path = TRUE), "path"),
                  list(c("a", "a"), c("a", "b", "a"), c("a", "b", "b"),
                       c("a", "c"), "b"))
+})
+
+
+test_that("'as_list' does not create names if none exist", {
+    l <- list(1, 2, 3)
+    x <- as_dataset(l)
+    expect_equal(as.list(x), l)
+    expect_equal(as.list(x, flat = TRUE), l)
 })
