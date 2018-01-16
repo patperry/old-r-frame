@@ -99,6 +99,9 @@ as.list.dataset <- function(x, ..., flat = FALSE, path = FALSE)
         }
 
         x <- do.call(c, x)
+        if (is.null(x)) {
+            x <- list()
+        }
         names(x) <- as.character(do.call(c, names))
         if (path) {
             attr(x, "index") <- do.call(c, index)

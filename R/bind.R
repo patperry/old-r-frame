@@ -111,10 +111,9 @@ cbind.dataset <- function(..., deparse.level = 1)
 }
 
 
-rbind.dataset <- function(..., check = TRUE, deparse.level = 1)
+rbind.dataset <- function(..., deparse.level = 1)
 {
     # ignore 'deparse.level'
-    check <- arg_option(check)
 
     x <- list(...)
     null <- vapply(x, is.null, NA)
@@ -125,24 +124,73 @@ rbind.dataset <- function(..., check = TRUE, deparse.level = 1)
         return(NULL)
     }
 
-    x1 <- x[[1L]]
-    y <- vector("list", length(x1))
-    nc <- length(x1)
-    names <- names(x1)
-    names(y) <- names
+    # get columns
+    nc <- length(x[[1L]])
 
-    if (check) {
-        diff <- vapply(x, function(xi) {
-            nm <- names(xi)
-            (length(xi) != nc || (!is.null(nm) && !identical(nm, names)))
-        }, NA)
-        j <- which(diff)
-
-        if (length(j) > 0L) {
-            stop(sprintf("arguments 1 and %.0f have different columns",
-                         j[[1L]]))
+    # validate columns
+    for (i in seq_len(n)) {
+        xi <- x[[i]]
+        if (length(xi) != nc) {
+            index <- which(!null)
+            stop(sprintf("arguments %.0f and %.0f have different numbers of columns",
+                         index[[1]], index[[i]]))
         }
     }
+
+    # get names
+    for (iname in seq_len(n)) {
+        names <- names(x[[iname]])
+        if (!is.null(names)) {
+            break
+        }
+    }
+
+    # validate names
+    if (iname < n) {
+        for (i in (iname + 1L):n) {
+            xi <- x[[i]]
+            ni <- names(xi)
+            if (!is.null(ni) && !identical(ni, names)) {
+                index <- which(!null)
+                stop(sprintf("arguments %.0f and %.0f have different names",
+                             index[[iname]], index[[i]]))
+            }
+        }
+    }
+
+    # get number of keys, key names
+    k <- lapply(x, keys)
+    has_keys <- !all(vapply(k, is.null, NA))
+    if (has_keys) {
+        for (ikname in seq_len(n)) {
+            ki <- k[[ikname]]
+            nk <- length(ki)
+            knames <- names(ki)
+            if (!is.null(knames)) {
+                break
+            }
+        }
+
+        # validate keys
+        for (i in seq_len(n)) {
+            ki <- keys(x[[i]])
+            if (length(ki) != nk) {
+                index <- which(!null)
+                stop(sprintf("arguments %.0f and %.0f have different numbers of keys",
+                             index[[1]], index[[i]]))
+            }
+            nki <- names(ki)
+            if (!is.null(nki) && !identical(nki, knames)) {
+                index <- which(!null)
+                stop(sprintf("arguments %.0f and %.0f have different key names",
+                             index[[ikname]], index[[i]]))
+            }
+        }
+    }
+
+    y <- vector("list", nc)
+    names(y) <- names
+    x1 <- x[[1L]]
 
     for (j in seq_len(nc)) {
         elt <- x1[[j]]
@@ -157,5 +205,27 @@ rbind.dataset <- function(..., check = TRUE, deparse.level = 1)
         y[[j]] <- col
     }
 
-    as_dataset(y)
+    y <- as_dataset(y)
+
+    if (has_keys) {
+        keys <- vector("list", nk)
+        names(keys) <- knames
+
+        if (nk == 0) {
+            keys <- structure(keys, row.names = .set_row_names(nrow(y)),
+                              class = "data.frame")
+        } else {
+            k1 <- k[[1L]]
+            for (j in seq_len(nk)) {
+                rows <- lapply(k, `[[`, j)
+                col <- do.call(c, rows)
+                keys[[j]] <- col
+            }
+        }
+
+        # TODO: handle duplicates
+        keys(y) <- keys
+    }
+
+    y
 }
