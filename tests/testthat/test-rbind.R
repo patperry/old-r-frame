@@ -136,8 +136,8 @@ test_that("'rbind' can handle duplicate keys", {
     x2 <- as_dataset(mtcars[1:5, ])
     x <- rbind.dataset(x1, x2)
 
-    y1 <- `keys<-`(x1, cbind(keys(x1), rep(1, 6)))
-    y2 <- `keys<-`(x2, cbind(keys(x2), rep(2, 5)))
+    y1 <- `keys<-`(x1, cbind(keys(x1), "#" = rep(1, 6)))
+    y2 <- `keys<-`(x2, cbind(keys(x2), "#" = rep(2, 5)))
     y <- rbind.dataset(y1, y2)
 
     expect_equal(x, y)

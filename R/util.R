@@ -104,6 +104,11 @@ make_unique <- function(x)
         copy[[k]] <- copy[[k]] + 1L
         newkey[[i]] <- copy[[k]]
     }
+    names <- names(x)
+    if (is.null(names)) {
+        names <- character(length(x))
+    }
     x[[length(x) + 1L]] <- newkey
+    names(x) <- c(names, "#")
     as_keyset(x)
 }
