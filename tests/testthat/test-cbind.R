@@ -94,6 +94,42 @@ test_that("'cbind' can handle named matrix arguments", {
 })
 
 
+test_that("'cbind' can handle named matrix arguments 2", {
+    mtcars <- unname(mtcars)
+    x <- cbind.dataset(name = rownames(mtcars), nest = mtcars)
+    nest_mtcars <- `names<-`(mtcars,  paste0("nest.", seq_along(mtcars)))
+    y <- cbind.dataset(dataset(name = rownames(mtcars)), nest_mtcars)
+    expect_equal(x, y)
+})
+
+
+test_that("'cbind' can handle named matrix arguments with one column", {
+    mtcars1 <- mtcars[, 1, drop = FALSE]
+    x <- cbind.dataset(name = rownames(mtcars), nest = mtcars1)
+    nest_mtcars1 <- `names<-`(mtcars1,  paste0("nest.", names(mtcars1)))
+    y <- cbind.dataset(dataset(name = rownames(mtcars)), nest_mtcars1)
+    expect_equal(x, y)
+})
+
+
+test_that("'cbind' can handle named matrix arguments with one column 2", {
+    mtcars1 <- mtcars[, 1, drop = FALSE]
+    names(mtcars1) <- NULL
+    x <- cbind.dataset(name = rownames(mtcars), nest = mtcars1)
+    nest_mtcars1 <- `names<-`(mtcars1,  paste0("nest.", seq_along(mtcars1)))
+    y <- cbind.dataset(dataset(name = rownames(mtcars)), nest_mtcars1)
+    expect_equal(x, y)
+})
+
+
+test_that("'cbind' can handle named with 0 columns", {
+    z <- mtcars[,FALSE]
+    x <- cbind.dataset(mtcars, foo = z)
+    y <- cbind.dataset(mtcars, z)
+    expect_equal(x, y)
+})
+
+
 test_that("'cbind' with 0 columns works", {
     x <- as_dataset(mtcars)[FALSE]
     expect_equal(cbind.dataset(x, x, x), x)

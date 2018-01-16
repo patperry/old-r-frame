@@ -16,27 +16,41 @@ cbind.dataset <- function(..., deparse.level = 1)
 {
     # ignore 'deparse.level' argument
 
-    x <- list(...)
-    null <- vapply(x, is.null, NA)
-    x <- lapply(x[!null], as_dataset)
+    xorig <- list(...)
+    null <- vapply(xorig, is.null, NA)
+    xorig <- xorig[!null]
+    x <- lapply(xorig, as_dataset)
     n <- length(x)
 
-    if (n == 0) {
+    if (n == 0L) {
         return(NULL)
     }
 
-    # fix names
+    # handle named arguments
     argnames <- names(x)
     if (!is.null(argnames)) {
         for (i in seq_len(n)) {
             nm <- argnames[[i]]
-            if (nzchar(nm)) {
-                xi <- x[[i]]
-                if (length(xi) == 1) {
-                    names(xi) <- nm
-                    x[[i]] <- xi
+            if (!nzchar(nm))
+                next
+
+            xi <- x[[i]]
+            if (length(xi) == 0L)
+                next
+
+            xoi <- xorig[[i]]
+            # matrix inputs (and lists) get 'name.' prefix; others just get name
+            if ((is.list(xoi) && !is.object(xoi)) || (length(dim(xoi)) > 1L)) {
+                ni <- names(xi)
+                if (is.null(ni)) {
+                    ni <- as.character(seq_along(xi))
                 }
+                names(xi) <- paste(nm, ni, sep = ".")
+            } else {
+                names(xi) <- nm
             }
+
+            x[[i]] <- xi
         }
     }
 
