@@ -353,21 +353,30 @@ arg_index <- function(x, first, lastname, call = sys.call(-1L))
     n <- length(index)
     names <- names(index)
 
+    # arguments default to NULL
+    i <- j <- pairs <- NULL
+
     if (!is.null(names)) {
         # x[name=1,] and x[name=1] are both allowed
         empty <- !nzchar(names)
         if (empty[[n]]) {
             j <- index[[n]]
             index <- index[-n]
-        } else {
-            j <- NULL
         }
         i <- arg_slice(keys(x), index, call)
     } else if (n == 0L) {
-        i <- j <- NULL
+        # pass
     } else if (n == 1L) {
-        i <- NULL
-        j <- index[[1L]]
+        index <- index[[1L]]
+        r <- length(dim(index))
+        if (r <= 1L) {
+            j <- index
+        } else if (r == 2L) {
+            pairs <- index
+        } else {
+            stop(simpleError(sprintf("cannot index with a rank-%.0f array",
+                                     r), call))
+        }
     } else if (n == 2L) {
         i <- index[[1L]]
         j <- index[[2L]]
@@ -375,7 +384,46 @@ arg_index <- function(x, first, lastname, call = sys.call(-1L))
         stop(simpleError("incorrect number of dimensions", call))
     }
 
-    list(x = x, i = i, j = j)
+    list(x = x, i = i, j = j, pairs = pairs)
+}
+
+
+arg_pairs_index <- function(x, i, call = sys.call(-1L))
+{
+     nr <- nrow(x)
+     nc <- ncol(x)
+     d <- dim(i)
+     d2 <- d[[2L]]
+     if (d2 == 1L) {
+        nel <- nr * nc
+        i <- i[, 1L, drop = TRUE]
+
+        if (is.numeric(i)) {
+            i0 <- trunc(i) - 1L
+            bounds <- which(!(is.na(i0) | (0L <= i0 & i0 < nel)))
+            if (length(bounds) > 0L) {
+                stop(simpleError(sprintf("index %.0f is out of bounds",
+                                         bounds[[1L]]), call))
+            }
+            if (nr > 0L) {
+                row <- i0 %% nr + 1L
+                col <- i0 %/% nr + 1L
+                pairs <- cbind(row, col)
+            } else {
+                # all i0 are NA
+                pairs <- cbind(i0, i0)
+            }
+        } else {
+            stop(simpleError(sprintf("cannot index with matrix of \"%s\"",
+                                     class(i)[[1L]]), call))
+        }
+     } else if (d2 == 2L) {
+     } else {
+        stop(simpleError(sprintf("cannot index with a matrix of %.0f columns",
+                                 d2), call))
+     }
+
+     pairs
 }
 
 

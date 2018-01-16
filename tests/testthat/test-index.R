@@ -279,7 +279,13 @@ test_that("indexing with keys examples work", {
 
 
 test_that("indexing with matrix works", {
-    x <- as_dataset(iris)
+    ds <- as_dataset(iris)
+
     i <- c(47, 5, 132, 10, 142, 143, 123)
     j <- c(1, 3, 3, 1, 2, 2, 3)
+
+    x <- ds[cbind(i,j)]
+    y <- mapply(function(i, j) ds[i,j,drop=TRUE], i, j, SIMPLIFY = FALSE)
+
+    expect_equal(x, y)
 })
