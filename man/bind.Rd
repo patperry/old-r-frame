@@ -9,28 +9,24 @@ by concatenating rows or columns.
 \usage{
 \S3method{cbind}{dataset}(..., deparse.level = 1)
 
-\S3method{rbind}{dataset}(..., check = TRUE, deparse.level = 1)
+\S3method{rbind}{dataset}(..., deparse.level = 1)
 }
 \arguments{
 \item{...}{a sequence of dataset or atomic objects.}
 
-\item{check}{whether to check argument dimensions and names for
-    compatibility.}
-
 \item{deparse.level}{ignored.}
 }
 \details{
-\code{rbind} coerces each of its non-\code{NULL} arguments to a dataset via
-\code{as_dataset} and then concatenates their rows together. Each converted
-argument must have the same names and length as the first (or first
-non-\code{NULL} argument if the latter is \code{NULL}, or their names
-must be \code{NULL}. Specify \code{check = FALSE} to skip the checking on
-the argument names and lengths.
+\code{rbind.dataset} coerces each of its non-\code{NULL} arguments to a
+dataset via \code{as_dataset} and then concatenates their rows together. Each
+converted argument must have the same number of columns, and the column names
+must match or be \code{NULL}. Further, each must have the same number of key
+columns, and the key column names must match or be \code{NULL}.
 
-\code{cbind} coerces each of its non-\code{NULL} arguments via
+\code{cbind.dataset} coerces each of its non-\code{NULL} arguments via
 \code{as_dataset}, drops \code{NULL} values, and then concatenates
 their columns together. Each converted argument must have the same number of
-rows. Their keys must also agree with the first argument, or be \code{NULL}.
+rows. Their keys must also agree, or be \code{NULL}.
 }
 \section{Dispatch}{
 \code{cbind} and \code{rbind} use non-standard argument dispatch. A call to
@@ -44,14 +40,19 @@ dispatch.
 }
 \value{
 A dataset object gotten by concatenating the arguments. For \code{rbind},
-the result will have \code{names} taken from its first argument, but no
-other attributes (in particular, no keys). For \code{cbind}, the result
-will have the same keys as its first arguments, and names gotten by
-concatenating its arguments' names together.
+we also concatenate key rows, and if this introduces duplicates, to
+disambiguate the keys we append a key column called \code{"#"} with the
+key copy number.  For \code{cbind}, the result will have the same keys
+as its arguments, and names gotten by concatenating its arguments' names
+together.
 }
 \seealso{
 \code{\link{as_dataset}}, \code{\link{cbind}}.
 }
 \examples{
-# fill in
+# concatenate columns
+cbind.dataset(mtcars[1:4,1:3], y = rnorm(4))
+
+# concatenate rows; disambiguate the result keys by adding a column
+rbind.dataset(mtcars[1:4,], mtcars[1:4,])
 }
