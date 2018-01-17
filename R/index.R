@@ -85,6 +85,7 @@
     x <- as_dataset(args$x)
     i <- args$i
     j <- args$j
+    pairs <- args$pairs
 
     if (!is.null(j)) {
         x <- column_subset(x, j)
@@ -92,6 +93,10 @@
 
     if (!is.null(i)) {
         x <- row_subset(x, i)
+    }
+
+    if (!is.null(pairs)) {
+        return(get_pairs(x, pairs))
     }
 
     if (drop && length(x) == 1L) {
@@ -171,6 +176,31 @@ elt_subset <- function(x, i)
     }
 }
 
+
+get_pairs <- function(x, pairs)
+{
+    pairs <- arg_pairs_index(x, pairs)
+
+    i <- pairs[, 1L, drop = TRUE]
+    j <- pairs[, 2L, drop = TRUE]
+
+    vals <- lapply(seq_along(i), function(k) {
+        jk <- j[[k]]
+        if (is.na(jk)) {
+            NA
+        } else {
+            ik <- i[[k]]
+            xk <- x[[jk]]
+            if (length(dim(xk)) <= 1L) {
+                xk[[ik]]
+            } else {
+                xk[ik, , drop = TRUE]
+            }
+        }
+    })
+
+    vals
+}
 
 
 `[<-.dataset` <- function(x, ..., value)
