@@ -252,15 +252,10 @@ replace_pairs <- function(x, pairs, value, call = sys.call(-1L))
     }
 
     n <- length(i)
-    cl <- class(value)
-    if (cl[[1L]] == "AsIs") {
-        class(value) <- cl[-1L]
-        nv <- 1L
-    } else {
-        nv <- length(value)
-    }
+    nv <- length(value)
 
     if (nv == 1L) {
+        value <- value[[1L]]
         for (k in seq_len(n)) {
             jk <- j[[k]]
             ik <- i[[k]]
