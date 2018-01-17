@@ -155,27 +155,11 @@ column_subset <- function(x, i, call = sys.call(-1L))
 
 row_subset <- function(x, i, call = sys.call(-1L))
 {
-    keys <- keys(x)
     rows <- arg_row_index(x, i, call)
-
-    if (is.list(i) && is.null(oldClass(i))) {
-        drop <- vapply(i, function(ik)
-                       length(ik) == 1L && class(ik)[[1L]] != "AsIs", NA)
-    } else {
-        drop <- NULL
-    }
+    keys <- keys(x)
 
     if (!is.null(keys)) {
-        # remove sliced keys
-        if (!is.null(drop)) {
-            if (all(drop)) {
-                keys <- NULL
-            } else {
-                keys <- keys[rows, !drop, drop = FALSE]
-            }
-        } else {
-            keys <- keys[rows, , drop = FALSE]
-        }
+        keys <- keys[rows, , drop = FALSE]
 
         if (anyDuplicated(rows)) {
             keys <- append_copy_num(keys, nrow(x), rows)

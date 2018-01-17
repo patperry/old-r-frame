@@ -75,6 +75,4 @@ restrict_slice.default <- function(x, slice, ..., drop = FALSE)
     } else {
         x <- x[rows, ]
     }
-
-    x
 }
