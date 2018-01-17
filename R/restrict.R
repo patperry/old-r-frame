@@ -52,6 +52,29 @@ restrict_slice.default <- function(x, slice, ..., drop = FALSE)
 
     rows <- keyrows(keys, slice)
 
-    # TODO: drop singleton keys
-    x[rows, ]
+    dropped <- FALSE
+    if (drop) {
+        keep <- rep(TRUE, length(keys))
+        for (i in seq_len(n)) {
+            s <- slice[[i]]
+            if (length(s) == 1L && class(s)[[1L]] != "AsIs") {
+                keep[[i]] <- FALSE
+                dropped <- TRUE
+            }
+        }
+    }
+
+    if (dropped) {
+        keys <- keys[rows, keep]
+        if (length(keys) == 0L) {
+            keys <- NULL
+        }
+        keys(x) <- NULL
+        x <- x[rows, ]
+        keys(x) <- keys
+    } else {
+        x <- x[rows, ]
+    }
+
+    x
 }
