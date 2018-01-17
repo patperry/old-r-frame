@@ -1,13 +1,6 @@
 
 context("index")
 
-test_that("$ indexing requires exact", {
-    x <- as_dataset(mtcars)
-    expect_equal(x$mpg, mtcars$mpg)
-    expect_equal(x$mp, NULL)
-})
-
-
 test_that("indexing with row number works", {
     x <- as_dataset(mtcars)
     i <- c(13, 5, 20, 19)
@@ -64,49 +57,6 @@ test_that("indexing with matrix pairs works", {
     y <- mapply(function(i, j) ds[i,j,drop=TRUE], i, j, SIMPLIFY = FALSE)
 
     expect_equal(x, y)
-})
-
-
-test_that("index setting with matrix pairs works", {
-    i <- c(47, 5, 132, 10, 142, 143, 123)
-    j <- c(1, 3, 3, 1, 2, 2, 3)
-    val <- runif(length(i))
-
-    x <- as_dataset(iris)
-    x[cbind(i, j)] <- val
-
-    y <- iris
-    y[cbind(i, j)] <- val
-    y <- as_dataset(y)
-
-    expect_equal(x, y)
-})
-
-
-test_that("index setting with matrix pairs recycles", {
-    i <- c(47, 5, 132, 10, 142, 143, 123)
-    j <- c(1, 3, 3, 1, 2, 2, 3)
-    val <- 1.1
-
-    x <- as_dataset(iris)
-    x[cbind(i, j)] <- val
-
-    y <- iris
-    y[cbind(i, j)] <- val
-    y <- as_dataset(y)
-
-    expect_equal(x, y)
-})
-
-
-test_that("index setting with matrix and NA index errors", {
-    i <- c(47, 5, 132, NA, 10, 142, 143, 123)
-    j <- c(1, 3, 3, 1, 2, 2, NA, 3)
-    val <- runif(length(i))
-
-    x <- as_dataset(iris)
-    expect_error(x[cbind(i, j)] <- val,
-                 "NAs are not allowed in subscripted assignments")
 })
 
 

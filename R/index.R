@@ -39,7 +39,7 @@
             stop("replacement is not a vector or matrix")
         }
         n2 <- nrow_column(value)
-        if (!(n2 == n || (n2 == 1L && r == 1L))) {
+        if (!(n2 == n || (n2 == 1L && r < 2L))) {
             stop(sprintf("replacement has %.0f rows, data has %.0f", n2, n))
         }
         value <- as_column(value, n)
@@ -67,7 +67,7 @@
     i <- match(name, names(x), n1)
     x[[i]] <- value
 
-    if (i == n1 && !is.na(name) && !nzchar(name)) {
+    if (i == n1 && !is.na(name) && nzchar(name)) {
         if (is.null(names(x))) {
             names(x) <- character(n1)
         }
