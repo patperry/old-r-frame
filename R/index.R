@@ -390,40 +390,71 @@ arg_index <- function(x, first, lastname, call = sys.call(-1L))
 
 arg_pairs_index <- function(x, i, call = sys.call(-1L))
 {
-     nr <- nrow(x)
-     nc <- ncol(x)
-     d <- dim(i)
-     d2 <- d[[2L]]
-     if (d2 == 1L) {
-        nel <- nr * nc
-        i <- i[, 1L, drop = TRUE]
+    nr <- nrow(x)
+    nc <- ncol(x)
+    nel <- nr * nc
 
-        if (is.numeric(i)) {
-            i0 <- trunc(i) - 1L
-            bounds <- which(!(is.na(i0) | (0L <= i0 & i0 < nel)))
-            if (length(bounds) > 0L) {
-                stop(simpleError(sprintf("index %.0f is out of bounds",
-                                         bounds[[1L]]), call))
+    i <- as.matrix(i)
+    d <- dim(i)
+    d1 <- d[[1L]]
+    d2 <- d[[2L]]
+
+    if (is.logical(i)) {
+        if (d2 == 1L) {
+            i <- i[, 1L, drop = TRUE]
+            if (length(i) != nel) {
+                if (length(i) == 1L) {
+                    i <- rep(i, nel)
+                } else {
+                    stop(simpleError(sprintf("selection mask length (%.0f) must equal number of elements (%.0f)", length(i), nel), call))
+                }
             }
-            if (nr > 0L) {
-                row <- i0 %% nr + 1L
-                col <- i0 %/% nr + 1L
-                pairs <- cbind(row, col)
-            } else {
-                # all i0 are NA
-                pairs <- cbind(i0, i0)
-            }
+        } else if (d1 == nr && d2 == nc) {
+            i <- as.logical(i)
         } else {
-            stop(simpleError(sprintf("cannot index with matrix of \"%s\"",
-                                     class(i)[[1L]]), call))
+            stop(simpleError(sprintf("selection mask dimensions (%.0f, %.0f) must match data dimensions (%.0f, %.0f)", d1, d2, nr, nc), call))
         }
-     } else if (d2 == 2L) {
-     } else {
-        stop(simpleError(sprintf("cannot index with a matrix of %.0f columns",
-                                 d2), call))
-     }
 
-     pairs
+        i <- seq_len(nel)[as.logical(i)]
+        vec <- TRUE
+    } else if (d2 == 1L) {
+        i <- trunc(as.numeric(i))
+        bounds <- which(!(is.na(i) | (1L <= i & i <= nel)))
+        if (length(bounds) > 0L) {
+            stop(simpleError(sprintf("index %.0f is out of bounds",
+                                     bounds[[1L]]), call))
+        }
+        vec <- TRUE
+    } else if (d2 == 2L) {
+        row <- trunc(as.numeric(i[, 1L, drop = TRUE]))
+        col <- trunc(as.numeric(i[, 2L, drop = TRUE]))
+
+        bounds <- which(!((is.na(row) | (1L <= row & row <= nr))
+                          && ((is.na(col) | (1L <= col & col <= nc)))))
+        if (length(bounds) > 0L) {
+            stop(simpleError(sprintf("index %.0f is out of bounds",
+                                     bounds[[1L]]), call))
+        }
+
+        row[is.na(col)] <- NA
+        col[is.na(row)] <- NA
+        vec <- FALSE
+    } else {
+        stop(simpleError(sprintf("cannot index with %.0f-column matrix",
+                                 d2), call))
+    }
+
+    if (vec) {
+        if (nr > 0L) {
+            i0 <- i - 1L
+            row <- i0 %% nr + 1L
+            col <- i0 %/% nr + 1L
+        } else {
+            row <- col <- rep(NA_integer_, length(i))
+        }
+    }
+
+    cbind(row, col)
 }
 
 
