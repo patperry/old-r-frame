@@ -42,7 +42,7 @@ test_that("indexing with column number works", {
 
 test_that("indexing without keys works", {
     x <- as_dataset(list(a = letters))
-    expect_equal(as_dataset(x[1:5,,drop = FALSE]),
+    expect_equal(as_dataset(x[1:5, , drop = FALSE]),
                  as_dataset(list(a = letters[1:5])))
 })
 
@@ -98,34 +98,5 @@ test_that("indexing with logical mask works", {
 
     x <- ds[cbind(as.logical(index))]
     y <- ds[index]
-    expect_equal(x, y)
-})
-
-
-test_that("drop = TRUE works for single column", {
-    x <- as_dataset(mtcars)[, 1, drop = TRUE]
-    y <- mtcars[, 1, drop = TRUE]
-    expect_equal(x, y)
-})
-
-
-test_that("drop = TRUE works for single row", {
-    x <- as_dataset(mtcars)[1, , drop = TRUE]
-    y <- mtcars[1, , drop = TRUE]
-    expect_equal(x, y)
-})
-
-
-test_that("drop = TRUE works for single element ", {
-    x <- as_dataset(mtcars)[1, 1, drop = TRUE]
-    y <- mtcars[1, 1, drop = TRUE]
-    expect_equal(x, y)
-})
-
-
-test_that("drop = TRUE row works for matrix column", {
-    ds <- dataset(group = mtcars)
-    x <- ds[7, , drop = TRUE]
-    y <- list(group = mtcars[7, , drop = TRUE])
     expect_equal(x, y)
 })

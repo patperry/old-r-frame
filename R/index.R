@@ -104,21 +104,31 @@
     }
 
     if (drop) {
-        if (!is.null(i) && nrow(x) == 1L) {
-            x <- lapply(x, function(elt) {
-                if (length(dim(elt)) == 2L) {
-                    elt[1L, , drop = TRUE]
-                } else {
-                    elt[[1L]]
-                }
-            })
+        dim <- dim(x)
+        if (!is.null(i) && dim[[1L]] == 1L) {
+            x <- lapply(x, drop_row_dim)
         }
-        if (!is.null(j) && length(x) == 1L) {
+        if (!is.null(j) && dim[[2L]] == 1L) {
             x <- x[[1L]]
         }
     }
 
     x
+}
+
+
+drop_row_dim <- function(x)
+{
+    dim <- dim(x)
+    if (length(dim) < 2L) {
+        x[[1L]]
+    } else if (is.data.frame(x)) {
+        # can't use x[1L, , drop = TRUE] for data.frame since that does
+        # not return a list when x has 0 or 1 column
+        lapply(x, drop_row_dim)
+    } else {
+        x[1L, , drop = TRUE]
+    }
 }
 
 
