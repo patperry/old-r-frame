@@ -597,98 +597,51 @@ arg_row_index <- function(x, i, call = sys.call(-1L))
     n <- nrow(x)
     keys <- keys(x)
     
-    if (is.list(i) && is.null(oldClass(i))) {
-        if (is.null(keys)) {
-            stop(simpleError("cannot index rows with list when 'keys' is NULL", call))
-        }
-        rows <- keyslice(keys, i)
-    } else {
-        r <- length(dim(i))
-        if (r <= 1) {
-            rows <- seq_len(n)
-            if (is.numeric(i)) {
-                # pass
-            } else if (is.logical(i)) {
-                if (length(i) != nrow(x)) {
-                    stop(simpleError(sprintf("index mask length (%.0f) must match number of rows (%.0f)",
-                                             length(i), nrow(x)), call))
-                }
-                # pass
-            } else {
-                rn <- rownames(x)
-                if (is.null(rn)) {
-                    stop(simpleError("cannot index with character with 'rownames' is NULL", call))
-                }
-                i <- as.character(i)
-                names(rows) <- rn
+    if (is.list(i) && !is.object(i)) {
+        i <- as_dataset(i)
+    }
+
+    r <- length(dim(i))
+    if (r <= 1) {
+        rows <- seq_len(n)
+        if (is.numeric(i)) {
+            # pass
+        } else if (is.logical(i)) {
+            if (length(i) != nrow(x)) {
+                stop(simpleError(sprintf(
+                     "index mask length (%.0f) must match number of rows (%.0f)",
+                     length(i), nrow(x)), call))
             }
-            rows <- rows[i]
+            # pass
         } else {
-            if (is.null(keys)) {
-                stop(simpleError("cannot index rows with matrix when 'keys' is NULL", call))
+            rn <- rownames(x)
+            if (is.null(rn)) {
+                stop(simpleError(
+                     "cannot index with character with 'rownames' is NULL",
+                     call))
             }
-            rows <- rowid(keys, i)
+            i <- as.character(i)
+            names(rows) <- rn
         }
 
-        if (anyNA(rows)) {
-            j <- which(is.na(rows))[[1L]]
-            lab <- key_format(if (length(dim(i)) <= 1) i[[j]] else i[j,])
-            stop(simpleError(sprintf("selected row entry %.0f (%s) does not exist", j, lab), call))
+        rows <- rows[i]
+
+    } else {
+        if (is.null(keys)) {
+            stop(simpleError(
+                 "cannot index rows with matrix when 'keys' is NULL", call))
         }
+        rows <- rowid(keys, i)
+    }
+
+    if (anyNA(rows)) {
+        j <- which(is.na(rows))[[1L]]
+        lab <- key_format(if (length(dim(i)) <= 1) i[[j]] else i[j,])
+        stop(simpleError(sprintf(
+             "selected row entry %.0f (%s) does not exist", j, lab), call))
     }
 
     rows
-}
-
-
-arg_slice <- function(keys, args, call = sys.call(-1))
-{
-    n <- length(keys)
-    names <- names(args)
-    if (is.null(names)) {
-        if (length(args) > 1L) {
-            stop(simpleError("only one unnamed slice argument is allowed", call))
-        }
-        i <- args[[1L]]
-        if (is.null(args)) {
-            return(NULL)
-        }
-        i <- as.list(i)
-        if (length(i) != n) {
-            stop(simpleError(sprintf("number of index components (%.0f) must match number of key components (%.0f)", length(i), n), call))
-        }
-    } else {
-        empty <- !nzchar(names)
-        if (any(empty)) {
-            stop(simpleError("cannot mix named and unnamed slice arguments", call))
-        }
-
-        ki <- match(names, names(keys))
-        if (anyNA(ki)) {
-            kj <- which(is.na(ki))[[1L]]
-            stop(simpleError(sprintf("selected key \"%s\" does not exist", names[[kj]]),
-                             call))
-        }
-
-        i <- vector("list", n)
-        i[ki] <- args
-    }
-
-    # convert types, keeping "AsIs" marker if present
-    for (k in seq_len(n)) {
-        ik <- i[[k]]
-
-        if (is.null(ik)) {
-            next
-        }
-
-        if (length(dim(ik)) > 1L) {
-            stop(simpleError(sprintf("cannot slice with rank-%.0f array for key value",
-                                     length(dim(ik))), call))
-        }
-    }
-
-    i
 }
 
 

@@ -136,15 +136,15 @@ x[dataset(c("y", "x"), c(3, 1)),]
 #> y         3 │  42 green 3.8  0.0 0.0
 #> x         1 │  35 red   0.0 -1.3 2.8
 
-# slice by key value
-x[major = "y",]
-#>                   ════set═════
-#> minor │ age color   a    b   c
-#>     1 │  12 black 0.0 -5.1 0.1
-#>     3 │  42 green 3.8  0.0 0.0
+# slice by key value using the 'restrict' function
+restrict(x, major = "y")
+#>                         ════set═════
+#> major minor │ age color   a    b   c
+#> y         1 │  12 black 0.0 -5.1 0.1
+#> y         3 │  42 green 3.8  0.0 0.0
 
 # slice by key set
-x[minor = c(1, 2),]
+restrict(x, minor = c(1, 2))
 #>                         ════set═════
 #> major minor │ age color   a    b   c
 #> x         1 │  35 red   0.0 -1.3 2.8
@@ -152,7 +152,7 @@ x[minor = c(1, 2),]
 #> y         1 │  12 black 0.0 -5.1 0.1
 
 # suppress dimension dropping with I()
-x[major = I("y"), minor = c(1, 2),]
+restrict(x, major = I("y"), minor = c(1, 2))
 #>                         ═══set════
 #> major minor │ age color a    b   c
 #> y         1 │  12 black 0 -5.1 0.1

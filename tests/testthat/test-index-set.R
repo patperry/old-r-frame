@@ -1,4 +1,4 @@
-context("setindex")
+context("index-set")
 
 test_that("deleting all columns", {
     x <- as_dataset(mtcars)

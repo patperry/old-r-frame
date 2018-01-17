@@ -1,16 +1,19 @@
-\name{keyslice}
-\alias{keyslice}
-\alias{keyslice.default}
-\alias{keyslice.keyset}
-\title{Data Key Slicing}
+\name{keyrows}
+\alias{keyrows}
+\alias{keyrows.default}
+\alias{keyrows.keyset}
+\alias{keyrows.NULL}
+\title{Data Key Rows}
 \description{
-Find sets of rows with specified key components.
+Find the set of rows with specified key component values.
 }
 \usage{
-keyslice(x, ...)
+keyrows(x, slice, ...)
 }
 \arguments{
 \item{x}{an object with a key for each row.}
+
+\item{slice}{the slice description, giving values for each key component.}
 
 \item{...}{arguments specifying the slice.}
 }

@@ -454,3 +454,76 @@ arg_rows <- function(value, name = argname(substitute(value)),
 }
 
 arg_cols <- arg_rows
+
+
+arg_slice <- function(nkey, keynames, slice, call = sys.call(-1))
+{
+    if (!is.list(slice) && !is.null(slice)) {
+        stop(simpleError(sprintf("slice must be a list or NULL, not \"%s",
+                                 class(slice)[[1L]]), call))
+    }
+
+    n <- length(slice)
+    if (n == 0L) {
+        return(slice)
+    }
+
+    for (i in seq_len(n)) {
+        value <- slice[[i]]
+        r <- length(dim(value))
+        if (r > 1L) {
+            stop(simpleError(sprintf(
+                 "cannot slice with rank-%.0f array for key value", r), call))
+        }
+    }
+
+    names <- names(slice)
+    if (is.null(names)) {
+        if (n > nkey) {
+            stop(simpleError(sprintf(
+                 "'slice' length (%.0f) exceeds number of keys (%.0f)",
+                 n, nkey), call))
+
+        }
+        return(slice)
+    }
+
+    if (is.null(keynames)) {
+        stop(simpleError(
+             "cannot use named slice when key names are NULL", call))
+    }
+
+    if (identical(names, keynames)) {
+        # TODO: require key names to be unique for this to be a valid
+        # optimization
+        return(slice)
+    }
+
+    index <- vector("list", nkey)
+    for (i in seq_len(n)) {
+        name <- names[[i]]
+        value <- slice[[i]]
+
+        if (nzchar(name)) {
+            j <- match(name, keynames)
+            if (is.na(j)) {
+                stop(simpleError(sprintf("unknown key name \"%s\"", name),
+                                 call))
+            }
+        } else if (i > nkey) {
+            stop(simpleError(sprintf(
+                 "slice index (%.0f) exceeds number of keys (%.0f)",
+                 i, nkey), call))
+        } else {
+            j <- i
+        }
+
+        if (is.null(index[[j]])) {
+            index[[j]] <- value
+        } else if (!is.null(value)) {
+            index[[j]] <- c(index[[j]], value)
+        }
+    }
+
+    index
+}

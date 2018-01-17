@@ -82,17 +82,4 @@ x[rep(c(TRUE, FALSE), 6), ]
 
 # you can also index rows with a matrix of keys:
 x[dataset(row = c("b", "d"), col = c("z", "x")), ]
-
-# you can use a named argument to slice, dropping singleton keys;
-# with named arguments, the trailing comma is optional
-x[row = c("b", "d")]
-x[row = c("b", "d"), col = "y"]
-x[col = "x"]
-
-# use I() to prevent dropping
-x[col = I("x")]
-
-# alternatively, slice by indexing with a list (trailing comma needed here)
-x[list(c("b", "d"), "y"),]
-x[list(c("b", "d"), I("y")),]
 }

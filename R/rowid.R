@@ -28,7 +28,7 @@ rowid <- function(x, keys, default = NA_integer_, ...)
 rowid.default <- function(x, keys, default = NA_integer_, ...)
 {
     x <- keys(x)
-    rowid(as_keyset(x), keys, default, ...)
+    rowid(x, keys, default, ...)
 }
 
 

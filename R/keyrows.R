@@ -12,22 +12,32 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-keyslice <- function(x, ...)
+keyrows <- function(x, slice, ...)
 {
-    UseMethod("keyslice")
+    UseMethod("keyrows")
 }
 
 
-keyslice.default <- function(x, ...)
+keyrows.default <- function(x, slice, ...)
 {
-    x <- keys(x)
-    keyslice(as_keyset(x), ...)
+    keys <- keys(x)
+    keyrows(keys, slice, ...)
 }
 
 
-keyslice.keyset <- function(x, ...)
+keyrows.NULL <- function(x, slice, ...)
 {
-    i <- arg_slice(x, list(...))
+    slice <- arg_slice(0, NULL, slice)
+    integer()
+}
+
+
+keyrows.keyset <- function(x, slice, ...)
+{
+    x <- as_keyset(x)
+    nkey <- length(x)
+    keynames <- names(x)
+    i <- arg_slice(nkey, keynames, slice)
 
     n <- nrow(x)
     ni <- length(i)

@@ -112,14 +112,14 @@ Index a dataset just like a `data.frame`, or use key values to index or slice.
 # index with a matrix of keys
 x[dataset(c("y", "x"), c(3, 1)),]
 
-# slice by key value
-x[major = "y",]
+# slice by key value using the 'restrict' function
+restrict(x, major = "y")
 
 # slice by key set
-x[minor = c(1, 2),]
+restrict(x, minor = c(1, 2))
 
 # suppress dimension dropping with I()
-x[major = I("y"), minor = c(1, 2),]
+restrict(x, major = I("y"), minor = c(1, 2))
 ```
 
 ### Grouping
