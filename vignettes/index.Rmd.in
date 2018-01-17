@@ -1,0 +1,185 @@
+---
+title: "Indexing Operations"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Indexing Operations}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+options(width = 80)
+```
+
+```{r}
+library(frame)
+options(frame.rows = 4, frame.wrap = 0)
+set.seed(0)
+```
+
+The indexing and operations supported by *frame* `dataset` objects are similar
+to those supported by `data.frame` objects, but there are a few extensions and
+differences. We will illustrate the indexing operations for the following
+tasks:
+
+  + Extracting a column
+  + Selecting columns
+  + Extracting a row
+  + Selecting rows
+  + Extracting entries
+
+
+## Sample Data
+
+We will illustrate the indexing operations with a sample dataset with
+two key columns, and 5 data columns, one of which is a matrix.
+
+```{r}
+x <- cbind.dataset(name = rownames(mtcars),
+                   mtcars[1:3],
+                   dataset(group = mtcars[4:5]))
+keys(x) <- dataset(k1 = rep(LETTERS[1:4], 8),
+                   k2 = rep(1:8, each = 4))
+print(x)
+```
+
+Note the dimensions of `x`:
+
+```{r}
+length(x)
+
+dim(x)
+```
+
+The matrix column `"group"` gets counted as a single column in `x`.
+
+
+## Extracting a column
+
+We can extract a column using `$` or `[[`.
+
+```{r}
+x[[1]]
+
+x[["cyl"]]
+
+x$cyl
+```
+
+We can also using `[` with `drop = TRUE`.
+
+```{r}
+x[, 1, drop = TRUE]
+
+x[, "cyl", drop = TRUE]
+```
+
+Unlike `data.frame` objects, we do not allow partial name matching.
+
+```{r, error = TRUE}
+x$cy
+```
+
+Another difference from `data.frame` objects is that `drop = FALSE` is
+the default, so that `x[, 1]` returns a `dataset`.
+
+
+## Selecting columns
+
+We can select a subset of columns using `[`. This works in three modes:
+by name, by index, and by logical mask.
+
+### By name
+
+```{r}
+x[, "name"]
+
+x[, c("mpg", "disp")]
+
+x[, c("mpg", "group", "mpg")]
+```
+
+Note that we allow duplicate names.
+
+### By index
+
+```{r}
+x[, 1]
+
+x[, c(2, 4)]
+
+x[, c(2, 5, 2)]
+```
+
+### By logical mask
+
+```{r}
+x[, c(TRUE, FALSE, FALSE, FALSE, FALSE)]
+
+x[, c(FALSE, TRUE, FALSE, TRUE, FALSE)]
+```
+
+
+## Selecting rows
+
+We can select a subset of rows using `[` by key, by index, and by logical
+mask; for `dataset` objects with `rownames`, we can also select by name.
+
+### By key
+
+### By index
+
+### By logical mask
+
+### By name
+
+Unlike `data.frame` objects, not all `dataset` objects have row names. Our
+example dataset `x` is one such example with none:
+
+```{r}
+rownames(x)
+```
+
+Only datasets with a single character key have row names; in these cases the
+keys are the rownames.
+
+```{r}
+(y <- as_dataset(mtcars))
+rownames(y)
+```
+
+For datasets with row names, we can select rows using these names.
+```{r}
+y[c("Duster 360", "Mazda RX4 Wag", "Lotus Europa"), ]
+```
+
+
+## Extracting a row
+
+We can extract a single row by selecting a subset of size one and specifying
+`drop = TRUE`. This returns a list.
+
+```{r}
+x[1, , drop = TRUE]
+```
+
+The behavior for extracting a row differs from the `data.frame` behavior in
+two respects. First, the operation `x[1, , drop = TRUE]` *always* returns a
+list; second, it converts matrix columns to vectors, recursively if necessary,
+and it converts list columns to single elements. Compare the following
+operations with their `data.frame` equivalents.
+
+```{r}
+# data set with a single column
+data.frame(foo = 1)[1, , drop = TRUE] # scalar
+dataset(foo = 1)[1, , drop = TRUE]    # list
+
+# data set with a matrix column
+data.frame(foo = I(rbind(4:6)), bar = 1)[1, , drop = TRUE] # (matrix, scalar)
+dataset(foo = rbind(4:6), bar = 1)[1, , drop = TRUE]       # (vector, scalar)
+
+# data set with a list column
+data.frame(foo = I(list(2:5, 8)), bar = 6:7)[1, , drop = TRUE] # (list, scalar)
+dataset(foo = list(2:5, 8), bar = 6:7)[1, , drop = TRUE]       # (value, scalar)
+```

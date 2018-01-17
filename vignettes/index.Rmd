@@ -7,35 +7,58 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r}
+
+
+
+```r
 library(frame)
-options(frame.rows = 4)
-options(frame.wrap = 0)
+options(frame.rows = 4, frame.wrap = 0)
+set.seed(0)
 ```
 
 The indexing and operations supported by *frame* `dataset` objects are similar
 to those supported by `data.frame` objects, but there are a few extensions and
-differences.
+differences. We will illustrate the indexing operations for the following
+tasks:
+
+  + Extracting a column
+  + Selecting columns
+  + Extracting a row
+  + Selecting rows
+  + Extracting entries
+
 
 ## Sample Data
 
 We will illustrate the indexing operations with a sample dataset with
 two key columns, and 5 data columns, one of which is a matrix.
 
-```{r}
+
+```r
 x <- cbind.dataset(name = rownames(mtcars),
                    mtcars[1:3],
                    dataset(group = mtcars[4:5]))
 keys(x) <- dataset(k1 = rep(LETTERS[1:4], 8),
                    k2 = rep(1:8, each = 4))
 print(x)
+#>                                      ═group══
+#> k1 k2 │ name            mpg cyl disp  hp drat
+#> A   1 │ Mazda RX4      21.0   6  160 110 3.90
+#> B   1 │ Mazda RX4 Wag  21.0   6  160 110 3.90
+#> C   1 │ Datsun 710     22.8   4  108  93 3.85
+#> D   1 │ Hornet 4 Drive 21.4   6  258 110 3.08
+#> ⋮                             (32 rows total)
 ```
 
 Note the dimensions of `x`:
 
-```{r}
+
+```r
 length(x)
+#> [1] 5
+
 dim(x)
+#> [1] 32  5
 ```
 
 The matrix column `"group"` gets counted as a single column in `x`.
@@ -45,23 +68,55 @@ The matrix column `"group"` gets counted as a single column in `x`.
 
 We can extract a column using `$` or `[[`.
 
-```{r}
+
+```r
 x[[1]]
+#>  [1] "Mazda RX4"           "Mazda RX4 Wag"       "Datsun 710"         
+#>  [4] "Hornet 4 Drive"      "Hornet Sportabout"   "Valiant"            
+#>  [7] "Duster 360"          "Merc 240D"           "Merc 230"           
+#> [10] "Merc 280"            "Merc 280C"           "Merc 450SE"         
+#> [13] "Merc 450SL"          "Merc 450SLC"         "Cadillac Fleetwood" 
+#> [16] "Lincoln Continental" "Chrysler Imperial"   "Fiat 128"           
+#> [19] "Honda Civic"         "Toyota Corolla"      "Toyota Corona"      
+#> [22] "Dodge Challenger"    "AMC Javelin"         "Camaro Z28"         
+#> [25] "Pontiac Firebird"    "Fiat X1-9"           "Porsche 914-2"      
+#> [28] "Lotus Europa"        "Ford Pantera L"      "Ferrari Dino"       
+#> [31] "Maserati Bora"       "Volvo 142E"
+
 x[["cyl"]]
+#>  [1] 6 6 4 6 8 6 8 4 4 6 6 8 8 8 8 8 8 4 4 4 4 8 8 8 8 4 4 4 8 6 8 4
+
 x$cyl
+#>  [1] 6 6 4 6 8 6 8 4 4 6 6 8 8 8 8 8 8 4 4 4 4 8 8 8 8 4 4 4 8 6 8 4
 ```
 
 We can also using `[` with `drop = TRUE`.
 
-```{r}
+
+```r
 x[, 1, drop = TRUE]
+#>  [1] "Mazda RX4"           "Mazda RX4 Wag"       "Datsun 710"         
+#>  [4] "Hornet 4 Drive"      "Hornet Sportabout"   "Valiant"            
+#>  [7] "Duster 360"          "Merc 240D"           "Merc 230"           
+#> [10] "Merc 280"            "Merc 280C"           "Merc 450SE"         
+#> [13] "Merc 450SL"          "Merc 450SLC"         "Cadillac Fleetwood" 
+#> [16] "Lincoln Continental" "Chrysler Imperial"   "Fiat 128"           
+#> [19] "Honda Civic"         "Toyota Corolla"      "Toyota Corona"      
+#> [22] "Dodge Challenger"    "AMC Javelin"         "Camaro Z28"         
+#> [25] "Pontiac Firebird"    "Fiat X1-9"           "Porsche 914-2"      
+#> [28] "Lotus Europa"        "Ford Pantera L"      "Ferrari Dino"       
+#> [31] "Maserati Bora"       "Volvo 142E"
+
 x[, "cyl", drop = TRUE]
+#>  [1] 6 6 4 6 8 6 8 4 4 6 6 8 8 8 8 8 8 4 4 4 4 8 8 8 8 4 4 4 8 6 8 4
 ```
 
 Unlike `data.frame` objects, we do not allow partial name matching.
 
-```{r, error = TRUE}
+
+```r
 x$cy
+#> Error in `[[.dataset`(x, name): column "cy" does not exist
 ```
 
 Another difference from `data.frame` objects is that `drop = FALSE` is
@@ -75,27 +130,85 @@ by name, by index, and by logical mask.
 
 ### By name
 
-```{r}
+
+```r
 x[, "name"]
+#> k1 k2 │ name          
+#> A   1 │ Mazda RX4     
+#> B   1 │ Mazda RX4 Wag 
+#> C   1 │ Datsun 710    
+#> D   1 │ Hornet 4 Drive
+#> ⋮      (32 rows total)
+
 x[, c("mpg", "disp")]
+#> k1 k2 │  mpg disp
+#> A   1 │ 21.0  160
+#> B   1 │ 21.0  160
+#> C   1 │ 22.8  108
+#> D   1 │ 21.4  258
+#> ⋮ (32 rows total)
+
 x[, c("mpg", "group", "mpg")]
+#>              ═group══     
+#> k1 k2 │  mpg  hp drat  mpg
+#> A   1 │ 21.0 110 3.90 21.0
+#> B   1 │ 21.0 110 3.90 21.0
+#> C   1 │ 22.8  93 3.85 22.8
+#> D   1 │ 21.4 110 3.08 21.4
+#> ⋮          (32 rows total)
 ```
 
 Note that we allow duplicate names.
 
 ### By index
 
-```{r}
+
+```r
 x[, 1]
+#> k1 k2 │ name          
+#> A   1 │ Mazda RX4     
+#> B   1 │ Mazda RX4 Wag 
+#> C   1 │ Datsun 710    
+#> D   1 │ Hornet 4 Drive
+#> ⋮      (32 rows total)
+
 x[, c(2, 4)]
+#> k1 k2 │  mpg disp
+#> A   1 │ 21.0  160
+#> B   1 │ 21.0  160
+#> C   1 │ 22.8  108
+#> D   1 │ 21.4  258
+#> ⋮ (32 rows total)
+
 x[, c(2, 5, 2)]
+#>              ═group══     
+#> k1 k2 │  mpg  hp drat  mpg
+#> A   1 │ 21.0 110 3.90 21.0
+#> B   1 │ 21.0 110 3.90 21.0
+#> C   1 │ 22.8  93 3.85 22.8
+#> D   1 │ 21.4 110 3.08 21.4
+#> ⋮          (32 rows total)
 ```
 
 ### By logical mask
 
-```{r}
+
+```r
 x[, c(TRUE, FALSE, FALSE, FALSE, FALSE)]
+#> k1 k2 │ name          
+#> A   1 │ Mazda RX4     
+#> B   1 │ Mazda RX4 Wag 
+#> C   1 │ Datsun 710    
+#> D   1 │ Hornet 4 Drive
+#> ⋮      (32 rows total)
+
 x[, c(FALSE, TRUE, FALSE, TRUE, FALSE)]
+#> k1 k2 │  mpg disp
+#> A   1 │ 21.0  160
+#> B   1 │ 21.0  160
+#> C   1 │ 22.8  108
+#> D   1 │ 21.4  258
+#> ⋮ (32 rows total)
 ```
 
 
@@ -115,21 +228,46 @@ mask; for `dataset` objects with `rownames`, we can also select by name.
 Unlike `data.frame` objects, not all `dataset` objects have row names. Our
 example dataset `x` is one such example with none:
 
-```{r}
+
+```r
 rownames(x)
+#> NULL
 ```
 
 Only datasets with a single character key have row names; in these cases the
 keys are the rownames.
 
-```{r}
+
+```r
 (y <- as_dataset(mtcars))
+#> name           │  mpg cyl disp  hp drat    wt  qsec vs am gear carb
+#> Mazda RX4      │ 21.0   6  160 110 3.90 2.620 16.46  0  1    4    4
+#> Mazda RX4 Wag  │ 21.0   6  160 110 3.90 2.875 17.02  0  1    4    4
+#> Datsun 710     │ 22.8   4  108  93 3.85 2.320 18.61  1  1    4    1
+#> Hornet 4 Drive │ 21.4   6  258 110 3.08 3.215 19.44  1  0    3    1
+#> ⋮                                                   (32 rows total)
 rownames(y)
+#>  [1] "Mazda RX4"           "Mazda RX4 Wag"       "Datsun 710"         
+#>  [4] "Hornet 4 Drive"      "Hornet Sportabout"   "Valiant"            
+#>  [7] "Duster 360"          "Merc 240D"           "Merc 230"           
+#> [10] "Merc 280"            "Merc 280C"           "Merc 450SE"         
+#> [13] "Merc 450SL"          "Merc 450SLC"         "Cadillac Fleetwood" 
+#> [16] "Lincoln Continental" "Chrysler Imperial"   "Fiat 128"           
+#> [19] "Honda Civic"         "Toyota Corolla"      "Toyota Corona"      
+#> [22] "Dodge Challenger"    "AMC Javelin"         "Camaro Z28"         
+#> [25] "Pontiac Firebird"    "Fiat X1-9"           "Porsche 914-2"      
+#> [28] "Lotus Europa"        "Ford Pantera L"      "Ferrari Dino"       
+#> [31] "Maserati Bora"       "Volvo 142E"
 ```
 
 For datasets with row names, we can select rows using these names.
-```{r}
+
+```r
 y[c("Duster 360", "Mazda RX4 Wag", "Lotus Europa"), ]
+#> name          │  mpg cyl  disp  hp drat    wt  qsec vs am gear carb
+#> Duster 360    │ 14.3   8 360.0 245 3.21 3.570 15.84  0  0    3    4
+#> Mazda RX4 Wag │ 21.0   6 160.0 110 3.90 2.875 17.02  0  1    4    4
+#> Lotus Europa  │ 30.4   4  95.1 113 3.77 1.513 16.90  1  1    5    2
 ```
 
 
@@ -138,6 +276,72 @@ y[c("Duster 360", "Mazda RX4 Wag", "Lotus Europa"), ]
 We can extract a single row by selecting a subset of size one and specifying
 `drop = TRUE`. This returns a list.
 
-```{r}
+
+```r
 x[1, , drop = TRUE]
+#> $name
+#> [1] "Mazda RX4"
+#> 
+#> $mpg
+#> [1] 21
+#> 
+#> $cyl
+#> [1] 6
+#> 
+#> $disp
+#> [1] 160
+#> 
+#> $group
+#> $group$hp
+#> [1] 110
+#> 
+#> $group$drat
+#> [1] 3.9
+```
+
+The behavior for extracting a row differs from the `data.frame` behavior in
+two respects. First, the operation `x[1, , drop = TRUE]` *always* returns a
+list; second, it converts matrix columns to vectors, recursively if necessary,
+and it converts list columns to single elements. Compare the following
+operations with their `data.frame` equivalents.
+
+
+```r
+# data set with a single column
+data.frame(foo = 1)[1, , drop = TRUE] # scalar
+#> [1] 1
+dataset(foo = 1)[1, , drop = TRUE]    # list
+#> $foo
+#> [1] 1
+
+# data set with a matrix column
+data.frame(foo = I(rbind(4:6)), bar = 1)[1, , drop = TRUE] # (matrix, scalar)
+#> $foo
+#>      [,1] [,2] [,3]
+#> [1,]    4    5    6
+#> 
+#> $bar
+#> [1] 1
+dataset(foo = rbind(4:6), bar = 1)[1, , drop = TRUE]       # (vector, scalar)
+#> $foo
+#> [1] 4 5 6
+#> 
+#> $bar
+#> [1] 1
+
+# data set with a list column
+data.frame(foo = I(list(2:5, 8)), bar = 6:7)[1, , drop = TRUE] # (list, scalar)
+#> $foo
+#> [[1]]
+#> [1] 2 3 4 5
+#> 
+#> 
+#> $bar
+#> [1] 6
+dataset(foo = list(2:5, 8), bar = 6:7)[1, , drop = TRUE]       # (value, scalar)
+#> $foo
+#> [1] 2 3 4 5
+#> 
+#> $bar
+#> [1] 6
 ```
