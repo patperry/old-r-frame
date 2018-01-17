@@ -40,7 +40,7 @@ row.names.dataset <- function(x)
     keys <- keys(x)
     if (is.null(keys)) {
         NULL
-    } else if (length(keys) == 1 && is.character(keys[[1L]])) {
+    } else if (length(keys) == 1L && is.character(keys[[1L]])) {
         keys[[1L]]
     } else {
         NULL
