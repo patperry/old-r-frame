@@ -331,3 +331,24 @@ test_that("indexing with logical mask works", {
     y <- ds[index]
     expect_equal(x, y)
 })
+
+
+test_that("drop = TRUE works for single column", {
+    x <- as_dataset(mtcars)[, 1, drop = TRUE]
+    y <- mtcars[, 1, drop = TRUE]
+    expect_equal(x, y)
+})
+
+
+test_that("drop = TRUE works for single row", {
+    x <- as_dataset(mtcars)[1, , drop = TRUE]
+    y <- mtcars[1, , drop = TRUE]
+    expect_equal(x, y)
+})
+
+
+test_that("drop = TRUE works for single element ", {
+    x <- as_dataset(mtcars)[1, 1, drop = TRUE]
+    y <- mtcars[1, 1, drop = TRUE]
+    expect_equal(x, y)
+})

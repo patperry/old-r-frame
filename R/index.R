@@ -99,8 +99,13 @@
         return(get_pairs(x, pairs))
     }
 
-    if (drop && length(x) == 1L) {
-        x <- x[[1L]]
+    if (drop) {
+        if (!is.null(i) && nrow(x) == 1L) {
+            x <- as.list(x)
+        }
+        if (!is.null(j) && length(x) == 1L) {
+            x <- x[[1L]]
+        }
     }
 
     x
