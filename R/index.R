@@ -211,14 +211,15 @@ get_pairs <- function(x, pairs)
 `[<-.dataset` <- function(x, ..., value)
 {
     args <- arg_index(x, ..1, "value")
-    x <- args$x
+
+    x <- as_dataset(args$x)
     i <- args$i
     j <- args$j
-    x <- as_dataset(x)
+    pairs <- args$pairs
 
     if (is.null(value)) {
         # pass
-    } else {
+    } else if (is.null(pairs)) {
         cl <- class(value)
         if (cl[[1L]] == "AsIs") {
             class(value) <- cl[-1L]
@@ -228,11 +229,62 @@ get_pairs <- function(x, pairs)
         }
     }
 
-    if (is.null(i)) {
+    if (!is.null(pairs)) {
+        replace_pairs(x, pairs, value)
+    } else if (is.null(i)) {
         replace_cols(x, j, value)
     } else {
         replace_cells(x, i, j, value)
     }
+}
+
+
+replace_pairs <- function(x, pairs, value, call = sys.call(-1L))
+{
+    pairs <- arg_pairs_index(x, pairs)
+
+    i <- pairs[, 1L, drop = TRUE]
+    j <- pairs[, 2L, drop = TRUE]
+
+    if (anyNA(i) || anyNA(j)) {
+        stop(simpleError("NAs are not allowed in subscripted assignments",
+                         call))
+    }
+
+    n <- length(i)
+    cl <- class(value)
+    if (cl[[1L]] == "AsIs") {
+        class(value) <- cl[-1L]
+        nv <- 1L
+    } else {
+        nv <- length(value)
+    }
+
+    if (nv == 1L) {
+        for (k in seq_len(n)) {
+            jk <- j[[k]]
+            ik <- i[[k]]
+            if (length(dim(x[[jk]])) <= 1) {
+                x[[jk]][[ik]] <- value
+            } else {
+                x[[jk]][ik, ] <- value
+            }
+        }
+    } else if (nv == n) {
+        for (k in seq_len(n)) {
+            jk <- j[[k]]
+            ik <- i[[k]]
+            if (length(dim(x[[jk]])) <= 1) {
+                x[[jk]][[ik]] <- value[[k]]
+            } else {
+                x[[jk]][ik, ] <- value[[k]]
+            }
+        }
+    } else {
+        stop(simpleError(sprintf("number of values (%.0f) must match number of elements to replace (%.0f)", nv, n)))
+    }
+
+    x
 }
 
 

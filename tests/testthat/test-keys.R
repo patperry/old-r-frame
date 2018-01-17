@@ -1,6 +1,5 @@
 
-context("key")
-
+context("keys")
 
 test_that("'as_dataset' on data.frame uses row names as key", {
     x <- as_dataset(mtcars)
@@ -11,6 +10,11 @@ test_that("'as_dataset' on data.frame uses row names as key", {
 test_that("'as_dataset' on data.frame uses row names special column as key", {
     x <- as_dataset(mtcars)
     expect_equal(keys(x)[["name"]], rownames(mtcars))
+})
+
+
+test_that("'length' does not include key columns", {
+    expect_equal(length(as_dataset(mtcars)), length(mtcars))
 })
 
 
