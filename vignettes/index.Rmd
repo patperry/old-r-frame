@@ -60,7 +60,7 @@ x[, "cyl", drop = TRUE]
 
 Unlike `data.frame` objects, we do not allow partial name matching.
 
-```{r}
+```{r, error = TRUE}
 x$cy
 ```
 
