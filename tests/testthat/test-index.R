@@ -121,3 +121,11 @@ test_that("drop = TRUE works for single element ", {
     y <- mtcars[1, 1, drop = TRUE]
     expect_equal(x, y)
 })
+
+
+test_that("drop = TRUE row works for matrix column", {
+    ds <- dataset(group = mtcars)
+    x <- ds[7, , drop = TRUE]
+    y <- list(group = mtcars[7, , drop = TRUE])
+    expect_equal(x, y)
+})

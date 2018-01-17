@@ -4,15 +4,16 @@ context("index-select")
 test_that("$ indexing requires exact", {
     x <- as_dataset(mtcars)
     expect_equal(x$mpg, mtcars$mpg)
-    expect_equal(x$mp, NULL)
+    expect_error(x$mp, "column \"mp\" does not exist")
 })
 
 
 test_that("[[ ignores exact", {
     x <- as_dataset(mtcars)
-    expect_warning(x[["mp", exact = FALSE]],
+    expect_warning(x[["mpg", exact = FALSE]],
                    "'exact' argument is ignored")
 })
+
 
 
 test_that("indexing with column number works", {

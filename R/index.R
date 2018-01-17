@@ -20,7 +20,11 @@
     }
 
     # no fancy subscripting here; maybe add support for that later
-    .subset2(x, i)
+    elt <- .subset2(x, i)
+    if (is.null(elt)) {
+        stop(sprintf("column \"%s\" does not exist", as.character(i)))
+    }
+    elt
 }
 
 
@@ -101,7 +105,13 @@
 
     if (drop) {
         if (!is.null(i) && nrow(x) == 1L) {
-            x <- as.list(x)
+            x <- lapply(x, function(elt) {
+                if (length(dim(elt)) == 2L) {
+                    elt[1L, , drop = TRUE]
+                } else {
+                    elt[[1L]]
+                }
+            })
         }
         if (!is.null(j) && length(x) == 1L) {
             x <- x[[1L]]
