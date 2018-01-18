@@ -61,14 +61,29 @@ as.list.dataset <- function(x, ..., flat = FALSE, path = FALSE)
         # convert each element to a list of columns, and compute the names
         for (i in seq_along(x)) {
             xi <- x[[i]]
-            if (length(dim(xi)) <= 1) {
+            d <- dim(xi)
+            n <- d[[2L]]
+            if (length(d) <= 1) {
                 x[[i]] <- list(xi)
                 index[[i]] <- list(i)
                 path_[[i]] <- list(names[[i]])
                 names[[i]] <- list(names[[i]])
+            } else if (n == 0L) {
+                nrow <- d[[1L]]
+                if (nrow > 0L) {
+                    if (is.data.frame(xi)) {
+                        elt <- as.list(xi[1L, , drop = FALSE])
+                    } else {
+                        elt <- xi[1L, , drop = TRUE]
+                    }
+                    x[[i]] <- list(rep(list(elt), nrow))
+                } else {
+                    x[[i]] <- list()
+                }
+                index[[i]] <- list(i)
+                path_[[i]] <- list(names[[i]])
+                names[[i]] <- list(names[[i]])
             } else {
-                n <- ncol(xi)
-
                 if (is.data.frame(xi)) {
                     x[[i]] <- as.list(xi, ..., flat = TRUE, path = TRUE)
                 } else {

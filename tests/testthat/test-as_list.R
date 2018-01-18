@@ -68,3 +68,11 @@ test_that("'as_list' does not create names if none exist", {
     expect_equal(as.list(x), l)
     expect_equal(as.list(x, flat = TRUE), l)
 })
+
+
+test_that("0-column matrix column", {
+    ds <- dataset(x = 1:5, y = matrix(0, 5, 0))
+    x <- as.list(ds, flat = TRUE)
+    y <- list(x = 1:5, y = rep(list(numeric(0)), 5))
+    expect_equal(x, y)
+})

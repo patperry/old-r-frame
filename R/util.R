@@ -42,14 +42,17 @@ as_column <- function(x, n)
 nrow_dataset <- function(x)
 {
     nc <- length(x)
-    if (nc == 0) {
+    if (nc == 0L) {
         return(0L)
     }
 
-    nr <- vapply(x, nrow_column, 0) # not int since result might overflow
+    nr <- vapply(x, nrow_column, 0)
     i <- which.max(nr)
     n <- nr[[i]]
-    j <- which(nr != 1 & nr != n)
+    if (n == -1L) { # all columns are NULL
+        return(0L)
+    }
+    j <- which(!nr %in% c(-1L, 1L, n))
     if (length(j) > 0) {
         names <- names(x)
         stop(sprintf(
@@ -64,11 +67,15 @@ nrow_dataset <- function(x)
 
 nrow_column <- function(x)
 {
-    d <- dim(x)
-    if (is.null(d)) {
-        length(x)
+    if (is.null(x)) {
+        -1L
     } else {
-        d[[1]]
+        d <- dim(x)
+        if (is.null(d)) {
+            length(x)
+        } else {
+            d[[1]]
+        }
     }
 }
 

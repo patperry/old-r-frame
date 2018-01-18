@@ -72,11 +72,6 @@ test_that("'dataset' errors for rank-3 array columns", {
 })
 
 
-test_that("'dataset' errors for NULL columns", {
-    expect_error(dataset(x = 1, y = NULL), "column 2 \\(\"y\"\\) is NULL")
-})
-
-
 test_that("'dataset' allows scalar columns", {
     expect_equal(dataset(x = 1:10, y = 10:1, z = 1),
                  dataset(x = 1:10, y = 10:1, z = rep(1, 10)))

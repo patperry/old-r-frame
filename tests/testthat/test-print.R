@@ -312,16 +312,18 @@ test_that("printing with list", {
     x <- dataset(col = list(structure(1:4, class = "foo"),
                             structure(letters, class = "bar", dim = c(2, 13)),
                             structure(1:24, dim = c(3, 2, 4)),
+                            NULL,
                             letters,
                             structure(LETTERS[1:4], dim = 4)))
 
     lines <- c(
-'  col          ',
-'1 foo          ',
-'2 bar[2x13]    ',
-'3 array[3x2x4] ',
-'4 character[26]',
-'5 array[4]     ')
+'  col           ',
+'1 foo(4)        ',
+'2 bar[2, 13]    ',
+'3 array[3, 2, 4]',
+'4 NULL          ',
+'5 character(26) ',
+'6 array[4]      ')
 
     expect_equal(strsplit(capture_output(print(x)), "\n")[[1]], lines)
 })

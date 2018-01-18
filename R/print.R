@@ -135,10 +135,12 @@ format_list <- function(x, width, control)
     y <- vapply(x, FUN.VALUE = "", function(elt) class(elt)[[1L]])
     suffix <- vapply(x, FUN.VALUE = "", function(elt) {
         d <- dim(elt)
+        n <- length(elt)
         if (!is.null(d)) {
-            paste0("[", paste0(d, collapse = times), "]")
-        } else if (is.null(oldClass(elt))) {
-            paste0("[", length(elt), "]")
+            paste0("[", paste0(d, collapse = ", "), "]")
+        } else if (!is.null(n) && !is.null(elt)) {
+            n <- length(elt)
+            paste0("(", n, ")")
         } else {
             ""
         }

@@ -47,6 +47,33 @@ test_that("appending column", {
 })
 
 
+test_that("appending column by index", {
+    ds <- mtcars
+    n <- length(ds)
+    col <- rnorm(nrow(ds))
+
+    x <- as_dataset(ds)
+    x[[n + 1L]] <- col
+    y <- cbind.dataset(ds, col)
+
+    expect_equal(x, y)
+})
+
+
+test_that("appending column by index, too far", {
+    skip("not implemented")
+    ds <- mtcars
+    n <- length(ds)
+    col <- rnorm(nrow(ds))
+
+    x <- as_dataset(ds)
+    x[[n + 2L]] <- col
+    y <- cbind.dataset(ds, col)
+
+    expect_equal(x, y)
+})
+
+
 test_that("appending column with no names", {
     x <- as_dataset(mtcars)
     names(x) <- NULL

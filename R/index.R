@@ -21,9 +21,16 @@
 
     # no fancy subscripting here; maybe add support for that later
     elt <- .subset2(x, i)
+
     if (is.null(elt)) {
-        stop(sprintf("column \"%s\" does not exist", as.character(i)))
+        # could be missing or could be NULL; downcast to find out which
+        class(x) <- NULL
+        index <- if (is.character(i)) match(i, names(x)) else i
+        if (is.na(index) || !is.null(x[[index]])) {
+            stop(sprintf("column \"%s\" does not exist", as.character(i)))
+        }
     }
+
     elt
 }
 
@@ -223,7 +230,7 @@ get_pairs <- function(x, pairs)
     if (is.null(value)) {
         # pass
     } else if (is.null(pairs)) {
-        value <- as_dataset(value)
+        #value <- as_dataset(value)
     }
 
     if (!is.null(pairs)) {
@@ -350,10 +357,18 @@ replace_cells <- function(x, i, j, value, call = sys.call(-1L))
         jk <- j[[k]]
         vk <- if (recycle) value[[1L]] else value[[k]]
 
-        if (length(dim(x[[jk]])) <= 1L) {
-            x[[jk]][i] <- vk
+        if (is.null(x[[jk]])) {
+            xjk <- vector("list", dim(x)[[1L]])
+            if (!is.null(vk)) {
+                xjk[[i]] <- vk
+            }
+            x[[jk]] <- xjk
         } else {
-            x[[jk]][i,] <- vk
+            if (length(dim(x[[jk]])) <= 1L) {
+                x[[jk]][i] <- vk
+            } else {
+                x[[jk]][i,] <- vk
+            }
         }
     }
 
@@ -363,8 +378,17 @@ replace_cells <- function(x, i, j, value, call = sys.call(-1L))
 
 arg_recycle <- function(ni, nj, value, call = sys.call(-1L))
 {
-    rows <- nrow(value)
-    cols <- ncol(value)
+    dim <- dim(value)
+    if (is.null(dim)) {
+        rows <- length(value)
+        if (rows == ni * nj) {
+            return(list(rows = FALSE, cols = FALSE))
+        }
+        cols <- 1L
+    } else {
+        rows <- dim[[1L]]
+        cols <- dim[[2L]]
+    }
 
     if (rows == ni) {
         recycle_rows <- FALSE
