@@ -102,6 +102,13 @@ identical(as_simple_vector(f), as.character(f))
 as_simple_vector(f, integer())
 as.integer(f) # uses levels
 
+## Lists
+l <- list(1, 2.3, "hello", 7)
+as_simple_vector(l)
+
+# also works for 'boxed' lists; lists where each element is a length-1 list
+ll <- list(list(1), list(2.3), list("hello"), list(7))
+as_simple_vector(ll)
 
 ## Dates and times
 ct <- as.POSIXct("2017-12-25 17:23:45", tz = "America/Los_Angeles")

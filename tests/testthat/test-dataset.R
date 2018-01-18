@@ -158,3 +158,19 @@ test_that("as_dataset(list()) has 1 row", {
                               class = "data.frame"))
     expect_equal(x, y)
 })
+
+
+test_that("handles list matrix", {
+    mat <- rbind(list("D", 3),
+                 list("A", 1),
+                 list("C", 1))
+    x <- as_dataset(mat)
+    y <- as_dataset(list(mat[, 1], mat[, 2]))
+    expect_equal(x, y)
+})
+
+
+test_that("errors for list array", {
+    arr <- array(as.list(1:6), c(1, 2, 3))
+    expect_error(as_dataset(arr), "cannot convert rank-3 array to dataset")
+})

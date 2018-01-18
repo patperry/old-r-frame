@@ -219,6 +219,37 @@ mask; for `dataset` objects with `rownames`, we can also select by name.
 
 ### By key
 
+
+```r
+# single row
+x[list("D", 3), ]
+#>                                   ═group══
+#> k1 k2 │ name        mpg cyl  disp  hp drat
+#> D   3 │ Merc 450SE 16.4   8 275.8 180 3.07
+
+# multiple rows
+x[rbind(list("D", 3),
+        list("A", 1),
+        list("C", 1)), ]
+#>                                   ═group══
+#> k1 k2 │ name        mpg cyl  disp  hp drat
+#> D   3 │ Merc 450SE 16.4   8 275.8 180 3.07
+#> A   1 │ Mazda RX4  21.0   6 160.0 110 3.90
+#> C   1 │ Datsun 710 22.8   4 108.0  93 3.85
+
+# same result (and more efficient)
+x[cbind(c("D", "A", "C"), c(3, 1, 1)), ]
+#>                                   ═group══
+#> k1 k2 │ name        mpg cyl  disp  hp drat
+#> D   3 │ Merc 450SE 16.4   8 275.8 180 3.07
+#> A   1 │ Mazda RX4  21.0   6 160.0 110 3.90
+#> C   1 │ Datsun 710 22.8   4 108.0  93 3.85
+```
+
+For simplicity I'm using `rbind` and `cbind` here, but if efficiency matters
+then it's better to use `rbind.dataset` and `cbind.dataset`.
+
+
 ### By index
 
 ### By logical mask

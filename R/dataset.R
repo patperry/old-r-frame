@@ -122,8 +122,32 @@ as_dataset.data.frame <- function(x, ..., simple = FALSE)
 }
 
 
+as_dataset.array <- function(x, ..., simple = FALSE)
+{
+    dim <- dim(x)
+    r <- length(dim)
+
+    if (r > 2L) {
+        stop(sprintf("cannot convert rank-%.0f array to dataset", r))
+    }
+
+    x <- as.matrix(x)
+    as_dataset(x, ..., simple = simple)
+}
+
+
+as_dataset.matrix <- function(x, ..., simple = FALSE)
+{
+    names <- colnames(x)
+    x <- as.data.frame(x, optional = TRUE, stringsAsFactors = FALSE)
+    names(x) <- names
+    as_dataset(x, ..., simple = simple)
+}
+
+
 as_dataset.list <- function(x, ..., simple = FALSE)
 {
+
     simple <- arg_option(simple)
     nc <- length(x)
     names <- names(x) <- arg_names(nc, "columns", names(x), na = "")

@@ -540,14 +540,13 @@ arg_row_index <- function(x, i, call = sys.call(-1L))
     n <- nrow(x)
     keys <- keys(x)
     
-    d <- dim(i)
-    if (is.list(i) && !is.null(d)) {
+    r <- length(dim(i))
+    if (is.list(i) && r <= 1L) {
         i <- as_dataset(i)
-        d <- dim(i)
+        r <- length(dim(i))
     }
 
-    r <- length(d)
-    if (r <= 1) {
+    if (r <= 1L) {
         rows <- seq_len(n)
         if (is.numeric(i)) {
             # pass

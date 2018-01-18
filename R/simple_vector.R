@@ -43,6 +43,15 @@ as_simple_vector.default <- function(x, like = NULL, ...)
         x <- as.logical(x)
     } else if (is.complex(x)) {
         x <- as.complex(x)
+    } else if (is.list(x)) {
+        # unwrap scalar list
+        lengths <- vapply(x, length, 0)
+        if (all(lengths == 1L)) {
+            x <- do.call(c, x)
+            return(as_simple_vector(x, like, ...))
+        } else {
+            stop(sprintf("cannot convert heterogeneous list to simple vector"))
+        }
     } else {
         stop(sprintf("cannot convert objects of type \"%s\" to simple vector",
                      class(x)[[1L]]))

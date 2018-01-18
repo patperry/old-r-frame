@@ -73,3 +73,22 @@ test_that("numeric gets converted to POSIXct assuming origin 1970-01-01 UTC", {
     ct <- as.POSIXct("2017-12-25 17:23:45", tz = "America/Los_Angeles")
     expect_equal(as_simple_vector(as.numeric(ct), ct), ct)
 })
+
+
+test_that("homogeneous list", {
+    l <- list(1, 2, 17)
+    expect_equal(as_simple_vector(l), as.numeric(l))
+})
+
+
+test_that("homogeneous boxed list", {
+    l <- list(list(1), list(2), list(17))
+    expect_equal(as_simple_vector(l), c(1, 2, 17))
+})
+
+
+test_that("heterogeneous list", {
+    l <- list(1, c(1, 3), 1)
+    expect_error(as_simple_vector(l),
+                 "cannot convert heterogeneous list to simple vector")
+})
