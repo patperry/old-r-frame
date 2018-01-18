@@ -395,9 +395,7 @@ arg_index <- function(nargs, i, j, call = sys.call(-1L))
 {
     if (nargs == 1L) {
         if (missing(i)) {
-            return(NULL)
-        } else if (is.null(i)) {
-            return(list(j = integer()))
+            i <- NULL
         }
 
         r <- length(dim(i))
@@ -412,17 +410,14 @@ arg_index <- function(nargs, i, j, call = sys.call(-1L))
     } else if (nargs == 2L) {
         if (missing(i)) {
             i <- NULL
-        } else if (is.null(i)) {
-            i <- integer()
         }
         if (missing(j)) {
             j <- NULL
-        } else if (is.null(j)) {
-            j <- integer()
         }
         return(list(i = i, j = j))
     }
 
+    # nargs == 0L
     NULL
 }
 
