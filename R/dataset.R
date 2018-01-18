@@ -54,10 +54,11 @@ col_name_paren <- function(x, i)
 
 as_dataset.dataset <- function(x, ..., simple = FALSE)
 {
-    x <- arg_dataset(x)
+    if (!is_dataset(x)) {
+        x <- as_dataset(x)
+    }
     simple <- arg_option(simple)
 
-    x <- downcast(x, "dataset")
     if (!simple) {
         return(x)
     }

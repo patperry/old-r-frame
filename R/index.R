@@ -15,6 +15,7 @@
 
 `[[.dataset` <- function(x, i, exact = TRUE)
 {
+    x <- as_dataset(x)
     if (!identical(exact, TRUE)) {
         warning("'exact' argument is ignored")
     }
@@ -68,12 +69,14 @@
 `$.dataset` <- function(x, name)
 {
     # NOTE: partial matching on name is not allowed
+    x <- as_dataset(x)
     x[[name]]
 }
 
 
 `$<-.dataset` <- function(x, name, value)
 {
+    x <- as_dataset(x)
     n1 <- length(x) + 1L
     i <- match(name, names(x), n1)
     x[[i]] <- value
@@ -176,7 +179,7 @@ row_subset <- function(x, i, call = sys.call(-1L))
     # NOTE: result is a dataset
     cols <- lapply(x, elt_subset, rows)
     attr(cols, "row.names") <- .set_row_names(length(rows))
-    attr(cols, "class") <- class(x)
+    attr(cols, "class") <- c("dataset", "data.frame")
     keys(cols) <- keys
 
     cols
