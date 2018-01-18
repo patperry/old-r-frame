@@ -119,7 +119,7 @@ restrict(x, major = "y")
 restrict(x, minor = c(1, 2))
 
 # suppress dimension dropping with I()
-restrict(x, major = I("y"), minor = c(1, 2))
+restrict(x, major = I("y"))
 ```
 
 ### Grouping

@@ -81,12 +81,12 @@
 }
 
 
-`[.dataset` <- function(x, ..., drop = FALSE)
+`[.dataset` <- function(x, i, j, drop = FALSE)
 {
-    args <- arg_index(x, ..1, "drop")
+    x <- as_dataset(x)
+    args <- arg_index(nargs() - 1L - !missing(drop), i, j)
     drop <- arg_option(drop)
 
-    x <- as_dataset(args$x)
     i <- args$i
     j <- args$j
     pairs <- args$pairs
@@ -212,11 +212,10 @@ get_pairs <- function(x, pairs)
 }
 
 
-`[<-.dataset` <- function(x, ..., value)
+`[<-.dataset` <- function(x, i, j, value)
 {
-    args <- arg_index(x, ..1, "value")
-
-    x <- as_dataset(args$x)
+    x <- as_dataset(x)
+    args <- arg_index(nargs() - 2L, i, j)
     i <- args$i
     j <- args$j
     pairs <- args$pairs
@@ -398,79 +397,39 @@ arg_recycle <- function(ni, nj, value, call = sys.call(-1L))
 }
 
 
-# arg_index(x, ..1, "drop") or arg_index(x, ..1, "value")
-# for x[...,drop] or x[...] <- value
-arg_index <- function(x, first, lastname, call = sys.call(-1L))
+arg_index <- function(nargs, i, j, call = sys.call(-1L))
 {
-    # This is a fragile. ideally we'd use match.call(), but we can't do
-    # that here since we want to be able to index like x[x = 1], with 'x'
-    # as a named argument. Find the first call that isn't forwarding ...
-    for (n in 1L:sys.nframe()) {
-        pcall <- sys.call(-n)
-        if (!identical(pcall[[3L]], quote(expr=...))) {
-            break
+    if (nargs == 1L) {
+        if (missing(i)) {
+            return(NULL)
+        } else if (is.null(i)) {
+            return(list(j = integer()))
         }
-    }
 
-    # get the arguments
-    args <- pcall[-1L]
-
-    # split off 'drop'/'value' argument
-    narg <- length(args)
-    argnames <- names(args)
-    if (identical(argnames[[narg]], lastname)) {
-        args <- args[-narg]
-        argnames <- names(args)
-    }
-
-    # handle case when 'x' is a named argument
-    if ("x" %in% argnames) {
-        x <- first
-    }
-
-    # evaluate remaining arguments, replacing missing with NULL
-    # https://stackoverflow.com/a/47316520/6233565
-    miss <- vapply(args, identical, NA, quote(expr=))
-    args[miss] <- list(NULL)
-    args[[1L]] <- quote(list)
-    index <- eval.parent(args, n + 1L)
-
-    # get the call, for error messages
-    n <- length(index)
-    names <- names(index)
-
-    # arguments default to NULL
-    i <- j <- pairs <- NULL
-
-    if (!is.null(names)) {
-        # x[name=1,] and x[name=1] are both allowed
-        empty <- !nzchar(names)
-        if (empty[[n]]) {
-            j <- index[[n]]
-            index <- index[-n]
-        }
-        i <- arg_slice(keys(x), index, call)
-    } else if (n == 0L) {
-        # pass
-    } else if (n == 1L) {
-        index <- index[[1L]]
-        r <- length(dim(index))
+        r <- length(dim(i))
         if (r <= 1L) {
-            j <- index
+            return(list(j = i))
         } else if (r == 2L) {
-            pairs <- index
+            return(list(pairs = i))
         } else {
             stop(simpleError(sprintf("cannot index with a rank-%.0f array",
                                      r), call))
         }
-    } else if (n == 2L) {
-        i <- index[[1L]]
-        j <- index[[2L]]
-    } else {
-        stop(simpleError("incorrect number of dimensions", call))
+    } else if (nargs == 2L) {
+        if (missing(i)) {
+            i <- NULL
+        } else if (is.null(i)) {
+            i <- integer()
+        }
+        if (missing(j)) {
+            j <- NULL
+        } else if (is.null(j)) {
+            j <- integer()
+        }
+        return(list(i = i, j = j))
     }
 
-    list(x = x, i = i, j = j, pairs = pairs)
+    NULL
 }
 
 
@@ -581,11 +540,13 @@ arg_row_index <- function(x, i, call = sys.call(-1L))
     n <- nrow(x)
     keys <- keys(x)
     
-    if (is.list(i) && !is.object(i)) {
+    d <- dim(i)
+    if (is.list(i) && !is.null(d)) {
         i <- as_dataset(i)
+        d <- dim(i)
     }
 
-    r <- length(dim(i))
+    r <- length(d)
     if (r <= 1) {
         rows <- seq_len(n)
         if (is.numeric(i)) {
