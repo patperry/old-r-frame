@@ -23,7 +23,6 @@ export(as.data.frame.dataset)
 export(as.list.dataset)
 export(as.matrix.dataset)
 export(as_dataset)
-export(as_dataset.AsIs)
 export(as_dataset.array)
 export(as_dataset.data.frame)
 export(as_dataset.dataset)
@@ -87,7 +86,6 @@ export(unique.keyset)
 
 
 ## New S3 methods
-S3method(as_dataset, AsIs)
 S3method(as_dataset, array)
 S3method(as_dataset, data.frame)
 S3method(as_dataset, dataset)

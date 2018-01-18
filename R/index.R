@@ -203,7 +203,7 @@ get_pairs <- function(x, pairs)
             if (length(dim(xk)) <= 1L) {
                 xk[[ik]]
             } else {
-                xk[ik, , drop = TRUE]
+                drop_row_dim(xk[ik, , drop = FALSE])
             }
         }
     })
@@ -223,13 +223,7 @@ get_pairs <- function(x, pairs)
     if (is.null(value)) {
         # pass
     } else if (is.null(pairs)) {
-        cl <- class(value)
-        if (cl[[1L]] == "AsIs") {
-            class(value) <- cl[-1L]
-            value <- as_dataset(list(list(value)))
-        } else {
-            value <- as_dataset(value)
-        }
+        value <- as_dataset(value)
     }
 
     if (!is.null(pairs)) {
