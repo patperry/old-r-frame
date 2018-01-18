@@ -2,10 +2,12 @@
 \alias{dataset}
 \alias{as_dataset}
 \alias{as_dataset.AsIs}
+\alias{as_dataset.array}
 \alias{as_dataset.data.frame}
 \alias{as_dataset.dataset}
 \alias{as_dataset.default}
 \alias{as_dataset.list}
+\alias{as_dataset.matrix}
 \alias{is_dataset}
 \alias{is_simple_dataset}
 \title{Data Set Objects}
