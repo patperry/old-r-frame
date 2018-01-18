@@ -76,3 +76,11 @@ test_that("0-column matrix column", {
     y <- list(x = 1:5, y = rep(list(numeric(0)), 5))
     expect_equal(x, y)
 })
+
+
+test_that("0-column named, matrix column", {
+    ds <- dataset(x = 1:5, y = matrix(0, 5, 0))
+    x <- as.list(ds, flat = TRUE)
+    y <- list(x = 1:5, y = rep(list(numeric(0)), 5))
+    expect_equal(x, y)
+})

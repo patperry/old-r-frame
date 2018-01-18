@@ -378,3 +378,16 @@ test_that("printing with NA col name works", {
 '3 6')
     expect_equal(strsplit(capture_output(print(x)), "\n")[[1]], lines)
 })
+
+
+test_that("printing empty matrix", {
+    x <- dataset(x = matrix(0, 5, 0))
+    lines <- c(
+'  x         ',
+'1 numeric(0)',
+'2 numeric(0)',
+'3 numeric(0)',
+'4 numeric(0)',
+'5 numeric(0)')
+    expect_equal(strsplit(capture_output(print(x)), "\n")[[1]], lines)
+})

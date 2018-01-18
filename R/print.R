@@ -168,8 +168,7 @@ format_vector <- function(name, x, ..., control, section, indent)
 
     # convert factor to character
     cl <- class(x)
-    if (is.factor(x) && (identical(cl, "factor")
-                         || identical(cl, c("AsIs", "factor")))) {
+    if (is.factor(x)) {
         x <- as.character(x)
         cl <- class(x)
     }
@@ -226,8 +225,14 @@ format_vector <- function(name, x, ..., control, section, indent)
 
 format_matrix <- function(name, x, ..., control, section, indent)
 {
-    nc <- ncol(x)
-    names <- colnames(x)
+    nc <- dim(x)[[2L]]
+    if (nc == 0L) {
+        x <- as.list.dataset(list(x), flat = TRUE)[[1L]]
+        return(format_vector(name, x, ..., control = control,
+                             section = section, indent = indent))
+    }
+
+    names <- dimnames(x)[[2L]]
     if (is.null(names)) {
         names <- paste0("[,", as.character(seq_len(nc)), "]")
     } else {
@@ -358,7 +363,7 @@ format.dataset <- function(x, rows = -1L, wrap = -1L, ..., chars = NULL,
         wrap <- .Machine$integer.max
     }
    
-    x <- arg_dataset(x)
+    x <- as_dataset(x)
     rows <- arg_rows(rows)
     wrap <- arg_integer_scalar(wrap)
     chars <- arg_chars(chars)
@@ -376,7 +381,7 @@ format.dataset <- function(x, rows = -1L, wrap = -1L, ..., chars = NULL,
                                   quote = quote, na.print = na.print,
                                   print.gap = print.gap, justify = justify,
                                   width = width, line = line, wrap = wrap)
-    n <- nrow(x)
+    n <- dim(x)[[1L]]
 
     if (is.null(indent)) {
         indent <- 0L
@@ -637,12 +642,11 @@ print.dataset <- function(x, rows = NULL, wrap = NULL, ..., number = NULL,
                                   print.gap = print.gap, display = display,
                                   wrap = wrap)
 
-    n <- nrow(x)
+    n <- dim(x)[[1L]]
     style <- new_format_style(control)
     gap <- utf8_format("", width = control$print.gap)
 
     if (length(x) == 0) {
-        n <- nrow(x)
         cat(sprintf("(%.0f rows, 0 columns)\n", n))
         return(invisible(x))
     }
