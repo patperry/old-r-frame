@@ -29,7 +29,10 @@ as_keyset <- function(x, ...)
 
 as_keyset.keyset <- function(x, ...)
 {
-    downcast(x, "keyset")
+    if (!is_keyset(x)) {
+        x <- as_keyset(x)
+    }
+    x
 }
 
 

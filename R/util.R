@@ -80,19 +80,6 @@ nrow_column <- function(x)
 }
 
 
-downcast <- function(x, class)
-{
-    cl <- class(x)
-    i <- match(class, cl)
-    if (i > 1L) {
-        cl <- cl[-seq_len(i - 1L)]
-        class(x) <- cl
-    }
-
-    x
-}
-
-
 make_unique <- function(x)
 {
     x <- as_dataset(x, simple = TRUE)
