@@ -38,8 +38,9 @@
 
 `[[<-.dataset` <- function(x, i, value)
 {
-    # downcast to dataset, then list
     x <- as_dataset(x)
+
+    # record attributes and downcast to list
     keys <- attr(x, "keys")
     n <- .row_names_info(x, 2L)
     cl <- class(x)
@@ -196,9 +197,9 @@ elt_subset <- function(x, i)
 }
 
 
-get_pairs <- function(x, pairs)
+get_pairs <- function(x, pairs, call = sys.call(-1))
 {
-    pairs <- arg_pairs_index(x, pairs)
+    pairs <- arg_pairs_index(x, pairs, call)
 
     i <- pairs[, 1L, drop = TRUE]
     j <- pairs[, 2L, drop = TRUE]
@@ -230,12 +231,6 @@ get_pairs <- function(x, pairs)
     j <- args$j
     pairs <- args$pairs
 
-    if (is.null(value)) {
-        # pass
-    } else if (is.null(pairs)) {
-        #value <- as_dataset(value)
-    }
-
     if (!is.null(pairs)) {
         replace_pairs(x, pairs, value)
     } else if (is.null(i)) {
@@ -248,7 +243,7 @@ get_pairs <- function(x, pairs)
 
 replace_pairs <- function(x, pairs, value, call = sys.call(-1L))
 {
-    pairs <- arg_pairs_index(x, pairs)
+    pairs <- arg_pairs_index(x, pairs, call)
 
     i <- pairs[, 1L, drop = TRUE]
     j <- pairs[, 2L, drop = TRUE]
@@ -266,7 +261,7 @@ replace_pairs <- function(x, pairs, value, call = sys.call(-1L))
         for (k in seq_len(n)) {
             jk <- j[[k]]
             ik <- i[[k]]
-            if (length(dim(x[[jk]])) <= 1) {
+            if (length(dim(x[[jk]])) <= 1L) {
                 x[[jk]][[ik]] <- value
             } else {
                 x[[jk]][ik, ] <- value
@@ -276,7 +271,7 @@ replace_pairs <- function(x, pairs, value, call = sys.call(-1L))
         for (k in seq_len(n)) {
             jk <- j[[k]]
             ik <- i[[k]]
-            if (length(dim(x[[jk]])) <= 1) {
+            if (length(dim(x[[jk]])) <= 1L) {
                 x[[jk]][[ik]] <- value[[k]]
             } else {
                 x[[jk]][ik, ] <- value[[k]]
@@ -479,8 +474,9 @@ arg_pairs_index <- function(x, i, call = sys.call(-1L))
         i <- trunc(as.numeric(i))
         bounds <- which(!(is.na(i) | (1L <= i & i <= nel)))
         if (length(bounds) > 0L) {
-            stop(simpleError(sprintf("index %.0f is out of bounds",
-                                     bounds[[1L]]), call))
+            b <- bounds[[1L]]
+            stop(simpleError(sprintf("index %.0f (%.0f) is out of bounds",
+                                     b, i[[b]]), call))
         }
         vec <- TRUE
     } else if (d2 == 2L) {
@@ -488,10 +484,11 @@ arg_pairs_index <- function(x, i, call = sys.call(-1L))
         col <- trunc(as.numeric(i[, 2L, drop = TRUE]))
 
         bounds <- which(!((is.na(row) | (1L <= row & row <= nr))
-                          && ((is.na(col) | (1L <= col & col <= nc)))))
+                          & (is.na(col) | (1L <= col & col <= nc))))
         if (length(bounds) > 0L) {
-            stop(simpleError(sprintf("index %.0f is out of bounds",
-                                     bounds[[1L]]), call))
+            b <- bounds[[1L]]
+            stop(simpleError(sprintf("index %.0f (%.0f, %.0f) is out of bounds",
+                                     b, row[[b]], col[[b]]), call))
         }
 
         row[is.na(col)] <- NA
