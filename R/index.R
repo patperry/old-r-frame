@@ -273,7 +273,7 @@ replace_pairs <- function(x, pairs, value, call = sys.call(-1L))
             }
         }
     } else {
-        stop(simpleError(sprintf("number of values (%.0f) must match number of elements to replace (%.0f)", nv, n)))
+        stop(simpleError(sprintf("number of values (%.0f) must match number of entries to replace (%.0f)", nv, n)))
     }
 
     x
@@ -314,10 +314,7 @@ replace_cols <- function(x, j, value, call = sys.call(-1L))
         for (k in seq_along(j)) {
             jk <- j[[k]]
             vk <- if (rc) value[[1L]] else value[[k]]
-            if (rr) {
-                # TODO: handle lists, S3 objects
-                vk <- rep(vk, n)
-            }
+            vk <- as_column(vk, n)
             x[[jk]] <- vk
         }
     } else {

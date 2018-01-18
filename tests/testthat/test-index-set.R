@@ -60,12 +60,40 @@ test_that("appending column with no names", {
 })
 
 
+test_that("replace column with scalar", {
+    x <- as_dataset(mtcars)
+    x[[5]] <- 17
+    y <- mtcars
+    y[[5]] <- 17
+    y <- as_dataset(y)
+    expect_equal(x, y)
+})
+
+
+test_that("replace column with scalar, double index", {
+    x <- as_dataset(mtcars)
+    x[, 5] <- 17
+    y <- as_dataset(mtcars)
+    y[[5]] <- 17
+    expect_equal(x, y)
+})
+
 
 test_that("deleting columns with single index", {
     x <- as_dataset(mtcars)
     y <- mtcars
     x[c(4, 2, 4)] <- NULL
     y[c(4, 2)] <- NULL # errors on duplicates
+    expect_equal(x, as_dataset(y))
+})
+
+
+test_that("deleting columns with name", {
+    x <- as_dataset(mtcars)
+    y <- mtcars
+    i <- names(x)[c(5, 3, 8, 3)]
+    x[i] <- NULL
+    y[c(5, 3, 8)] <- NULL # errors on duplicates
     expect_equal(x, as_dataset(y))
 })
 

@@ -54,3 +54,36 @@ test_that("indexing with logical mask works", {
     y <- ds[index]
     expect_equal(x, y)
 })
+
+
+test_that("matrix entry", {
+    ds <- dataset(a = matrix(1:6 * 10, 3, 2))
+    x <- ds[cbind(2, 1)]
+    y <- list(c(20, 50))
+    expect_equal(x, y)
+})
+
+
+test_that("matrix entry replace", {
+    x <- dataset(a = matrix(1:6 * 10, 3, 2))
+    x[cbind(2, 1)] <- list(c(17, 14))
+
+    y <- dataset(a = cbind(c(10, 17, 30), c(40, 14, 60)))
+    expect_equal(x, y)
+})
+
+
+test_that("matrix entry replace recycle", {
+    x <- dataset(a = matrix(1:6 * 10, 3, 2))
+    x[cbind(2, 1)] <- 100
+
+    y <- dataset(a = cbind(c(10, 100, 30), c(40, 100, 60)))
+    expect_equal(x, y)
+})
+
+
+test_that("matrix entry wrong replace number", {
+    x <- dataset(a = matrix(1:6 * 10, 3, 2))
+    expect_error(x[cbind(2, 1)] <- c(17, 24),
+                 "number of values \\(2\\) must match number of entries to replace \\(1\\)")
+})
