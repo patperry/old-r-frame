@@ -62,8 +62,7 @@ object.
 or simple dataset objects, respectively.
 }
 \seealso{
-\code{\link{framed}}, \code{\link{keys}}, \code{\link{schema}},
-\code{link{as_simple_vector}}.
+\code{\link{keys}}, \code{\link{record}}, \code{link{as_simple_vector}}.
 }
 \examples{
 # no need for stringsAsFactors = TRUE

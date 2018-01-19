@@ -286,7 +286,7 @@ arg_names <- function(n, type, value, name = argname(substitute(value)),
 
     if (length(value) != n) {
         stop(simpleError(
-            sprintf("%s length (%.0f) must match number of %s (%.0f)",
+            sprintf("mismatch: %s has length %.0f, number of %s is %.0f",
                     name, length(value), type, n), call))
     }
 

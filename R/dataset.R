@@ -24,8 +24,7 @@ dataset <- function(...)
     }
     for (i in seq_len(n)) {
         if (names[[i]] == "") {
-            name <- deparse(args[[i]], nlines = 1L)[1L]
-            names[[i]] <- sub("^I\\((.*)\\)$", "\\1", name)
+            names[[i]] <- deparse(args[[i]], nlines = 1L)[1L]
         }
     }
     names(x) <- names
@@ -172,7 +171,7 @@ as_dataset.list <- function(x, ..., simple = FALSE)
 
 is_dataset <- function(x)
 {
-    is.data.frame(x) && inherits(x, "dataset")
+    inherits(x, "dataset")
 }
 
 
