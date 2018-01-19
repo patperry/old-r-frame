@@ -287,44 +287,98 @@ replace_pairs <- function(x, pairs, value, call = sys.call(-1L))
 
 replace_cols <- function(x, j, value, call = sys.call(-1L))
 {
-    if (is.null(value)) {
-        if (is.null(j)) {
-            j <- seq_along(x)
-        } else {
-            j <- arg_col_index(x, j, call)
-        }
-
-        # downcast to list
-        cl <- class(x)
-        keys <- attr(x, "keys")
-        rn <- attr(x, "row.names")
-        class(x) <- NULL
-
-        x[j] <- NULL
-        
-        # restore
-        attr(x, "row.names") <- rn
-        attr(x, "keys") <- keys
-        class(x) <- cl
-    } else if (is.character(j)) {
-        if (anyNA(j)) {
-            stop(simpleError("column index contains NA", call))
-        }
-
-        n <- nrow(x)
-        recycle <- arg_recycle(n, length(j), value, call)
-        rc <- recycle$cols
-        rr <- recycle$rows
-
-        for (k in seq_along(j)) {
-            jk <- j[[k]]
-            vk <- if (rc) value[[1L]] else value[[k]]
-            vk <- as_column(vk, n)
-            x[[jk]] <- vk
+    nc <- length(x)
+    if (is.null(j)) {
+        j <- seq_len(nc)
+    } else if (is.logical(j)) {
+        j <- arg_col_mask(x, j, call)
+    } else if (is.numeric(j)) {
+        j <- trunc(as.numeric(j))
+        bounds <- which(!is.finite(j) | j <= 0L)
+        if (length(bounds) > 0L) {
+            b <- bounds[[1L]]
+            stop(simpleError(sprintf("column index %.0f (%.0f) is invalid",
+                                     b, j[[b]]), call))
         }
     } else {
-        x <- replace_cells(x, NULL, j, value, call)
+        j <- as.character(j)
+        names <- names(x)
+        if (is.null(names) && length(j) > 0L) {
+            names <- as.character(nc)
+            names(x) <- names
+        }
     }
+
+    # record attributes and downcast to list
+    keys <- attr(x, "keys")
+    n <- dim(x)[[1L]]
+    cl <- class(x)
+    class(x) <- NULL
+
+    if (is.null(value)) { # delete
+        if (is.character(j)) {
+            j <- match(j, names, 0L)
+        }
+        x[j] <- NULL
+    } else { # replace
+        nj <- length(j)
+        dim <- dim(value)
+        r <- length(dim)
+
+        if (r > 2L) {
+            stop(simpleError("type error: replacement is not a vector or matrix", call))
+        }
+
+        nv <- if (r <= 1L) length(value) else dim[[1L]]
+        if (nv != n && nv != 1L) {
+            stop(simpleError(sprintf("mismatch: replacement has %.0f rows, data has %.0f",
+                 nv, n), call))
+        }
+
+        if (r <= 1L) {
+            col <- as_column(value, n)
+            cols <- rep(list(col), nj)
+        } else {
+            ncv <- dim[[2L]]
+            if (ncv != nj) {
+                stop(simpleError(sprintf(
+                    "mismatch: replacement has %.0f columns, index has length %.0f",
+                    ncv, nj), call))
+            }
+            cols <- as_dataset(value)
+        }
+
+        if (is.character(j)) {
+            index <- match(j, names, 0L)
+        } else {
+            index <- j
+        }
+
+        for (k in seq_along(index)) {
+            if (index[[k]] == 0L) {
+                nc <- nc + 1L
+                index[[k]] <- nc
+                if (is.character(j)) {
+                    names[[nc]] <- j[[k]]
+                }
+            }
+        }
+
+        length(x) <- nc
+        if (is.character(j)) {
+            names(x) <- names
+        }
+
+        for (k in seq_along(index)) {
+            i <- index[[k]]
+            x[[i]] <- cols[[k]]
+        }
+    }
+
+    # restore; note downcast
+    attr(x, "row.names") <- .set_row_names(n)
+    attr(x, "keys") <- keys
+    class(x) <- c("dataset", "data.frame")
 
     x
 }
@@ -433,6 +487,11 @@ arg_index <- function(nargs, i, j, call = sys.call(-1L))
         if (missing(j)) {
             j <- NULL
         }
+        rj <- length(dim(j))
+        if (rj > 1L) {
+            stop(simpleError(sprintf(
+                 "cannot index columns with a rank-%.0f array", r), call))
+        }
         return(list(i = i, j = j))
     }
 
@@ -513,19 +572,37 @@ arg_pairs_index <- function(x, i, call = sys.call(-1L))
 }
 
 
-arg_col_index <- function(x, i, call = sys.call(-1L))
+arg_col_mask <- function(x, i, call = sys.call(-1L))
 {
     n <- length(x)
-    if (is.logical(i) && length(i) != n) {
-        if (length(i) == 1L) {
-            # recycle scalar (needed for 'subset.data.frame')
-            i <- rep(i, n)
-        } else {
-            stop(simpleError(sprintf("selection mask length (%.0f) must equal number of columns (%.0f)",
-                                     length(i), n), call))
-        }
+    ni <- length(i)
+
+    if (ni == 1L) {
+        # recycle scalar (needed for 'subset.data.frame')
+        i <- rep(i, n)
+    } else if (ni != n) {
+        stop(simpleError(sprintf(
+             "selection mask length (%.0f) must equal number of columns (%.0f)",
+             ni, n), call))
     }
 
+    bounds <- which(is.na(i))
+    if (length(bounds) > 0L) {
+        b <- bounds[[1L]]
+        stop(simpleError(sprintf("column mask entry %.0f is NA", b), call))
+    }
+
+    seq_len(n)[i]
+}
+
+
+arg_col_index <- function(x, i, call = sys.call(-1L))
+{
+    if (is.logical(i)) {
+        return(arg_col_mask(x, i, call))
+    }
+
+    n <- length(x)
     cols <- seq_len(n)
     names(cols) <- names(x)
     cols <- cols[i]

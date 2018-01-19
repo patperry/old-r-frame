@@ -61,7 +61,7 @@ test_that("indexing with column logical works", {
 test_that("indexing with NA column logical errors", {
     x <- as_dataset(mtcars)
     j <- c(rep(TRUE, length(mtcars) - 1), NA)
-    expect_error(x[j], "column selection entry 11 is NA")
+    expect_error(x[j], "column mask entry 11 is NA")
 })
 
 
