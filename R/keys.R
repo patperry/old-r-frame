@@ -24,7 +24,7 @@ keys.default <- function(x)
 
 keys.dataset <- function(x)
 {
-    attr(x, "keys")
+    attr(x, "keys", TRUE)
 }
 
 `keys<-` <- function(x, value)
@@ -35,17 +35,23 @@ keys.dataset <- function(x)
 
 `keys<-.dataset` <- function(x, value)
 {
-    if (!is.null(value)) {
+    if (is.null(value)) {
+        if (!is.null(keys(x))) {
+            attr(x, "keys") <- NULL
+        }
+    } else {
         value <- as_keyset(value)
 
         n <- dim(x)[[1L]]
-        nk <- nrow(value)
+        nk <- dim(value)[[1L]]
         if (n != nk) {
-            stop(sprintf("key rows (%.0f) must match data rows (%.0f)", nk, n))
+            stop(sprintf("mismatch: keys have %.0f rows, data have %.0f",
+                         nk, n))
         }
+
+        attr(x, "keys") <- value
     }
 
-    attr(x, "keys") <- value
     x
 }
 
@@ -75,10 +81,11 @@ keylevels.default <- function(x)
 
 keylevels.keyset <- function(x)
 {
-    levels <- vector("list", length(x))
+    n <- length(x)
+    levels <- vector("list", n)
     names(levels) <- names(x)
 
-    for (i in seq_along(x)) {
+    for (i in seq_len(n)) {
         lv <- unique(x[[i]])
         o <- order(lv, method = "radix")
         levels[[i]] <- lv[o]
