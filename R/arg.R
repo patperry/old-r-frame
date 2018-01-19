@@ -54,8 +54,14 @@ arg_character_vector <- function(value, name = argname(substitute(value)),
     value <- as.character(value)
 
     if (utf8) {
-        # TODO: catch error
-        value <- as_utf8(value)
+        raw <- value
+        value <- tryCatch(as_utf8(raw), error = function(cond) NULL)
+        if (is.null(value)) {
+            invalid <- which(!utf8_valid(raw))[[1L]]
+            stop(simpleError(sprintf("%s, entry %.0f has invalid character encoding",
+                                     name, invalid),
+                             call))
+        }
     }
 
     value

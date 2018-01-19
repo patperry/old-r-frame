@@ -12,13 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-dimnames.dataset <- function(x)
-{
-    cn <- names(x)
-    rn <- row.names(x)
-    list(rn, cn)
-}
-
 
 `dimnames<-.dataset` <- function(x, value)
 {
@@ -53,9 +46,26 @@ row.names.dataset <- function(x)
     if (is.null(value)) {
         keys(x) <- NULL
     } else {
-        value <- arg_names(nrow(x), "rows", as.character(value),
-                           allow_na = FALSE, unique = TRUE)
+        nrow <- dim(x)[[1L]]
+        value <- as.character(value)
+        value <- arg_names(nrow, "rows", value, allow_na = TRUE,
+                           utf8 = TRUE, unique = TRUE)
         keys(x) <- dataset(name = value)
     }
+    x
+}
+
+`names<-.dataset` <- function(x, value)
+{
+    if (is.null(value)) {
+        if (!is.null(names(x))) {
+            attr(x, "names") <- NULL
+        }
+    } else {
+        n <- length(x)
+        value <- arg_names(n, "columns", value, allow_na = TRUE, utf8 = TRUE)
+        attr(x, "names") <- value
+    }
+
     x
 }

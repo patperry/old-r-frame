@@ -141,10 +141,10 @@ as_dataset.matrix <- function(x, ..., simple = FALSE)
 
 as_dataset.list <- function(x, ..., simple = FALSE)
 {
-
     simple <- arg_option(simple)
     nc <- length(x)
-    names <- names(x) <- arg_names(nc, "columns", names(x), na = "")
+    names <- arg_names(nc, "columns", names(x), allow_na = TRUE, utf8 = TRUE)
+    names(x) <- names
 
     # make sure columns are vectors and matrices only
     for (i in seq_len(nc)) {

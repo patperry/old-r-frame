@@ -14,11 +14,12 @@ test_that("'as_dataset.list' allows duplicate column names", {
 })
 
 
-test_that("'as_dataset' does not error for invalid column name", {
+test_that("'as_dataset' errors for invalid column name", {
     nm <- "fa\xE7ile"; Encoding(nm) <- "UTF-8" # latin-1, declared UTF-8
     x <- list(1:10)
     names(x)[[1]] <- nm
-    expect_equal(names(as_dataset(x)), nm)
+    expect_error(as_dataset(x),
+                 "'names\\(x\\)', entry 1 has invalid character encoding")
 })
 
 
@@ -26,14 +27,6 @@ test_that("'as_dataset' allows duplicate names after normalization", {
     x <- list(1, 2)
     names(x) <- c("\u00c5", "\u212b")
     expect_equal(names(as_dataset(x)), names(x))
-})
-
-
-test_that("'as_dataset' fixes NA names", {
-    x <- structure(list(4, 7), names = c("a", NA))
-    y <- structure(list(4, 7), names = c("a", ""))
-
-    expect_equal(as_dataset(x), as_dataset(y))
 })
 
 
