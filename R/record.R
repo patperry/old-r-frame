@@ -90,46 +90,23 @@ as.vector.record <- function(x, mode = "any")
 }
 
 
-qualify_names <- function(prefix, n, names)
-{
-    if (!nzchar(prefix))
-        names
-    else if (n == 0)
-        character()
-    else if (!is.null(names))
-        paste(prefix, names, sep = ".")
-    else paste(prefix, seq_len(n), sep = ".")
-}
-
-
 c.record <- function(...)
 {
     dots <- list(...)
     null <- vapply(dots, is.null, FALSE)
     args <- dots[!null]
     narg <- length(args)
+
+    if (narg == 0)
+        return(NULL)
+
     argnames <- names(args)
     has_argnames <- !is.null(argnames)
 
-    if (narg == 0) {
-        return(NULL)
-    } else if (narg == 1) {
-        x <- as_record(args[[1]])
-
-        names <- if (has_argnames)
-            qualify_names(argnames[[1]], length(x), names(x))
-        else names(x)
-
-        # optimization: no need to validate since argument names
-        # are valid in the user's native locale, hence valid UTF-8
-        attr(x, "names") <- names
-        return(x)
-    }
-
     xs <- lapply(args, as_record)
     ns <- vapply(xs, length, 0)
-    n <- sum(ns)
 
+    n <- sum(ns)
     l <- vector("list", n)
     has_names <- FALSE
 
@@ -159,11 +136,24 @@ c.record <- function(...)
 
     x <- as_record(l)
 
-    # optimization: no need to validate names (see note from n = 1 case)
+    # optimization: no need to validate since argument names
+    # are valid in the user's native locale, hence valid UTF-8
     if (has_names)
         attr(x, "names") <- names
 
     x
+}
+
+
+qualify_names <- function(prefix, n, names)
+{
+    if (!nzchar(prefix))
+        names
+    else if (n == 0)
+        character()
+    else if (!is.null(names))
+        paste(prefix, names, sep = ".")
+    else paste(prefix, seq_len(n), sep = ".")
 }
 
 
