@@ -28,7 +28,8 @@
         class(x) <- NULL
         index <- if (is.character(i)) match(i, names(x)) else i
         if (is.na(index) || !is.null(x[[index]])) {
-            stop(sprintf("column \"%s\" does not exist", as.character(i)))
+            stop(sprintf("selected column \"%s\" does not exist",
+                         as.character(i)))
         }
     }
 
@@ -603,7 +604,8 @@ arg_col_index <- function(x, i, call = sys.call(-1L))
         if (is.na(i[[j]])) {
             stop(simpleError(sprintf("column selection entry %.0f is NA", j), call))
         } else if (is.character(i[[j]])) {
-            stop(simpleError(sprintf("selected column \"%s\" is undefined", i[[j]]), call))
+            stop(simpleError(sprintf("selected column \"%s\" does not exist",
+                                     i[[j]]), call))
         } else {
             stop(simpleError(sprintf("column selection entry %.0f is out of bounds", j), call))
         }

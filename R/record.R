@@ -84,6 +84,40 @@ is_record <- function(x)
 }
 
 
+`$.record` <- function(x, name)
+{
+    x[[name]]
+}
+
+
+`[[.record` <- function(x, i, exact = TRUE)
+{
+    if (!identical(exact, TRUE)) {
+        warning("'exact' argument is ignored")
+    }
+
+    # TODO: implement in C
+    n <- length(i)
+    if (n == 0L) {
+        stop("missing subscript")
+    }
+
+    i1 <- i[[1L]]
+    n1 <- length(i1)
+    if (n1 != 1L) {
+        stop(sprintf("non-scalar subscript (length %.0f)", n1))
+    }
+
+    elt <- .subset2(x[i1], 1L)
+    if (n > 1L) {
+        i2 <- i[-1L]
+        elt <- elt[[i2]]
+    }
+
+    elt
+}
+
+
 `[.record` <- function(x, i)
 {
     # TODO: implement in C

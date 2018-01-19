@@ -51,6 +51,6 @@ test_that("with NULL, missing", {
 
 test_that("with NA, empty name", {
     x <- as_record(c(4, 3, 2, 1), c("a", NA, "", "z"))
-    expect_equal(x[NA_character_], x[1])
+    expect_equal(x[NA_character_], x[2])
     expect_equal(x[""], x[3])
 })

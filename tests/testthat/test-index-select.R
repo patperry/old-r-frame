@@ -4,7 +4,7 @@ context("index-select")
 test_that("$ indexing requires exact", {
     x <- as_dataset(mtcars)
     expect_equal(x$mpg, mtcars$mpg)
-    expect_error(x$mp, "column \"mp\" does not exist")
+    expect_error(x$mp, "selected column \"mp\" does not exist")
 })
 
 
