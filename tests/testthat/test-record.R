@@ -26,7 +26,9 @@ test_that("from empty", {
 
 test_that("from named empty", {
     x <- structure(list(), names = character())
-    expect_equal(as_record(x), structure(x, class = "record"))
+    y <- as_record(x)
+    names(y) <- character()
+    expect_equal(as_record(x), y)
 })
 
 
@@ -57,9 +59,9 @@ test_that("with NSE mixed", {
 test_that("setting names with wrong length", {
     x <- record(a = 1, b = 18, c = "foo")
     expect_error(names(x) <- c("a", "b", "c", "d"),
-                 "mismatch: 'value' has length 4, number of fields is 3")
+                 "mismatch: value length is 4, object length is 3")
     expect_error(names(x) <- "a",
-                 "mismatch: 'value' has length 1, number of fields is 3")
+                 "mismatch: value length is 1, object length is 3")
 })
 
 
@@ -69,5 +71,24 @@ test_that("setting names with wrong encoding", {
 
     x <- record(a = 1, b = 18, c = "foo")
     expect_error(names(x) <- names,
-                 "'value', entry 2 has invalid character encoding")
+                 "value entry 2 has wrong character encoding")
+})
+
+
+test_that("as.list downcasts", {
+    x <- record(a = 1, b = 10)
+    expect_equal(as.list(x), list(a = 1, b = 10))
+})
+
+
+test_that("as.list can set new names", {
+    x <- record(a = 1, b = 10)
+    expect_equal(as.list(x, c("x", "y")), list(x = 1, y = 10))
+})
+
+
+test_that("as.vector downcasts", {
+    x <- record(a = 1, b = 10)
+    expect_equal(as.vector(x), as.list(x))
+    expect_equal(as.vector(x, "numeric"), c(1, 10))
 })

@@ -1,4 +1,4 @@
-context("record index")
+context("record subset")
 
 test_that("with positive integers", {
     l <- as.list(letters)
@@ -38,7 +38,7 @@ test_that("with logical", {
 
 test_that("with invalid mask", {
     x <- record(a = 6, b = 3, c = 10)
-    expect_error(x[TRUE], "logical index has length 1, record has 3 fields")
+    expect_error(x[TRUE], "mismatch: logical index length is 1, object length is 3")
 })
 
 

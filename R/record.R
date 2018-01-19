@@ -15,19 +15,20 @@
 
 record <- function(...)
 {
-    args <- as.list(substitute(list(...)))[-1L]
+    args <- as.list(substitute(list(...)))[-1]
     x <- list(...)
     n <- length(x)
 
     names <- names(x)
-    if (is.null(names)) {
+    if (is.null(names))
         names <- character(n)
-    }
+
     for (i in seq_len(n)) {
-        if (names[[i]] == "") {
-            names[[i]] <- deparse(args[[i]], nlines = 1L)[1L]
+        if (!nzchar(names[[i]])) {
+            names[[i]] <- deparse(args[[i]], 500)[[1]]
         }
     }
+
     names(x) <- names
     as_record(x)    
 }
@@ -41,12 +42,12 @@ as_record <- function(x, names = NULL, ...)
 
 as_record.record <- function(x, names = NULL, ...)
 {
-    if (!is_record(x)) {
+    if (!is_record(x))
         x <- as_record(x)
-    }
-    if (!is.null(names)) {
+
+    if (!is.null(names))
         names(x) <- names
-    }
+
     x
 }
 
@@ -60,11 +61,108 @@ as_record.default <- function(x, names = NULL, ...)
 
 as_record.list <- function(x, names = NULL, ...)
 {
-    if (is.null(names)) {
+    if (is.null(names))
         names <- names(x)
-    }
-    x <- structure(as.vector(x), class = "record")
+
+    attributes(x) <- NULL
+    class(x) <- "record"
     names(x) <- names
+
+    x
+}
+
+
+as.list.record <- function(x, names = NULL, ...)
+{
+    if (is.null(names))
+        names <- names(x)
+
+    attributes(x) <- NULL
+    names(x) <- names
+
+    x
+}
+
+
+as.vector.record <- function(x, mode = "any")
+{
+    as.vector(as.list(x), mode)
+}
+
+
+qualify_names <- function(prefix, n, names)
+{
+    if (!nzchar(prefix))
+        names
+    else if (n == 0)
+        character()
+    else if (!is.null(names))
+        paste(prefix, names, sep = ".")
+    else paste(prefix, seq_len(n), sep = ".")
+}
+
+
+c.record <- function(...)
+{
+    dots <- list(...)
+    null <- vapply(dots, is.null, FALSE)
+    args <- dots[!null]
+    narg <- length(args)
+    argnames <- names(args)
+    has_argnames <- !is.null(argnames)
+
+    if (narg == 0) {
+        return(NULL)
+    } else if (narg == 1) {
+        x <- as_record(args[[1]])
+
+        names <- if (has_argnames)
+            qualify_names(argnames[[1]], length(x), names(x))
+        else names(x)
+
+        # optimization: no need to validate since argument names
+        # are valid in the user's native locale, hence valid UTF-8
+        attr(x, "names") <- names
+        return(x)
+    }
+
+    xs <- lapply(args, as_record)
+    ns <- vapply(xs, length, 0)
+    n <- sum(ns)
+
+    l <- vector("list", n)
+    has_names <- FALSE
+
+    off <- 0
+    for (i in seq_len(narg)) {
+        xi <- xs[[i]]
+        ni <- ns[[i]]
+
+        dst <- off + seq_len(ni)
+        l[dst] <- unname(as.list(xi))
+
+        namesi <- if (has_argnames)
+            qualify_names(argnames[[i]], ni, names(xi))
+        else names(xi)
+
+        if (!is.null(namesi)) {
+            if (!has_names) {
+                names <- character(n)
+                has_names <- TRUE
+            }
+
+            names[dst] <- namesi
+        }
+
+        off <- off + ni
+    }
+
+    x <- as_record(l)
+
+    # optimization: no need to validate names (see note from n = 1 case)
+    if (has_names)
+        attr(x, "names") <- names
+
     x
 }
 
@@ -77,8 +175,7 @@ is_record <- function(x)
 
 `names<-.record` <- function(x, value)
 {
-    n <- length(x)
-    names <- arg_names(n, "fields", value, allow_na = TRUE, utf8 = TRUE)
+    names <- arg_record_names(x, value)
     attr(x, "names") <- names
     x
 }
@@ -90,54 +187,93 @@ is_record <- function(x)
 }
 
 
+`$<-.record` <- function(x, name, value)
+{
+    x[[name]] <- value
+}
+
+
 `[[.record` <- function(x, i, exact = TRUE)
 {
-    if (!identical(exact, TRUE)) {
-        warning("'exact' argument is ignored")
-    }
-
     # TODO: implement in C
+
+    if (!identical(exact, TRUE))
+        warning("'exact' argument is ignored")
+
+    if (missing(i))
+        stop("missing index")
+
     n <- length(i)
-    if (n == 0L) {
-        stop("missing subscript")
-    }
+    i1 <- arg_record_index1(n, i)
 
-    i1 <- i[[1L]]
-    n1 <- length(i1)
-    if (n1 != 1L) {
-        stop(sprintf("non-scalar subscript (length %.0f)", n1))
-    }
+    x1 <- x[i1]
+    entry <- .subset2(x1, 1L)
 
-    elt <- .subset2(x[i1], 1L)
-    if (n > 1L) {
-        i2 <- i[-1L]
-        elt <- elt[[i2]]
-    }
+    if (n > 1L)
+        entry[[ i[-1L] ]]
+    else entry
+}
 
-    elt
+
+
+`[[<-.record` <- function(x, i, value)
+{
+    # TODO: implement in C
+
+    if (missing(i))
+        stop("missing index")
+
+    n <- length(i)
+    i1 <- arg_record_index1(n, i)
+
+    if (n == 1L) {
+        x[i1] <- value
+    } else {
+        x[[i1]][[ i[-1L] ]] <- value
+    }
 }
 
 
 `[.record` <- function(x, i)
 {
-    # TODO: implement in C
-    if (missing(i) || is.null(i)) {
-        return(x)
-    } else if (is.numeric(i)) {
-        i <- as.numeric(i)
-    } else if (is.logical(i)) {
-        i <- as.logical(i)
-        ni <- length(i)
-        n <- length(x)
-        if (ni != n) {
-            stop(sprintf(
-                 "mismatch: logical index has length %.0f, record has %.0f fields",
-                 ni, n))
-        }
-    } else {
-        i <- match(as.character(i), names(x))
-    }
+    i <- arg_record_subset(x, i)
+    if (is.null(i))
+        x
+    else structure(.subset(x, i), class = "record")
+}
 
-    y <- .subset(x, i)
-    as_record(y)
+
+`[<-.record` <- function(x, i, value)
+{
+    i <- arg_record_subset(x, i)
+
+    if (is.null(value))
+        record_delete(x, i)
+    else record_replace(x, i, value)
+}
+
+
+record_delete <- function(x, i)
+{
+    names <- names(x)
+    if (is.null(i)) {
+        l <- list()
+        if (!is.null(names))
+            names <- character()
+    } else {
+        l <- x
+    }
+    as_record(l, names)
+}
+
+
+record_replace <- function(x, i, value)
+{
+    names <- names(x)
+    if (is.null(i)) {
+        l <- rep_len(list(value), length(x))
+    } else {
+        l <- x
+    }
+    as_record(l, names)
 }
