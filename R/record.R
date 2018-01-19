@@ -82,3 +82,28 @@ is_record <- function(x)
     attr(x, "names") <- names
     x
 }
+
+
+`[.record` <- function(x, i)
+{
+    # TODO: implement in C
+    if (missing(i) || is.null(i)) {
+        return(x)
+    } else if (is.numeric(i)) {
+        i <- as.numeric(i)
+    } else if (is.logical(i)) {
+        i <- as.logical(i)
+        ni <- length(i)
+        n <- length(x)
+        if (ni != n) {
+            stop(sprintf(
+                 "mismatch: logical index has length %.0f, record has %.0f fields",
+                 ni, n))
+        }
+    } else {
+        i <- match(as.character(i), names(x))
+    }
+
+    y <- .subset(x, i)
+    as_record(y)
+}
