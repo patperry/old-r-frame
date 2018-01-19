@@ -38,7 +38,7 @@ print(flights)
 
 There are more rows in this dataset than will fit on the screen.  By default,
 then `print` function will only display 20 rows, and only wrap columns at most
-twice.  Change the default to another value using the following command:
+once.  Change the default to another value using the following command:
 
 ```{r}
 options(frame.rows = 5) # truncate output after 5 rows
@@ -48,7 +48,7 @@ options(frame.wrap = 0) # truncate output without wrapping columns
 *frame* uses the default value of 20 to display as much data as possible
 without overflowing the space on a standard console. For the rest of this
 vignette, however, we will be demonstrating programming, not data analysis, so
-we will truncate the output to 4 rows and no wraps.
+we will truncate the output to 5 rows and no wraps.
 
 
 ```{r}

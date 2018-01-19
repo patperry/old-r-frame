@@ -28,7 +28,7 @@ test_that("'cbind' errors if rows do not match", {
     x1 <- mtcars[,1:3]
     x2 <- mtcars[1:4, 4:5]
     expect_error(cbind.dataset(x1, x1, x2),
-                 "arguments 1 and 3 have different numbers of rows")
+                 "mismatch: argument 1 has 32 rows, argument 3 has 4")
 })
 
 
@@ -36,7 +36,7 @@ test_that("'cbind' errors if rows do not match, with NULL in between", {
     x1 <- mtcars[,1:3]
     x2 <- mtcars[1:4, 4:5]
     expect_error(cbind.dataset(NULL, x1, x1, NULL, x2),
-                 "arguments 2 and 5 have different numbers of rows")
+                 "mismatch: argument 2 has 32 rows, argument 5 has 4")
 })
 
 

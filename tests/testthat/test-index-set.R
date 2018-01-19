@@ -61,14 +61,13 @@ test_that("appending column by index", {
 
 
 test_that("appending column by index, too far", {
-    skip("not implemented")
     ds <- mtcars
     n <- length(ds)
     col <- rnorm(nrow(ds))
 
     x <- as_dataset(ds)
-    x[[n + 2L]] <- col
-    y <- cbind.dataset(ds, col)
+    x[[n + 3L]] <- col
+    y <- cbind.dataset(ds, as_dataset(list(NULL, NULL, col)))
 
     expect_equal(x, y)
 })
@@ -214,4 +213,12 @@ test_that("errors for invalid pair", {
                                   stringsAsFactors = FALSE))
     expect_error(x[cbind(c(1, 2), c(2, 3))] <- list(100, list(99, 88)),
                  "index 2 \\(2, 3\\) is out of bounds")
+})
+
+
+test_that("setting invalid errors", {
+    x <- as_dataset(mtcars)
+    expect_error(x[[c(17, 1)]] <- 10, "non-scalar index \\(length 2\\)")
+    expect_error(x[[17]] <- array(1, c(1,1,1)),
+                 "replacement is not a vector or matrix")
 })

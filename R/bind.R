@@ -54,44 +54,41 @@ cbind.dataset <- function(..., deparse.level = 1)
         }
     }
 
-    # get rows
-    nr <- dim(x[[1L]])[[1L]]
-
-    # validate rows
+    # get rows, columns, keys; validate
+    nctot <- 0L
+    keys <- NULL
+    ikey <- 0L
     for (i in seq_len(n)) {
         xi <- x[[i]]
-        if (dim(xi)[[1L]] != nr) {
+        di <- dim(xi)
+
+        nri <- di[[1L]]
+        nctot <- nctot + di[[2L]]
+
+        if (i == 1L) {
+            nr <- nri
+        } else if (nri != nr) {
             index <- which(!null)
-            stop(sprintf("arguments %.0f and %.0f have different numbers of rows",
-                         index[[1]], index[[i]]))
+            stop(sprintf("mismatch: argument %.0f has %.0f rows, argument %.0f has %.0f",
+                         index[[1L]], nr, index[[i]], nri))
+        }
+
+        ki <- keys(xi)
+        if (is.null(ki)) {
+            next
+        }
+        if (ikey == 0L) {
+            keys <- ki
+            ikey <- i
+        } else if (!identical(ki, keys)) {
+            index <- which(!null)
+            stop(sprintf("arguments %.0f and %.0f have different keys",
+                         index[[ikey]], index[[i]]))
         }
     }
 
-    # get keys
-    for (ikey in seq_len(n)) {
-        keys <- keys(x[[ikey]])
-        if (!is.null(keys)) {
-            break
-        }
-    }
-
-    # validate keys
-    if (ikey < n) {
-        for (i in (ikey + 1L):n) {
-            xi <- x[[i]]
-            ki <- keys(xi)
-            if (!is.null(ki) && !identical(ki, keys)) {
-                index <- which(!null)
-                stop(sprintf("arguments %.0f and %.0f have different keys",
-                             index[[ikey]], index[[i]]))
-            }
-        }
-    }
-
-    nctot <- sum(vapply(x, ncol, 0))
-    if (nctot == 0) {
-        x1 <- x[[1]]
-        keys(x1) <- keys
+    if (nctot == 0L) {
+        x1 <- x[[max(1L, ikey)]]
         return(x1)
     }
 

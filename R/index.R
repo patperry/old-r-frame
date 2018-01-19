@@ -40,29 +40,20 @@
 {
     x <- as_dataset(x)
 
-    # record attributes and downcast to list
-    keys <- attr(x, "keys")
-    n <- .row_names_info(x, 2L)
-    cl <- class(x)
-    class(x) <- NULL
-
-    if (!is.null(value)) {
-        r <- length(dim(value))
-        if (r > 2L) {
-            stop("replacement is not a vector or matrix")
-        }
-        n2 <- nrow_column(value)
-        if (!(n2 == n || (n2 == 1L && r < 2L))) {
-            stop(sprintf("replacement has %.0f rows, data has %.0f", n2, n))
-        }
-        value <- as_column(value, n)
+    ni <- length(i)
+    if (ni != 1L) {
+        stop(sprintf("non-scalar index (length %.0f)", ni))
     }
 
-    x[[i]] <- value
+    r <- length(dim(value))
+    if (r <= 1L) {
+        x[, i] <- value
+    } else if (r == 2L) {
+        x[, i] <- as_dataset(list(value))
+    } else {
+        stop("replacement is not a vector or matrix")
+    }
 
-    # restore attributes
-    class(x) <- cl
-    attr(x, "keys") <- keys
     x
 }
 
@@ -297,8 +288,8 @@ replace_cols <- function(x, j, value, call = sys.call(-1L))
         bounds <- which(!is.finite(j) | j <= 0L)
         if (length(bounds) > 0L) {
             b <- bounds[[1L]]
-            stop(simpleError(sprintf("column index %.0f (%.0f) is invalid",
-                                     b, j[[b]]), call))
+            stop(simpleError(sprintf("column %.0f does not exist (index entry %.0f)",
+                                     j[[b]], b), call))
         }
     } else {
         j <- as.character(j)
@@ -326,7 +317,7 @@ replace_cols <- function(x, j, value, call = sys.call(-1L))
         r <- length(dim)
 
         if (r > 2L) {
-            stop(simpleError("type error: replacement is not a vector or matrix", call))
+            stop(simpleError("replacement is not a vector or matrix", call))
         }
 
         nv <- if (r <= 1L) length(value) else dim[[1L]]
