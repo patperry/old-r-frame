@@ -108,11 +108,39 @@ as.vector.record <- function(x, mode = "any")
 }
 
 
+record_cast <- function(x)
+{
+    # TODO: optimize in C
+
+    if (!identical(oldClass(x), "record"))
+        x <- as.record(x)
+
+    # discard extra attributes if they exist
+    names <- names(x)
+    nattr <- length(attributes(x))
+    if (nattr > 1 + !is.null(names)) {
+        attributes(x) <- NULL
+        names(x) <- names
+        oldClass(x) <- "record"
+    }
+
+    x
+}
+
+
 c.record <- function(...)
 {
-    args <- list(...)
-    argnames <- arg_record_names(-1, names(args), "argument names")
+    args <- pairlist(...)
+    narg <- length(args)
+    argnames <- names(args)
+
+    # optimize common case
+    if (narg == 1L && is.null(argnames))
+        return(record_cast(args[[1L]]))
+
+    argnames <- arg_record_names(-1, argnames, "argument names")
     names(args) <- NULL
+    args <- as.vector(args, "list")
 
     null <- vapply(args, is.null, FALSE)
     args <- args[!null]
@@ -120,6 +148,7 @@ c.record <- function(...)
 
     if (narg == 0)
         return(NULL)
+    else if (narg == 1 && is.null(argnames))
 
     argnames <- argnames[!null]
 
@@ -131,9 +160,9 @@ c.record <- function(...)
 
     names <- flatten_names(nlist, argnames, namelist)
     if (!is.null(names))
-        attr(x, "names") <- names
+        names(x) <- names
 
-    class(x) <- "record"
+    oldClass(x) <- "record"
     x
 }
 
@@ -293,10 +322,16 @@ record_delete_all <- function(x)
 record_replace <- function(x, i, value, call = sys.call(-1))
 {
     if (is.null(i))
-        return(record_replace_all(x, value, call))
-
-    names <- names(x)
-    as.record(l, names)
+        record_replace_all(x, value, call)
+    else if (is.numeric(i))
+        if (any(i < 0L))
+            record_replace_except(x, i, value, call)
+        else
+            record_replace_index(x, length(x), i, value, call)
+    else {
+        names <- names(x)
+        as.record(l, names)
+    }
 }
 
 
@@ -325,19 +360,66 @@ record_replace_all <- function(x, value, call)
 }
 
 
-RECORD_SIZE_MAX <- 2^53 # others can't be stored as double
+record_replace_except <- function(x, i, value, call)
+{
+    if (anyNA(i))
+        i[is.na(i)] <- NA
+
+    if (!is.integer(i))
+        i <- trunc(i)
+
+    if (any(i > 0L)) {
+        fmt <- "numeric index contains both positive and negative values"
+        stop(simpleError(fmt, call))
+    }
+
+    n <- length(x)
+    record_replace_index(x, n, seq_len(n)[i], value, call)
+}
+
+
+record_replace_index <- function(x, n, i, value, call)
+{
+    if (n < 2^31)
+        i <- as.integer(i)
+
+    ni <- length(i)
+    nv <- length(value)
+
+    if (ni != nv && nv != 1L) {
+        # NOTE: different behavior from R (which does not count zeroes).
+        # This is intentional.
+        fmt <- "mismatch: selection length is %.0f, replacement length is %.0f"
+        stop(simpleError(sprintf(fmt, ni, nv)))
+    }
+
+}
+
+
+
+
+
+# from ?LongVectors; max is 2^52
+RECORD_SIZE_DIGITS <- 52L
+RECORD_SIZE_MAX <- 2^RECORD_SIZE_DIGITS
+
 
 record_lookup <- function(x, i, call)
 {
+    # TODO: implement in C
     if (is.numeric(i)) {
-        invalid <- !(1 <= i & i < RECORD_SIZE_MAX)
-        if (any(invalid)) {
-            j <- which.max(invalid)
-            fmt <- "index entry %.0f is invalid (%s)"
-            stop(simpleError(sprintf(fmt, j, i[[j]])))
-        }
+        if (!is.integer(i))
+            i <- trunc(i)
 
-    } else if (is.character(i)) {
-        match(i, names(x))
+        if (anyNA(i))
+            i[is.na(i)] <- 0L
+
+        if (!is.integer(i) && !all(i <= RECORD_SIZE_MAX)) {
+            invalid <- which(i > RECORD_SIZE_MAX)[[1]]
+            fmt <- "index entry %.0f exceeds maximum (%f > 2^%d)"
+            stop(simpleError(sprintf(fmt, invalid,
+                                     i[[invalid]], RECORD_SIZE_DIGITS),
+                             call))
+        }
     }
 }

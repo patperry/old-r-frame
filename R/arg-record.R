@@ -25,7 +25,7 @@ arg_record_names <- function(n, value, name = argname(substitute(value)),
 
     names <- tryCatch(as_utf8(raw, normalize = TRUE), error = function(cond) NULL)
     if (is.null(names)) {
-        invalid <- which.max(!utf8_valid(raw))
+        invalid <- which(!utf8_valid(raw))[[1]]
         fmt <- "%s entry %.0f has wrong character encoding"
         stop(simpleError(sprintf(fmt, name, invalid), call))
     }
