@@ -60,21 +60,14 @@ arg_record_subset <- function(x, value, call = sys.call(-1))
 
 arg_record_index1 <- function(n, i, call = sys.call(-1L))
 {
-    if (n == 0L)
+    if (n == 0)
         stop("missing index")
 
-    i1 <- i[[1L]]
+    i1 <- i[[1]]
 
     n1 <- length(i1)
-    if (n1 != 1L)
+    if (n1 != 1)
         stop(sprintf("non-scalar index (length %.0f)", n1))
 
-    if (is.na(i1))
-        NA_character_
-    else i1
+    i1
 }
-
-
-
-
-

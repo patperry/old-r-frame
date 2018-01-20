@@ -197,10 +197,10 @@ is_record <- function(x)
     i1 <- arg_record_index1(n, i)
 
     x1 <- x[i1]
-    entry <- .subset2(x1, 1L)
+    entry <- .subset2(x1, 1)
 
-    if (n > 1L)
-        entry[[ i[-1L] ]]
+    if (n > 1)
+        entry[[ i[-1] ]]
     else entry
 }
 
@@ -216,10 +216,10 @@ is_record <- function(x)
     n <- length(i)
     i1 <- arg_record_index1(n, i)
 
-    if (n == 1L) {
+    if (n == 1) {
         x[i1] <- value
     } else {
-        x[[i1]][[ i[-1L] ]] <- value
+        x[[i1]][[ i[-1] ]] <- value
     }
 }
 
@@ -227,9 +227,13 @@ is_record <- function(x)
 `[.record` <- function(x, i)
 {
     i <- arg_record_subset(x, i)
-    if (is.null(i))
+    if (is.null(i)) {
         x
-    else structure(.subset(x, i), class = "record")
+    } else {
+        y <- .subset(x, i)
+        class(y) <- "record"
+        y
+    }
 }
 
 
@@ -245,25 +249,77 @@ is_record <- function(x)
 
 record_delete <- function(x, i)
 {
+    if (is.null(i))
+        return(record_delete_all(x))
+
+    if (is.character(i))
+        i <- match(i, names(x))
+
+    class(x) <- NULL
+    x[i] <- NULL
+    class(x) <- "record"
+
+    y
+}
+
+
+record_delete_all <- function(x)
+{
+    class(x) <- NULL
+    x[] <- NULL
+    class(x) <- "record"
+    x
+}
+
+
+record_replace <- function(x, i, value, call = sys.call(-1))
+{
+    if (is.null(i))
+        return(record_replace_all(x, value, call))
+
     names <- names(x)
-    if (is.null(i)) {
-        l <- list()
-        if (!is.null(names))
-            names <- character()
-    } else {
-        l <- x
-    }
     as_record(l, names)
 }
 
 
-record_replace <- function(x, i, value)
+record_replace_all <- function(x, value, call)
 {
-    names <- names(x)
-    if (is.null(i)) {
-        l <- rep_len(list(value), length(x))
+    n <- length(x)
+    nv <- length(value)
+
+    if (nv == n) {
+        if (is.object(value))
+            value <- as.list(value)
+    } else if (nv == 1) {
+        if (is.object(value))
+            value <- value[[1]]
+        value <- rep_len(value, n)
     } else {
-        l <- x
+        fmt <- "mismatch: replacement length is %.0f, selection length is %.0f"
+        stop(simpleError(sprintf(fmt, nv, n), call))
     }
-    as_record(l, names)
+
+    class(x) <- NULL
+    x[] <- value
+    class(x) <- "record"
+
+    x
+}
+
+
+RECORD_SIZE_MAX <- 2^53 # others can't be stored as double
+
+record_lookup <- function(x, i, call)
+{
+    if (is.numeric(i)) {
+        invalid <- !(1 <= i & i < RECORD_SIZE_MAX)
+        if (any(invalid)) {
+            j <- which.max(invalid)
+            fmt <- "index entry %.0f is invalid (%s)"
+            stop(simpleError(sprintf(fmt, j, i[[j]])))
+        }
+
+    } else if (is.character(i)) {
+        match(i, names(x))
+    }
 }
