@@ -43,7 +43,7 @@ as.record <- function(x, names = NULL, ...)
 as.record.record <- function(x, names = NULL, ...)
 {
     if (!is.record(x))
-        x <- as.record(x)
+        x <- as.record(x, ...)
 
     if (!is.null(names))
         names(x) <- names
@@ -59,14 +59,32 @@ as.record.default <- function(x, names = NULL, ...)
 }
 
 
-as.record.list <- function(x, names = NULL, ...)
+
+
+
+as.record.list <- function(x, names = NULL, ..., flat = FALSE)
 {
-    if (is.null(names))
-        names <- names(x)
+    n <- length(x)
+    names <- if (is.null(names))
+        arg_record_names(n, names(x))
+    else arg_record_names(n, names)
+
+
+    if (flat) {
+        l <- lapply(x, as.record, flat = TRUE)
+
+        if (!is.null(names)) {
+            # can't 'do.call(c.record, l)' because 'names' might contain NA or ""
+            ns <- vapply(l, length, 0)
+            ntot <- sum(ns)
+        }
+
+        names(l) <- names
+    }
 
     attributes(x) <- NULL
     class(x) <- "record"
-    names(x) <- names
+    attr(x, "names") <- names
 
     x
 }
@@ -101,59 +119,56 @@ c.record <- function(...)
         return(NULL)
 
     argnames <- names(args)
-    has_argnames <- !is.null(argnames)
 
-    xs <- lapply(args, as.record)
-    ns <- vapply(xs, length, 0)
+    xlist <- lapply(args, as.record)
+    nlist <- vapply(xlist, length, 0)
+    namelist <- lapply(xlist, names)
 
-    n <- sum(ns)
-    l <- vector("list", n)
-    has_names <- FALSE
+    x <- unlist(xlist, recursive = FALSE, use.names = FALSE)
 
-    off <- 0
-    for (i in seq_len(narg)) {
-        xi <- xs[[i]]
-        ni <- ns[[i]]
-
-        dst <- off + seq_len(ni)
-        l[dst] <- unname(as.list(xi))
-
-        namesi <- if (has_argnames)
-            qualify_names(argnames[[i]], ni, names(xi))
-        else names(xi)
-
-        if (!is.null(namesi)) {
-            if (!has_names) {
-                names <- character(n)
-                has_names <- TRUE
-            }
-
-            names[dst] <- namesi
-        }
-
-        off <- off + ni
-    }
-
-    x <- as.record(l)
-
-    # optimization: no need to validate since argument names
-    # are valid in the user's native locale, hence valid UTF-8
-    if (has_names)
+    names <- flatten_names(nlist, argnames, namelist)
+    if (!is.null(names))
         attr(x, "names") <- names
 
+    class(x) <- "record"
     x
 }
 
 
-qualify_names <- function(prefix, n, names)
+qualify_names <- function(n, prefix = NULL, names = NULL)
 {
-    if (!nzchar(prefix))
+    if (is.null(prefix) || !nzchar(prefix))
         names
     else if (n == 0)
         character()
     else if (!is.null(names))
         paste(prefix, names, sep = ".")
     else paste(prefix, seq_len(n), sep = ".")
+}
+
+
+flatten_names <- function(nlist, prefixlist = NULL, nameslist = NULL)
+{
+    result <- NULL
+
+    off <- 0
+    for (i in seq_along(nlist)) {
+
+        n <- nlist[[i]]
+        names <- qualify_names(n, prefixlist[[i]], nameslist[[i]])
+
+        if (!is.null(names)) {
+            if (is.null(result))
+                result <- character(sum(nlist))
+
+            if (n > 0)
+                result[(off + 1):(off + n)] <- names
+        }
+
+        off <- off + n
+    }
+
+    result
 }
 
 
@@ -165,7 +180,7 @@ is.record <- function(x)
 
 `names<-.record` <- function(x, value)
 {
-    names <- arg_record_names(x, value)
+    names <- arg_record_names(length(x), value)
     attr(x, "names") <- names
     x
 }

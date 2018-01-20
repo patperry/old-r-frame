@@ -13,7 +13,8 @@
 #  limitations under the License.
 
 
-arg_record_names <- function(x, value, call = sys.call(-1))
+arg_record_names <- function(n, value, name = argname(substitute(value)),
+                             call = sys.call(-1))
 {
     if (missing(value) || is.null(value))
         return(NULL)
@@ -22,15 +23,14 @@ arg_record_names <- function(x, value, call = sys.call(-1))
     names <- tryCatch(as_utf8(raw), error = function(cond) NULL)
     if (is.null(names)) {
         invalid <- which.max(!utf8_valid(raw))
-        fmt <- "value entry %.0f has wrong character encoding"
-        stop(simpleError(sprintf(fmt, invalid), call))
+        fmt <- "%s entry %.0f has wrong character encoding"
+        stop(simpleError(sprintf(fmt, name, invalid), call))
     }
 
-    n <- length(names)
-    nx <- length(x)
-    if (n != nx) {
-        fmt <- "mismatch: value length is %.0f, object length is %.0f"
-        stop(simpleError(sprintf(fmt, n, nx), call))
+    nvalue <- length(names)
+    if (nvalue != n) {
+        fmt <- "mismatch: %s length is %.0f, object length is %.0f"
+        stop(simpleError(sprintf(fmt, name, nvalue, n), call))
     }
 
     names

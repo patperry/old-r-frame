@@ -59,9 +59,9 @@ test_that("with NSE mixed", {
 test_that("setting names with wrong length", {
     x <- record(a = 1, b = 18, c = "foo")
     expect_error(names(x) <- c("a", "b", "c", "d"),
-                 "mismatch: value length is 4, object length is 3")
+                 "mismatch: 'value' length is 4, object length is 3")
     expect_error(names(x) <- "a",
-                 "mismatch: value length is 1, object length is 3")
+                 "mismatch: 'value' length is 1, object length is 3")
 })
 
 
@@ -71,7 +71,7 @@ test_that("setting names with wrong encoding", {
 
     x <- record(a = 1, b = 18, c = "foo")
     expect_error(names(x) <- names,
-                 "value entry 2 has wrong character encoding")
+                 "'value' entry 2 has wrong character encoding")
 })
 
 
