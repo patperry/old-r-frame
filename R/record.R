@@ -34,21 +34,15 @@ record <- function(...)
 }
 
 
-as.record <- function(x, names = NULL, ...)
+is.record <- function(x)
 {
-    UseMethod("as.record")
+    inherits(x, "record")
 }
 
 
-as.record.record <- function(x, names = NULL, ...)
+as.record <- function(x, names = NULL, ...)
 {
-    if (!is.record(x))
-        x <- as.record(x, ...)
-
-    if (!is.null(names))
-        names(x) <- names
-
-    x
+    UseMethod("as.record")
 }
 
 
@@ -59,9 +53,6 @@ as.record.default <- function(x, names = NULL, ...)
 }
 
 
-
-
-
 as.record.list <- function(x, names = NULL, ..., flat = FALSE)
 {
     n <- length(x)
@@ -69,22 +60,22 @@ as.record.list <- function(x, names = NULL, ..., flat = FALSE)
         arg_record_names(n, names(x))
     else arg_record_names(n, names)
 
-
     if (flat) {
         l <- lapply(x, as.record, flat = TRUE)
-
-        if (!is.null(names)) {
-            # can't 'do.call(c.record, l)' because 'names' might contain NA or ""
-            ns <- vapply(l, length, 0)
-            ntot <- sum(ns)
-        }
-
-        names(l) <- names
+        record_concat(l, unsafe = TRUE)
+    } else {
+        attributes(x) <- NULL
+        names(x) <- names
+        oldClass(x) <- "record"
+        x
     }
+}
 
-    attributes(x) <- NULL
-    class(x) <- "record"
-    attr(x, "names") <- names
+
+as.record.record <- function(x, names = NULL, ...)
+{
+    if (!missing(names) && !is.null(names))
+        names(x) <- names
 
     x
 }
@@ -104,20 +95,68 @@ as.list.record <- function(x, names = NULL, ...)
 
 as.vector.record <- function(x, mode = "any")
 {
-    as.vector(as.list(x), mode)
+    if (mode == "any")
+        x
+    else if (mode == "list")
+        as.list(x)
+    else NextMethod()
 }
+
+
+as_vector_mode <- function(mode, x, names = NULL)
+{
+    if (is.null(names))
+        names <- names(x)
+    x <- as.vector(x, mode)
+    names(x) <- names
+    x
+}
+
+as.character.record <- function(x, names = NULL, ...) {
+    if (!anyNA(x))
+        return(as_vector_mode("character", x, names))
+
+    # Work around a bug: as.character(list(NA)) is "NA" as of R 3.4.3
+    na <- which(is.na(x))
+    y <- as_vector_mode("character", x, names)
+    y[na] <- NA_character_
+    y
+}
+
+as.complex.record <- function(x, names = NULL, ...)
+    as_vector_mode("complex", x, names)
+
+as.double.record <- function(x, names = NULL, ...)
+    as_vector_mode("double", x, names)
+
+as.integer.record <- function(x, names = NULL, ...)
+    as_vector_mode("integer", x, names)
+
+as.logical.record <- function(x, names = NULL, ...)
+    as_vector_mode("logical", x, names)
+
+c.record <- function(...)
+{
+    args <- pairlist(...)
+    narg <- length(args)
+
+    if (narg == 1 && is.null(names(args)))
+        record_cast(args[[1]])
+    else
+        record_concat(as.list(args))
+}
+
+
 
 
 record_cast <- function(x)
 {
-    # TODO: optimize in C
-
     if (!identical(oldClass(x), "record"))
         x <- as.record(x)
 
-    # discard extra attributes if they exist
     names <- names(x)
     nattr <- length(attributes(x))
+
     if (nattr > 1 + !is.null(names)) {
         attributes(x) <- NULL
         names(x) <- names
@@ -128,48 +167,61 @@ record_cast <- function(x)
 }
 
 
-c.record <- function(...)
+record_concat <- function(xlist, names = NULL, unsafe = FALSE)
 {
-    args <- pairlist(...)
-    narg <- length(args)
-    argnames <- names(args)
+    if (is.null(names))
+        names <- names(xlist)
 
-    # optimize common case
-    if (narg == 1L && is.null(argnames))
-        return(record_cast(args[[1L]]))
+    if (!unsafe)
+        names <- arg_record_names(-1, names, "component names")
 
-    argnames <- arg_record_names(-1, argnames, "argument names")
-    names(args) <- NULL
-    args <- as.vector(args, "list")
+    m <- length(xlist)
+    nlist <- numeric(m)
+    nameslist <- vector("list", m)
+    empty <- TRUE
 
-    null <- vapply(args, is.null, FALSE)
-    args <- args[!null]
-    narg <- length(args)
+    for (i in seq_len(m)) {
+        xi <- xlist[[i]]
+        if (is.null(xi))
+            next
 
-    if (narg == 0)
+        if (!is.record(xi)) {
+            xi <- as.record(xi)
+            xlist[[i]] <- xi
+        }
+
+        nlist[[i]] <- length(xi)
+        nameslist[[i]] <- names(xi)
+        empty <- FALSE
+    }
+
+    if (empty)
         return(NULL)
-    else if (narg == 1 && is.null(argnames))
 
-    argnames <- argnames[!null]
+    n <- sum(nlist)
+    x <- vector("list", n)
 
-    xlist <- lapply(args, as.record)
-    nlist <- vapply(xlist, length, 0)
-    namelist <- lapply(xlist, names)
+    off <- 0
+    for (i in seq_len(m)) {
+        ni <- nlist[[i]]
 
-    x <- unlist(xlist, FALSE)
+        if (ni == 0)
+            next
 
-    names <- flatten_names(nlist, argnames, namelist)
-    if (!is.null(names))
-        names(x) <- names
+        x[(off + 1):(off + ni)] <- xlist[[i]]
+        off <- off + ni
+    }
 
+    names(x) <- flatten_names(nlist, nameslist, names)
     oldClass(x) <- "record"
     x
 }
 
 
-qualify_names <- function(n, prefix = NULL, names = NULL)
+
+qualify_names <- function(n, names = NULL, prefix = NULL)
 {
-    if (is.null(prefix) || !nzchar(prefix))
+    if (is.null(prefix))
         names
     else if (n == 0)
         character()
@@ -179,15 +231,14 @@ qualify_names <- function(n, prefix = NULL, names = NULL)
 }
 
 
-flatten_names <- function(nlist, prefixlist = NULL, nameslist = NULL)
+flatten_names <- function(nlist, nameslist = NULL, prefixlist = NULL)
 {
     result <- NULL
 
     off <- 0
     for (i in seq_along(nlist)) {
-
         n <- nlist[[i]]
-        names <- qualify_names(n, prefixlist[[i]], nameslist[[i]])
+        names <- qualify_names(n, nameslist[[i]], prefixlist[[i]])
 
         if (!is.null(names)) {
             if (is.null(result))
@@ -203,11 +254,6 @@ flatten_names <- function(nlist, prefixlist = NULL, nameslist = NULL)
     result
 }
 
-
-is.record <- function(x)
-{
-    inherits(x, "record")
-}
 
 
 `names<-.record` <- function(x, value)

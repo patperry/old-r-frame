@@ -89,6 +89,20 @@ test_that("as.list can set new names", {
 
 test_that("as.vector downcasts", {
     x <- record(a = 1, b = 10)
-    expect_equal(as.vector(x), as.list(x))
+    expect_equal(as.vector(x, "any"), x)
+    expect_equal(as.vector(x, "list"), as.list(x))
     expect_equal(as.vector(x, "numeric"), c(1, 10))
+})
+
+
+test_that("as conversion keeps names", {
+    x <- record(a = 1, b = 10, c = 0, d = NA)
+    expect_equal(as.numeric(x), c(a = 1, b = 10, c = 0, d = NA))
+    expect_equal(as.character(x), c(a = "1", b = "10", c = "0", d = NA))
+})
+
+
+test_that("as conversion sets names", {
+    x <- record(a = 1, b = 10)
+    expect_equal(as.numeric(x, c("x", "y")), c(x = 1, y = 10))
 })
