@@ -50,8 +50,9 @@ test_that("with NULL, missing", {
 
 
 test_that("with NA name", {
-    expect_error(as.record(c(4, 3, 2, 1), c("a", NA, "", "z")),
-                 "'names' entry 2 is NA")
+    x <- as.record(c(4, 3, 2, 1), c("a", NA, "", "z"))
+    expect_equal(x[[""]], 3)
+    expect_equal(x[[3]], 2)
 })
 
 

@@ -20,13 +20,10 @@ arg_record_names <- function(n, value, name = argname(substitute(value)),
         return(NULL)
 
     raw <- as.character(value)
-    if (anyNA(raw)) {
-        na <- which.max(is.na(raw))
-        fmt <- "%s entry %.0f is NA"
-        stop(simpleError(sprintf(fmt, name, na), call))
-    }
+    if (anyNA(raw))
+        raw[is.na(raw)] <- ""
 
-    names <- tryCatch(as_utf8(raw), error = function(cond) NULL)
+    names <- tryCatch(as_utf8(raw, normalize = TRUE), error = function(cond) NULL)
     if (is.null(names)) {
         invalid <- which.max(!utf8_valid(raw))
         fmt <- "%s entry %.0f has wrong character encoding"
