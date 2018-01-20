@@ -30,20 +30,20 @@ record <- function(...)
     }
 
     names(x) <- names
-    as_record(x)    
+    as.record(x)    
 }
 
 
-as_record <- function(x, names = NULL, ...)
+as.record <- function(x, names = NULL, ...)
 {
-    UseMethod("as_record")
+    UseMethod("as.record")
 }
 
 
-as_record.record <- function(x, names = NULL, ...)
+as.record.record <- function(x, names = NULL, ...)
 {
-    if (!is_record(x))
-        x <- as_record(x)
+    if (!is.record(x))
+        x <- as.record(x)
 
     if (!is.null(names))
         names(x) <- names
@@ -52,14 +52,14 @@ as_record.record <- function(x, names = NULL, ...)
 }
 
 
-as_record.default <- function(x, names = NULL, ...)
+as.record.default <- function(x, names = NULL, ...)
 {
     x <- as.list(x)
-    as_record(x, names)
+    as.record(x, names)
 }
 
 
-as_record.list <- function(x, names = NULL, ...)
+as.record.list <- function(x, names = NULL, ...)
 {
     if (is.null(names))
         names <- names(x)
@@ -103,7 +103,7 @@ c.record <- function(...)
     argnames <- names(args)
     has_argnames <- !is.null(argnames)
 
-    xs <- lapply(args, as_record)
+    xs <- lapply(args, as.record)
     ns <- vapply(xs, length, 0)
 
     n <- sum(ns)
@@ -134,7 +134,7 @@ c.record <- function(...)
         off <- off + ni
     }
 
-    x <- as_record(l)
+    x <- as.record(l)
 
     # optimization: no need to validate since argument names
     # are valid in the user's native locale, hence valid UTF-8
@@ -157,7 +157,7 @@ qualify_names <- function(prefix, n, names)
 }
 
 
-is_record <- function(x)
+is.record <- function(x)
 {
     inherits(x, "record")
 }
@@ -278,7 +278,7 @@ record_replace <- function(x, i, value, call = sys.call(-1))
         return(record_replace_all(x, value, call))
 
     names <- names(x)
-    as_record(l, names)
+    as.record(l, names)
 }
 
 

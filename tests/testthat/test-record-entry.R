@@ -26,7 +26,7 @@ test_that("missing index", {
 
 
 test_that("invalid index", {
-    stop("Not implemented")
+    skip("Not implemented")
     x <- record(a = 1, b = 4, c = 19)
 
     expect_error(x[[-1]] <- 1, "invalid index \\(-1\\)")

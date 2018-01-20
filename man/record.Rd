@@ -1,10 +1,10 @@
 \name{record}
 \alias{record}
-\alias{as_record}
-\alias{as_record.default}
-\alias{as_record.list}
-\alias{as_record.record}
-\alias{is_record}
+\alias{as.record}
+\alias{as.record.default}
+\alias{as.record.list}
+\alias{as.record.record}
+\alias{is.record}
 \title{Record Objects}
 \description{
 Create or test for record objects.
@@ -12,13 +12,13 @@ Create or test for record objects.
 \usage{
 record(...)
 
-as_record(x, names = NULL, ...)
+as.record(x, names = NULL, ...)
 
-is_record(x)
+is.record(x)
 }
 \arguments{
 \item{\dots}{columns for \code{record}; further arguments passed to or
-    from other methods for \code{as_record}.}
+    from other methods for \code{as.record}.}
 
 \item{x}{object to be converted or tested.}
 
@@ -46,19 +46,19 @@ Other than that, records and lists have identical behavior.
 The \code{record} function takes a set of fields as arguments and creates a
 record object with these fields. When argument names are missing, the
 result creates names from the call. If the \code{names} argument is
-non-\code{NULL}, the \code{as_record} sets the names of the result to this
+non-\code{NULL}, the \code{as.record} sets the names of the result to this
 value.
 
-\code{as_record} converts \code{x} to a record object. This is a generic
+\code{as.record} converts \code{x} to a record object. This is a generic
 function with a default implementation that converts the result of
 \code{as.list(x)} to a record.
     
-\code{is_record} tests whether \code{x} is a record object.
+\code{is.record} tests whether \code{x} is a record object.
 }
 \value{
-\code{record} and \code{as_record} return a record objects.
+\code{record} and \code{as.record} return a record objects.
 
-\code{is_record} returns \code{TRUE} or \code{FALSE} depending on whether
+\code{is.record} returns \code{TRUE} or \code{FALSE} depending on whether
     its argument is a record object.
 }
 \seealso{
@@ -74,13 +74,13 @@ y <- 98.6
 record(x, y)
 
 # convert an object
-as_record(list(foo = 10, bar = "party"))
+as.record(list(foo = 10, bar = "party"))
 
 # convert an object, setting new names
-as_record(list(foo = 10, bar = "party"), names = c("zzz", "yyy"))
+as.record(list(foo = 10, bar = "party"), names = c("zzz", "yyy"))
 
 # test for records
-is_record(record(x, y))
-is_record(list(x, y))
+is.record(record(x, y))
+is.record(list(x, y))
 }
 \keyword{classes}

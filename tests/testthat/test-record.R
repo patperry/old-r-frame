@@ -2,38 +2,38 @@ context("record")
 
 test_that("from list", {
     x <- list(2, "foo", NA)
-    expect_equal(as_record(x), structure(x, class = "record"))
+    expect_equal(as.record(x), structure(x, class = "record"))
 })
 
 
 test_that("from named list", {
     x <- list(a = 2, b = "foo", c = NA)
-    expect_equal(as_record(x), structure(x, class = "record"))
+    expect_equal(as.record(x), structure(x, class = "record"))
 })
 
 
 test_that("from record", {
-    x <- as_record(list(a = 2, b = "foo", c = NA))
-    expect_equal(as_record(x), x)
+    x <- as.record(list(a = 2, b = "foo", c = NA))
+    expect_equal(as.record(x), x)
 })
 
 
 test_that("from empty", {
     x <- list()
-    expect_equal(as_record(x), structure(x, class = "record"))
+    expect_equal(as.record(x), structure(x, class = "record"))
 })
 
 
 test_that("from named empty", {
     x <- structure(list(), names = character())
-    y <- as_record(x)
+    y <- as.record(x)
     names(y) <- character()
-    expect_equal(as_record(x), y)
+    expect_equal(as.record(x), y)
 })
 
 
 test_that("from NULL", {
-    expect_equal(as_record(NULL), as_record(list()))
+    expect_equal(as.record(NULL), as.record(list()))
 })
 
 
@@ -42,7 +42,7 @@ test_that("with NSE", {
     b <- "foo"
     c <- NA
     x <- record(a, b, c)
-    y <- as_record(list(a = a, b = b, c = c))
+    y <- as.record(list(a = a, b = b, c = c))
     expect_equal(x, y)
 })
 
@@ -51,7 +51,7 @@ test_that("with NSE mixed", {
     a <- 2
     c <- NA
     x <- record(a, b = "foo", c)
-    y <- as_record(list(a = a, b = "foo", c = c))
+    y <- as.record(list(a = a, b = "foo", c = c))
     expect_equal(x, y)
 })
 
