@@ -41,3 +41,10 @@ test_that("nested single argument", {
     l <- list(a = 1, b = record(x = "foo", y = "bar"))
     expect_equal(c.record(l), as.record(l))
 })
+
+
+test_that("mixed types", {
+    x <- c.record(list(x = "foo"), NULL, "bar")
+    y <- as.record(list(x = "foo", "bar"))
+    expect_equal(x, y)
+})

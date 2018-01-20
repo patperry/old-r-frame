@@ -30,7 +30,7 @@ record <- function(...)
     }
 
     names(x) <- names
-    as.record(x)    
+    as.record(x)
 }
 
 
@@ -81,24 +81,10 @@ as.record.record <- function(x, names = NULL, ...)
 }
 
 
-as.list.record <- function(x, names = NULL, ...)
-{
-    if (is.null(names))
-        names <- names(x)
-
-    attributes(x) <- NULL
-    names(x) <- names
-
-    x
-}
-
-
 as.vector.record <- function(x, mode = "any")
 {
     if (mode == "any")
         x
-    else if (mode == "list")
-        as.list(x)
     else NextMethod()
 }
 
@@ -112,16 +98,6 @@ as_vector_mode <- function(mode, x, names = NULL)
     x
 }
 
-as.character.record <- function(x, names = NULL, ...) {
-    if (!anyNA(x))
-        return(as_vector_mode("character", x, names))
-
-    # Work around a bug: as.character(list(NA)) is "NA" as of R 3.4.3
-    na <- which(is.na(x))
-    y <- as_vector_mode("character", x, names)
-    y[na] <- NA_character_
-    y
-}
 
 as.complex.record <- function(x, names = NULL, ...)
     as_vector_mode("complex", x, names)
@@ -132,8 +108,26 @@ as.double.record <- function(x, names = NULL, ...)
 as.integer.record <- function(x, names = NULL, ...)
     as_vector_mode("integer", x, names)
 
+as.list.record <- function(x, names = NULL, ...)
+    as_vector_mode("list", x, names)
+
 as.logical.record <- function(x, names = NULL, ...)
     as_vector_mode("logical", x, names)
+
+
+as.character.record <- function(x, names = NULL, ...) {
+    if (!anyNA(x))
+        return(as_vector_mode("character", x, names))
+
+    # Work around bug (?): as.character(list(NA)) is "NA" as of R 3.4.3
+    # https://stat.ethz.ch/pipermail/r-devel/2018-January/075388.html
+
+    na <- which(is.na(x))
+    y <- as_vector_mode("character", x, names)
+    y[na] <- NA_character_
+    y
+}
+
 
 c.record <- function(...)
 {
@@ -190,9 +184,11 @@ record_concat <- function(xlist, names = NULL, unsafe = FALSE)
             xlist[[i]] <- xi
         }
 
-        nlist[[i]] <- length(xi)
-        nameslist[[i]] <- names(xi)
         empty <- FALSE
+        nlist[[i]] <- length(xi)
+        namesi <- names(xi)
+        if (!is.null(namesi))
+            nameslist[[i]] <- namesi
     }
 
     if (empty)
@@ -352,7 +348,7 @@ record_delete <- function(x, i)
     x[i] <- NULL
     class(x) <- "record"
 
-    y
+    x
 }
 
 
@@ -376,7 +372,7 @@ record_replace <- function(x, i, value, call = sys.call(-1))
             record_replace_index(x, length(x), i, value, call)
     else {
         names <- names(x)
-        as.record(l, names)
+        as.record(x, names)
     }
 }
 

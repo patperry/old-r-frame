@@ -75,15 +75,21 @@ test_that("setting names with wrong encoding", {
 })
 
 
-test_that("as.list downcasts", {
+test_that("as.list does not downcast a list", {
     x <- record(a = 1, b = 10)
-    expect_equal(as.list(x), list(a = 1, b = 10))
+    expect_equal(as.list(x), x)
+})
+
+
+test_that("as.list converts a non-list", {
+    x <- as.record(c(a = 1, b = 10))
+    expect_equal(as.list(x), record(a = 1, b = 10))
 })
 
 
 test_that("as.list can set new names", {
     x <- record(a = 1, b = 10)
-    expect_equal(as.list(x, c("x", "y")), list(x = 1, y = 10))
+    expect_equal(as.list(x, c("x", "y")), record(x = 1, y = 10))
 })
 
 
