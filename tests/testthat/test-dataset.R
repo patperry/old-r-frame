@@ -19,7 +19,7 @@ test_that("'as_dataset' errors for invalid column name", {
     x <- list(1:10)
     names(x)[[1]] <- nm
     expect_error(as_dataset(x),
-                 "'names\\(x\\)', entry 1 has invalid character encoding")
+                 "`names\\(x\\)`, entry 1 has invalid character encoding")
 })
 
 

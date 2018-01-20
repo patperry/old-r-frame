@@ -7,7 +7,7 @@ test_that("'print.dataset' can print all rows", {
     expect_equal(capture_output(print(as_dataset(d), -1)),
                  capture_output(print(as_dataset(d), .Machine$integer.max)))
 
-    expect_error(print(as_dataset(d), NA), "'rows' cannot be NA")
+    expect_error(print(as_dataset(d), NA), "`rows` cannot be NA")
 })
 
 
