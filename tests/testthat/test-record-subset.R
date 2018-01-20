@@ -49,8 +49,13 @@ test_that("with NULL, missing", {
 })
 
 
-test_that("with NA, empty name", {
-    x <- as.record(c(4, 3, 2, 1), c("a", NA, "", "z"))
-    expect_equal(x[NA_character_], x[2])
-    expect_equal(x[""], x[3])
+test_that("with NA name", {
+    expect_error(as.record(c(4, 3, 2, 1), c("a", NA, "", "z")),
+                 "'names' entry 2 is NA")
+})
+
+
+test_that("with empty name", {
+    x <- as.record(c(4, 3, 2, 1), c("a", "g", "", "z"))
+    expect_equal(x[[""]], 2)
 })

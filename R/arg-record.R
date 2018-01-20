@@ -20,6 +20,12 @@ arg_record_names <- function(n, value, name = argname(substitute(value)),
         return(NULL)
 
     raw <- as.character(value)
+    if (anyNA(raw)) {
+        na <- which.max(is.na(raw))
+        fmt <- "%s entry %.0f is NA"
+        stop(simpleError(sprintf(fmt, name, na), call))
+    }
+
     names <- tryCatch(as_utf8(raw), error = function(cond) NULL)
     if (is.null(names)) {
         invalid <- which.max(!utf8_valid(raw))
@@ -27,10 +33,12 @@ arg_record_names <- function(n, value, name = argname(substitute(value)),
         stop(simpleError(sprintf(fmt, name, invalid), call))
     }
 
-    nvalue <- length(names)
-    if (nvalue != n) {
-        fmt <- "mismatch: %s length is %.0f, object length is %.0f"
-        stop(simpleError(sprintf(fmt, name, nvalue, n), call))
+    if (n >= 0) {
+        nvalue <- length(names)
+        if (nvalue != n) {
+            fmt <- "mismatch: %s length is %.0f, object length is %.0f"
+            stop(simpleError(sprintf(fmt, name, nvalue, n), call))
+        }
     }
 
     names

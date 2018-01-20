@@ -110,21 +110,24 @@ as.vector.record <- function(x, mode = "any")
 
 c.record <- function(...)
 {
-    dots <- list(...)
-    null <- vapply(dots, is.null, FALSE)
-    args <- dots[!null]
+    args <- list(...)
+    argnames <- arg_record_names(-1, names(args), "argument names")
+    names(args) <- NULL
+
+    null <- vapply(args, is.null, FALSE)
+    args <- args[!null]
     narg <- length(args)
 
     if (narg == 0)
         return(NULL)
 
-    argnames <- names(args)
+    argnames <- argnames[!null]
 
     xlist <- lapply(args, as.record)
     nlist <- vapply(xlist, length, 0)
     namelist <- lapply(xlist, names)
 
-    x <- unlist(xlist, recursive = FALSE, use.names = FALSE)
+    x <- unlist(xlist, FALSE)
 
     names <- flatten_names(nlist, argnames, namelist)
     if (!is.null(names))
