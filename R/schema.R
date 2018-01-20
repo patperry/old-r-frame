@@ -1,4 +1,4 @@
-#  Copyright 2017 Patrick O. Perry.
+#  Copyright 2018 Patrick O. Perry.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,14 +17,29 @@ schema <- function(x, ...)
     UseMethod("schema")
 }
 
+
 schema.default <- function(x, ...)
 {
-    x <- as_dataset(x)
-    schema(x, ...)
+    n <- length(x)
+    type <- if (n == 0)
+        NULL
+    else if (n == 1 && is.null(dim(x)))
+        x[0]
+    else x
+    as.record(list(type))
 }
+
+
+schema.record <- function(x, ...)
+{
+    x <- as.record(x)
+    as.record(lapply(x, schema))
+}
+
 
 schema.dataset <- function(x, ...)
 {
+    # TODO: fix
     id <- seq_along(x)
     name <- names(x)
     class <- vapply(x, function(elt) class(elt)[[1L]], "")
