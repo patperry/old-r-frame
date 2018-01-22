@@ -12,7 +12,7 @@ Create or test for record objects.
 \usage{
 record(...)
 
-as.record(x, names = NULL, ...)
+as.record(x, names = NULL, ..., flat = FALSE)
 
 is.record(x)
 }
@@ -24,11 +24,13 @@ is.record(x)
 
 \item{names}{field names for the converted object, or \code{NULL} to
     preserve existing names.}
+
+\item{flat}{whether to recursively flatten fields.}
 }
 \details{
 These functions are used to create or test for a \code{record} object,
-essentially a list. There are some crucial differences between
-\code{record} and \code{list} objects:
+essentially a list, but more generally a record can have any storage mode.
+There are some crucial differences between \code{record} and base R vectors:
 
 \enumerate{
     \item when accessing fields by name, record objects do not

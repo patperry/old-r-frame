@@ -31,7 +31,7 @@ test_that("with logical", {
 
     expect_equal(x[c(TRUE, TRUE, FALSE)], x[c(1, 2)])
     expect_equal(x[c(TRUE, FALSE, TRUE)], x[c(1, 3)])
-    expect_equal(x[c(FALSE, FALSE, FALSE)], as.record(NULL, character()))
+    expect_equal(x[c(FALSE, FALSE, FALSE)], as.record(list(), character()))
     expect_equal(x[c(TRUE, TRUE, TRUE)], x)
 })
 

@@ -24,11 +24,14 @@ do <- function(f, x, env = NULL)
 }
 
 
-map_.default <- function(x, f, ...)
-{
-    for (i in seq_along(x))
-        f(x[[i]], ...)
+walk <- function(x, f, ...)
+    UseMethod("walk")
 
+walk.default <- function(x, f, ...)
+{
+    for (i in seq_along(x)) {
+        f(x[[i]], ...)
+    }
     invisible(NULL)
 }
 
@@ -50,7 +53,8 @@ list.map.default <- function(x, f, ...)
     for (i in seq_len(n)) {
         y[[i]] <- f(x[[i]], ...)
     }
-    as.record.list(lapply(x, f, ...))
+    names(y) <- names(x)
+    as.list.record(y)
 }
 
 
@@ -66,54 +70,44 @@ NULL.map.default <- function(x, f, ...)
             stop(sprintf(fmt, i))
         }
     }
-
     NULL
 }
-
 
 logical.map <- function(x, f, ...)
     UseMethod("logical.map")
 
 logical.map.default <- function(x, f, ...)
-    as.record.logical(list.map(x, f, ...))
-
+    as.logical.record(map(x, f, ...))
 
 raw.map <- function(x, f, ...)
     UseMethod("raw.map")
 
 raw.map.default <- function(x, f, ...)
-    as.record.raw(list.map(x, f, ...))
-
+    as.raw.record(map(x, f, ...))
 
 integer.map <- function(x, f, ...)
     UseMethod("integer.map")
 
-integer.map <- function(x, f, ...)
-    as.record.integer(list.map(x, f, ...))
-
+integer.map.default <- function(x, f, ...)
+    as.integer.record(map(x, f, ...))
 
 double.map <- function(x, f, ...)
     UseMethod("double.map")
 
 double.map.default <- function(x, f, ...)
-    as.record.double(list.map(x, f, ...))
-
+    as.double.record(map(x, f, ...))
 
 complex.map <- function(x, f, ...)
     UseMethod("complex.map")
 
 complex.map.default <- function(x, f, ...)
-    as.record.complex(list.map(x, f, ...))
-
+    as.complex.record(map(x, f, ...))
 
 character.map <- function(x, f, ...)
     UseMethod("character.map")
 
 character.map.default <- function(x, f, ...)
-    as.record.character(list.map(x, f, ...))
-
-
-
+    as.character.record(map(x, f, ...))
 
 numeric.map <- function(x, f, ...)
     UseMethod("numeric.map")

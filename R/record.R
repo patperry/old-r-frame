@@ -20,12 +20,10 @@
 
 record <- function(...)
 {
-    args <- as.list(substitute(list(...)))[-1]
+    args <- list(substitute(list(...)))[-1]
+
     x <- list(...)
     n <- length(x)
-    if (n == 0)
-        return(NULL)
-
     names <- names(x)
     if (is.null(names))
         names <- character(n)
@@ -37,15 +35,16 @@ record <- function(...)
     }
 
     names(x) <- names
-    as.record(x)
+    do(c.record, x)
 }
+
 
 # The underlying storage mode for `x` can be arbitrary. Records with
 # components of all the same type can be stored as atomic vectors, but
 # they can also be stored as lists.
 
 is.record <- function(x, mode = "any")
-    is.vector(x, mode) && (inherits(x, "record") || is.null(x))
+    inherits(x, "record")
 
 # We coerce other objects to records by first converting to vector. We
 # preserve object names for vector inputs.
@@ -59,24 +58,29 @@ as.record.default <- function(x, mode = "any")
         return(x)
 
     dim <- dim(x)
-    if (is.null(dim) || length(dim) == 1) {
-        names <- names(x)
-        x <- as.vector(x, mode)
-        names(x) <- names
-    } else {
-        x <- as.vector(x, mode)
+    if (!is.null(dim)) {
+        rank <- length(dim)
+        if (rank == 2) {
+            stop("cannot convert matrix to record")
+        } else if (rank > 2) {
+            stop(sprintf("cannot convert rank-%.0f array to record", rank))
+        }
     }
 
+    names <- names(x)
+    x <- as.vector(x, mode)
+    names(x) <- names
     as.record.vector(x)
 }
 
+
 as.record.vector <- function(x, mode = "any")
 {
-    if (is.record(x, mode))
+    if (is.record(x, mode)) {
         x
-    else if (mode == "character")
+    } else if (mode == "character") {
         as.character.record(x)
-    else {
+    } else {
         names <- names(x)
         x <- as.vector(x, mode)
         attributes(x) <- NULL
@@ -86,21 +90,31 @@ as.record.vector <- function(x, mode = "any")
     }
 }
 
+
 # Records use the empty string instead of `NA` when coercing to character.
 
 as.character.record <- function(x)
 {
-    if (is.character(x))
+    record <- is.record(x)
+    if (record && is.character(x))
         return(x)
-    attributes(x) <- NULL
-    if (!anyNA(x))
-        x <- as.character(x)
-    else {
-        na <- is.na(x)
-        x <- as.character(x)
-        x[na] <- ""
-    }
-    as.record.vector(x)
+
+    names <- names(x)
+    missing <- anyNA(x)
+    if (missing)
+        which <- is.na(x)
+
+    if (record)
+        attributes(x) <- NULL
+
+    x <- as.character(x)
+    if (missing)
+        x[which] <- NA
+
+    class(x) <- "record"
+    names(x) <- names
+
+    x
 }
 
 as.list.record <- function(x) as.record.vector(x, "list")
@@ -109,7 +123,6 @@ as.logical.record <- function(x) as.record.vector(x, "logical")
 as.integer.record <- function(x) as.record.vector(x, "integer")
 as.double.record <- function(x) as.record.vector(x, "double")
 as.complex.record <- function(x) as.record.vector(x, "complex")
-as.character.record <- function(x) as.record.vector(x, "character")
 
 as.numeric.record <- function(x)
 {
@@ -166,7 +179,6 @@ is.na.record <- function(x)
 
 as.vector.record <- function(x, mode = "any")
 {
-    x <- as.record(x)
     if (mode == "character")
         as.character.record(x)
     else NextMethod("as.vector")
@@ -175,8 +187,8 @@ as.vector.record <- function(x, mode = "any")
 
 
 # Record names are themselves records, but unlike most R objects, they
-# are required to be encoded in normalized UTF-8, and they cannot contain
-# the empty string (`""`). They are, however, allowed to contain `NA`.
+# are required to be encoded in normalized UTF-8, and they cannot contain NA.
+# They are, however, allowed to contain the empty string (`""`).
 #
 # Note that `names(x)` may also contain duplicate values.
 
@@ -185,53 +197,89 @@ names.record <- function(x)
 
 `names<-.record` <- function(x, value)
 {
-    value <- as.record.normal.character(value)
     if (identical(names(x), value))
         return(x)
 
-    n <- length(x)
-    nvalue <- length(value)
-    if (nvalue != n) {
-        fmt <- "mismatch: `value` length is %.0f, argument length is %.0f"
-        stop(sprintf(fmt, name, nvalue, n))
+    if (!is.null(value)) {
+        value <- as.character.record.normal(value)
+        n <- length(x)
+        nvalue <- length(value)
+
+        if (nvalue != n) {
+            fmt <- "mismatch: `value` length is %.0f, argument length is %.0f"
+            stop(sprintf(fmt, name, nvalue, n))
+        }
     }
 
     attr(x, "names_") <- value
     x
 }
 
+
 c.record <- function(...)
 {
     args <- list(...)
-    n <- length(args)
+    narg <- length(args)
+    mode <- modes_combine(args)
+    as.record(args, mode)
+}
 
-    if (n == 0)
-        return(NULL)
 
-    if (n == 1)
-        return(as.record(args[[1]]))
-
+modes_combine <- function(xlist)
+{
+    n <- length(xlist)
     mode <- "NULL"
+
     for (i in seq_len(n)) {
-        x <- args[[i]]
-
-        if (!is.record(x)) {
-            x <- as.record(x)
-            args[i] <- list(x)
-        }
-
+        x <- xlist[[i]]
         type <- typeof(x)
-        if (mode == "NULL")
+        if (mode == "NULL") {
             mode <- type
-        else if (type != mode) {
-            mode <- "list"
-            break
+        } else if (type != mode) {
+            return("list")
         }
     }
 
     if (mode == "NULL")
-        NULL
-    else
-        as.record(args, mode)
+        "any"
+    else mode
 }
+
+
+    qualify_names <- function(n, names = NULL, prefix = NULL)
+{
+    if (is.null(prefix))
+        names
+    else if (n == 0)
+        character()
+    else if (!is.null(names))
+        paste(prefix, names, sep = ".")
+    else paste(prefix, seq_len(n), sep = ".")
+}
+
+
+flatten_names <- function(nlist, nameslist = NULL, prefixlist = NULL)
+{
+    result <- NULL
+
+    off <- 0
+    for (i in seq_along(nlist)) {
+        n <- nlist[[i]]
+        names <- qualify_names(n, nameslist[[i]], prefixlist[[i]])
+
+        if (!is.null(names)) {
+            if (is.null(result))
+                result <- character(sum(nlist))
+
+            if (n > 0)
+                result[(off + 1):(off + n)] <- names
+        }
+
+        off <- off + n
+    }
+
+    result
+}
+
+
 

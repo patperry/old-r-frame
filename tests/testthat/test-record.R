@@ -33,7 +33,7 @@ test_that("from named empty", {
 
 
 test_that("from NULL", {
-    expect_equal(as.record(NULL), as.record(list()))
+    expect_equal(as.record(NULL), NULL)
 })
 
 
@@ -75,7 +75,7 @@ test_that("setting names with wrong encoding", {
 })
 
 
-test_that("as.list does not downcast a list", {
+test_that("as.list downcasts", {
     x <- record(a = 1, b = 10)
     expect_equal(as.list(x), x)
 })
@@ -83,32 +83,52 @@ test_that("as.list does not downcast a list", {
 
 test_that("as.list converts a non-list", {
     x <- as.record(c(a = 1, b = 10))
-    expect_equal(as.list(x), record(a = 1, b = 10))
-})
-
-
-test_that("as.list can set new names", {
-    x <- record(a = 1, b = 10)
-    expect_equal(as.list(x, c("x", "y")), record(x = 1, y = 10))
+    expect_equal(as.record(as.list(x)), record(a = 1, b = 10))
 })
 
 
 test_that("as.vector downcasts", {
     x <- record(a = 1, b = 10)
     expect_equal(as.vector(x, "any"), x)
-    expect_equal(as.vector(x, "list"), as.list(x))
+    expect_equal(as.vector(x, "list"), x)
     expect_equal(as.vector(x, "numeric"), c(1, 10))
 })
 
 
 test_that("as conversion keeps names", {
     x <- record(a = 1, b = 10, c = 0, d = NA)
-    expect_equal(as.numeric(x), c(a = 1, b = 10, c = 0, d = NA))
-    expect_equal(as.character(x), c(a = "1", b = "10", c = "0", d = NA))
+    expect_equal(as.numeric(x), c(1, 10, 0, NA))
+    expect_equal(as.character(x), c("1", "10", "0", NA))
 })
 
 
-test_that("as conversion sets names", {
-    x <- record(a = 1, b = 10)
-    expect_equal(as.numeric(x, c("x", "y")), c(x = 1, y = 10))
+test_that("as.data.frame from list", {
+    expect_equal(as.data.frame(record(x = 1, b = "hello")),
+                 data.frame(x = 1, b = "hello", stringsAsFactors = FALSE))
+})
+
+
+test_that("as.data.frame from atomic", {
+    expect_equal(as.data.frame(as.record(c(x = 1, b = 3))),
+                 data.frame(x = 1, b = 3))
+})
+
+
+test_that("as.data.frame with invalid names", {
+    expect_error(as.data.frame(record(), character(0)),
+                 "mismatch: `row.names` has length 0, data has 1 row")
+})
+
+
+test_that("as.data.frame from anonymous", {
+    expect_error(as.data.frame(as.record(1:3), character(0)),
+                 "mismatch: `row.names` has length 0, data has 1 row")
+})
+
+
+test_that("changing storage mode", {
+    x <- record(a = 1, b = 9, c = 2)
+    expect_equal(as.vector(x), as.list(x))
+    expect_equal(as.vector(x, "list"), as.list(x))
+    expect_equal(as.vector(x, "character"), c("1", "9", "2"))
 })

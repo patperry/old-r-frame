@@ -1,7 +1,7 @@
 context("record c")
 
 test_that("empty", {
-    expect_equal(c.record(), NULL)
+    expect_true(is.record(c.record()))
 })
 
 
